@@ -6,11 +6,13 @@
 
 #ifndef BMI_HXX
 #define BMI_HXX
+#include <string>
+#include <vector>
 
 namespace bmi {
 
-  const int BMI_SUCCESS = 0;
-  const int BMI_FAILURE = 1;
+  //const int BMI_SUCCESS = 0;
+  //  const int BMI_FAILURE = 1;
 
   const int MAX_COMPONENT_NAME = 2048;
   const int MAX_VAR_NAME = 2048;
