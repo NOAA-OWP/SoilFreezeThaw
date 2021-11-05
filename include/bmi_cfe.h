@@ -114,6 +114,9 @@ struct cfe_state_struct {
 
     int verbosity;
 
+    // *********** ice fraction *******************************
+    double* ice_fraction;
+
 };
 typedef struct cfe_state_struct cfe_state_struct;
 

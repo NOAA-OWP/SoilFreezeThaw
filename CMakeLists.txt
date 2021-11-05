@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 #set(CMAKE_C_COMPILER $CC)
 #set(CMAKE_CXX_COMPILER $CXX)
-
+set(CMAKE_BUILD_TYPE Debug)
 
 # set the project name
 project(cfeft)

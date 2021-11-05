@@ -11,8 +11,8 @@
 
 #define CFE_DEGUG 0
 
-#define INPUT_VAR_NAME_COUNT 2
-#define OUTPUT_VAR_NAME_COUNT 6
+#define INPUT_VAR_NAME_COUNT 4
+#define OUTPUT_VAR_NAME_COUNT 7
 #define STATE_VAR_NAME_COUNT 89   // must match var_info array size
 
 //----------------------------------------------
@@ -159,7 +159,8 @@ static const char *output_var_names[OUTPUT_VAR_NAME_COUNT] = {
         "GIUH_RUNOFF",
         "NASH_LATERAL_RUNOFF",
         "DEEP_GW_TO_CHANNEL_FLUX",
-        "Q_OUT"
+        "Q_OUT",
+	"SMCT"
 };
 
 static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
@@ -168,7 +169,8 @@ static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
         "double",
         "double",
         "double",
-        "double"
+        "double",
+	"double"
 };
 
 static const int output_var_item_count[OUTPUT_VAR_NAME_COUNT] = {
@@ -177,7 +179,8 @@ static const int output_var_item_count[OUTPUT_VAR_NAME_COUNT] = {
         1,
         1,
         1,
-        1
+        1,
+	1
 };
 
 static const char *output_var_units[OUTPUT_VAR_NAME_COUNT] = {
@@ -186,7 +189,8 @@ static const char *output_var_units[OUTPUT_VAR_NAME_COUNT] = {
         "m",
         "m",
         "m",
-        "m"
+        "m",
+	"m"
 };
 
 static const int output_var_grids[OUTPUT_VAR_NAME_COUNT] = {
@@ -195,7 +199,8 @@ static const int output_var_grids[OUTPUT_VAR_NAME_COUNT] = {
         0,
         0,
         0,
-        0
+        0,
+	0
 };
 
 static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
@@ -204,38 +209,51 @@ static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
         "node",
-        "node"
+        "node",
+	"domain"
 };
 
 // Don't forget to update Get_value/Get_value_at_indices (and setter) implementation if these are adjusted
 static const char *input_var_names[INPUT_VAR_NAME_COUNT] = {
         "atmosphere_water__liquid_equivalent_precipitation_rate",
-        "water_potential_evaporation_flux"
+        "water_potential_evaporation_flux",
+	"soil__ice_fraction",
+	"soil__SMCT"
 };
 
 static const char *input_var_types[INPUT_VAR_NAME_COUNT] = {
         "double",
-        "double"
+        "double",
+	"double",
+	"double"
 };
 
 static const char *input_var_units[INPUT_VAR_NAME_COUNT] = {
         "mm h-1", //"atmosphere_water__liquid_equivalent_precipitation_rate"
         "m s-1"   //"water_potential_evaporation_flux"
+	" ",       // dimensionless
+	"m"
 };
 
 static const int input_var_item_count[INPUT_VAR_NAME_COUNT] = {
         1,
-        1
+        1,
+	1,
+	1
 };
 
 static const char input_var_grids[INPUT_VAR_NAME_COUNT] = {
         0,
-        0
+        0,
+	0,
+	0
 };
 
 static const char *input_var_locations[INPUT_VAR_NAME_COUNT] = {
         "node",
-        "node"
+        "node",
+	"domain",
+	"node"
 };
 
 static int Get_start_time (Bmi *self, double * time)
@@ -1321,6 +1339,12 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         return BMI_SUCCESS;
     }
 
+    if (strcmp (name, "SMCT") == 0) {
+      cfe_state_struct *cfe_ptr;
+      cfe_ptr = (cfe_state_struct *) self->data;
+      *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
+        return BMI_SUCCESS;
+    }
     /***********************************************************/
     /***********    INPUT    ***********************************/
     /***********************************************************/
@@ -1336,7 +1360,19 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = (void*)&cfe_ptr->aorc.precip_kg_per_m2;
         return BMI_SUCCESS;
     }
-
+    if (strcmp (name, "soil__ice_fraction") == 0) {
+        cfe_state_struct *cfe_ptr;
+        cfe_ptr = (cfe_state_struct *) self->data;
+        *dest = (void*)&cfe_ptr->ice_fraction;
+        return BMI_SUCCESS;
+    }
+    if (strcmp (name, "soil__SMCT") == 0) {
+        cfe_state_struct *cfe_ptr;
+        cfe_ptr = (cfe_state_struct *) self->data;
+        *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
+        return BMI_SUCCESS;
+    }
+    
     return BMI_FAILURE;
 }
 
@@ -1409,9 +1445,11 @@ static int Set_value_at_indices (Bmi *self, const char *name, int * inds, int le
 
     void* ptr;
     status = Get_value_ptr(self, name, &ptr);
+
     if (status == BMI_FAILURE)
         return BMI_FAILURE;
     memcpy(ptr, src, var_item_size * len);
+
     return BMI_SUCCESS;
 }
 
@@ -1423,7 +1461,7 @@ static int Set_value (Bmi *self, const char *name, void *array)
 
     // Here, for now at least, we know all the variables are scalar, so
     int inds[] = {0};
-
+    
     // Then we can just ...
     return Set_value_at_indices(self, name, inds, 1, array);
 
