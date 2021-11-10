@@ -4,7 +4,6 @@
 using namespace std;
 
 #include <string.h>
-//#include <iostream>
 #include "../../../include/bmi.hxx"
 #include "freezethaw.hxx"
 
@@ -34,6 +33,7 @@ class BmiFreezeThaw : public bmi::Bmi {
       this->output_var_names[6] = "soil__moisture_content_ice_bulk";
       this->output_var_names[7] = "soil__frozen_fraction";
       this->output_var_names[8] = "soil__num_layers";
+      this->output_var_names[9] = "soil__z_depth";
     };
 
     void Initialize(std::string config_file);
@@ -90,10 +90,10 @@ class BmiFreezeThaw : public bmi::Bmi {
   private:
     freezethaw::FreezeThaw _model;
     static const int input_var_name_count = 6;
-    static const int output_var_name_count = 9;
+    static const int output_var_name_count = 10;
 
     std::string input_var_names[6];
-    std::string output_var_names[9];
+    std::string output_var_names[10];
 };
 
 #endif

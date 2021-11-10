@@ -1,4 +1,4 @@
-forcing_file=./forcings/cat58_01Dec2015.csv
+forcing_file=./forcings/cat87_01Dec2015.csv
 end_time_d=200
 dt_s=3600.0
 Z=0.1,0.4,1.0,2.0,3.0,4.0,5.0,6.0

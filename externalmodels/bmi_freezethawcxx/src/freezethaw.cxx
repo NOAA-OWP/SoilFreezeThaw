@@ -34,6 +34,7 @@ FreezeThaw()
   this->smcice_bulk = 0.;
   this->smct_bulk = 0.;
   this->forcing_file= " ";
+  this->nsteps=0;
 }
 
 freezethaw::FreezeThaw::
@@ -46,7 +47,7 @@ FreezeThaw(std::string config_file)
   this->ttop = 260.;
   this->tbot = 272.;
   this->opt_botb = 1;
-  this->opt_topb = 2;
+  this->opt_topb = 2; // 1: constant temp, 2: from a file
 
   this->InitFromConfigFile();
 
@@ -64,6 +65,8 @@ FreezeThaw(std::string config_file)
   this->InitializeArrays();
   SetLayerThickness(); // get soil layer thickness
   SetSMCBulk();
+  this->time = 0.;
+  this->nsteps = 0;
 }
 
 
@@ -77,7 +80,6 @@ InitializeArrays(void)
   
   for (int i=0;i<nz;i++)
     this->SMCIce[i] = this->SMCT[i] - this->SMCLiq[i];
-
 }
 
 int freezethaw::FreezeThaw::
@@ -226,12 +228,12 @@ ReadForcingData(std::string forcing_file)
 
   int size_v = Time_v.size();
 
-  this->Time = new double[size_v];
+  this->Time_ = new double[size_v];
   this->GT = new double[size_v];
 
   
   for (int i=0; i<size_v; i++) {
-    this->Time[i] = Time_v[i];
+    this->Time_[i] = Time_v[i];
     this->GT[i] = GT_v[i];
   }
 
@@ -273,15 +275,12 @@ UpdateSMCDistribution()
   double smc_max;  // maximum smc between d and d_wt_dry depths
   double mass_w;   // water mass added or removed
   double smc_total; // smc_top + smc_bot + mass_w
-  
-  
-  
-
 }
+
+
 void freezethaw::FreezeThaw::
 Advance()
 {
-
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 
@@ -292,16 +291,24 @@ Advance()
   PhaseChange();
 
   this->time += this->dt;
-  if (this->time >dt*3600)
-    this->ttop = 285;
 
   SetSMCBulk();
+  for (int i=0; i < 8; i++) {
+    std::cout<<"After update: "<<this->SMCT[i]<<" "<<this->ST[i]<<"\n";
+  }
+
+  this->nsteps += 1;
 }
 
 double freezethaw::FreezeThaw::
-GroundHeatFlux(double surfT) {
-  if (opt_topb == 2) {
-    double ghf = - TC[0] * (surfT  - ttop) / Z[0];
+GroundHeatFlux(double surfT)
+{  
+  if (opt_topb == 1) {
+    double ghf = - TC[0] * (surfT  - ttop) / Z[0];   //temperature specified as constant
+    return ghf; 
+  }
+  else if (opt_topb == 2) {
+    double ghf = - TC[0] * (surfT  - GT[this->nsteps]) / Z[0];  //temperature from a file
     return ghf; 
   }
   else
@@ -644,7 +651,7 @@ freezethaw::FreezeThaw::
 ~FreezeThaw()
 {
   this->forcing_file=" ";
-  this->time = 0.;
+  //this->time = 0.;
 }
 
 #endif

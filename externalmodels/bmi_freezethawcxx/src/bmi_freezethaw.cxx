@@ -63,6 +63,8 @@ GetVarGrid(std::string name)
     return 0;
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
     return 0;
+  else if (name.compare("soil__z_depth") == 0 )
+    return 0;
   else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
     return 2;
   else if (name.compare("soil__num_layers") == 0 )
@@ -78,6 +80,8 @@ GetVarType(std::string name)
   if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_total_bulk") == 0)
     return "double";
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
+    return "double";
+  else if (name.compare("soil__z_depth") == 0)
     return "double";
   else if (name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
     return "double";
@@ -97,6 +101,8 @@ GetVarItemsize(std::string name)
     return sizeof(double);
   else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
     return sizeof(double);
+  else if (name.compare("soil__z_depth") == 0 )
+    return sizeof(double);
   else if (name.compare("soil__num_layers") == 0 )
     return sizeof(int);
   else
@@ -109,7 +115,7 @@ GetVarUnits(std::string name)
 {
   if (name.compare("soil__temperature") == 0)
     return "K";
-  else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0)
+  else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__z_depth") == 0)
     return "m";
   else
     return "";
@@ -136,7 +142,7 @@ GetVarLocation(std::string name)
     return "node";
   else if (name.compare("soil__moisture_content_total") == 0)
     return "node";
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
+  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__z_depth") == 0)
     return "node";
   else
     return "";
@@ -308,6 +314,8 @@ GetValuePtr (std::string name)
     return (void*)(&this->_model.nz);
   else if (name.compare("soil__frozen_fraction") == 0)
     return (void*)(&this->_model.ice_fraction);
+  else if (name.compare("soil__z_depth") == 0)
+    return (void*)(&this->_model.Dz);
   else
     return NULL;
 }

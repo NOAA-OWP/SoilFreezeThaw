@@ -26,6 +26,7 @@ namespace freezethaw {
     double origin[3];
     double time;
     double endtime;
+    int nsteps;
     double dt;
     int nz;
     double lhf; // latent heat of fusion
@@ -39,8 +40,8 @@ namespace freezethaw {
     double *SMCT; // total soil moisture content
     double *SMCLiq; // liquid moisture content
     double *SMCIce; // ice moisture content
-    double *GT; // ground/air temeperature
-    double *Time;
+    double *GT; // ground/air temperature
+    double *Time_;
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
