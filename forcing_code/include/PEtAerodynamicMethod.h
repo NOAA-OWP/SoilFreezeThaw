@@ -37,7 +37,7 @@ double pevapotranspiration_aerodynamic_method(pet_model *model)
 
   if( model->pet_options.use_penman_monteith_method == FALSE)  // we don't use this term in Penman-Monteith method
   {
-    if (model->bmi.verbose >1)
+    if (model->bmi_pet.verbose >1)
       printf("Use Penman Monteith method is FALSE\n");
 
     // This is equation 3.5.16 from Chow, Maidment, and Mays textbook.

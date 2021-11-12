@@ -30,9 +30,9 @@ extern void free_pet_model(pet_model *model) {
 // ######################    RUN    ########    RUN    ########    RUN    ########    RUN    #################################
 extern int run_pet(pet_model* model)
 {
-  if (model->bmi.verbose >2){
+  if (model->bmi_pet.verbose >2){
     printf("Running the PET model \n");
-    printf("model->bmi.is_forcing_from_bmi %d \n", model->bmi.is_forcing_from_bmi);
+    printf("model->bmi_pet.is_forcing_from_bmi %d \n", model->bmi_pet.is_forcing_from_bmi);
   }
 
   // populate the evapotranspiration forcing data structure:
@@ -43,13 +43,13 @@ extern int run_pet(pet_model* model)
                So we would delete the first block in this "if" statement,
                And move the "else" section below the model->aorc.forcings setting block.
   */
-  if (model->bmi.is_forcing_from_bmi == 0){
-    model->pet_forcing.air_temperature_C = model->forcing_data_air_temperature_2m_K[model->bmi.current_step] - TK;//convert to C
+  if (model->bmi_pet.is_forcing_from_bmi == 0){
+    model->pet_forcing.air_temperature_C = model->forcing_data_air_temperature_2m_K[model->bmi_pet.current_step] - TK;//convert to C
     model->pet_forcing.relative_humidity_percent     = (double)-99.9; // this negative number means use specific humidity
-    model->pet_forcing.specific_humidity_2m_kg_per_kg = model->forcing_data_precip_kg_per_m2[model->bmi.current_step];
-    model->pet_forcing.air_pressure_Pa    = model->forcing_data_surface_pressure_Pa[model->bmi.current_step];
-    model->pet_forcing.wind_speed_m_per_s = hypot(model->forcing_data_u_wind_speed_10m_m_per_s[model->bmi.current_step],
-                                           model->forcing_data_v_wind_speed_10m_m_per_s[model->bmi.current_step]);                 
+    model->pet_forcing.specific_humidity_2m_kg_per_kg = model->forcing_data_precip_kg_per_m2[model->bmi_pet.current_step];
+    model->pet_forcing.air_pressure_Pa    = model->forcing_data_surface_pressure_Pa[model->bmi_pet.current_step];
+    model->pet_forcing.wind_speed_m_per_s = hypot(model->forcing_data_u_wind_speed_10m_m_per_s[model->bmi_pet.current_step],
+                                           model->forcing_data_v_wind_speed_10m_m_per_s[model->bmi_pet.current_step]);                 
   }
   else{
     model->pet_forcing.air_temperature_C = model->aorc.air_temperature_2m_K - TK;//convert to C
@@ -61,18 +61,18 @@ extern int run_pet(pet_model* model)
 
   if(model->pet_options.yes_aorc==1)
   {
-    if (model->bmi.verbose >1)
+    if (model->bmi_pet.verbose >1)
         printf("YES AORC \n");
     
     /* jmframe: If we are getting forcing through BMI, then we don't need this, the forcings should already be in place */
-    if (model->bmi.is_forcing_from_bmi == 0){
-      model->aorc.incoming_longwave_W_per_m2     =  model->forcing_data_incoming_longwave_W_per_m2[model->bmi.current_step];
-      model->aorc.incoming_shortwave_W_per_m2    =  model->forcing_data_incoming_shortwave_W_per_m2[model->bmi.current_step];
-      model->aorc.surface_pressure_Pa            =  model->forcing_data_surface_pressure_Pa[model->bmi.current_step];
-      model->aorc.specific_humidity_2m_kg_per_kg =  model->forcing_data_specific_humidity_2m_kg_per_kg[model->bmi.current_step];
-      model->aorc.air_temperature_2m_K           =  model->forcing_data_air_temperature_2m_K[model->bmi.current_step];
-      model->aorc.u_wind_speed_10m_m_per_s       =  model->forcing_data_u_wind_speed_10m_m_per_s[model->bmi.current_step];
-      model->aorc.v_wind_speed_10m_m_per_s       =  model->forcing_data_v_wind_speed_10m_m_per_s[model->bmi.current_step];
+    if (model->bmi_pet.is_forcing_from_bmi == 0){
+      model->aorc.incoming_longwave_W_per_m2     =  model->forcing_data_incoming_longwave_W_per_m2[model->bmi_pet.current_step];
+      model->aorc.incoming_shortwave_W_per_m2    =  model->forcing_data_incoming_shortwave_W_per_m2[model->bmi_pet.current_step];
+      model->aorc.surface_pressure_Pa            =  model->forcing_data_surface_pressure_Pa[model->bmi_pet.current_step];
+      model->aorc.specific_humidity_2m_kg_per_kg =  model->forcing_data_specific_humidity_2m_kg_per_kg[model->bmi_pet.current_step];
+      model->aorc.air_temperature_2m_K           =  model->forcing_data_air_temperature_2m_K[model->bmi_pet.current_step];
+      model->aorc.u_wind_speed_10m_m_per_s       =  model->forcing_data_u_wind_speed_10m_m_per_s[model->bmi_pet.current_step];
+      model->aorc.v_wind_speed_10m_m_per_s       =  model->forcing_data_v_wind_speed_10m_m_per_s[model->bmi_pet.current_step];
     }
 
     // jframe: not sure if this belongs here or not, but it needs to happen somewhere.
@@ -112,7 +112,7 @@ extern int run_pet(pet_model* model)
   // we must calculate the net radiation before calling the ET subroutine.
   if(model->pet_options.use_aerodynamic_method==0) 
   {
-    if (model->bmi.verbose > 1)
+    if (model->bmi_pet.verbose > 1)
       printf("calculate the net radiation before calling the PET subroutine");
     // NOTE don't call this function use_aerodynamic_method option is TRUE
     model->pet_forcing.net_radiation_W_per_sq_m=calculate_net_radiation_W_per_sq_m(model);
@@ -129,7 +129,7 @@ extern int run_pet(pet_model* model)
   if(model->pet_options.use_penman_monteith_method ==1)
     model->pet_m_per_s=pevapotranspiration_penman_monteith_method(model);
 
-  if (model->bmi.verbose >=1){
+  if (model->bmi_pet.verbose >=1){
     printf("\n");
     printf("_______________________________________________________________________________\n");
     if(model->pet_options.use_energy_balance_method ==1)   printf("energy balance method:\n");
@@ -139,7 +139,7 @@ extern int run_pet(pet_model* model)
     if(model->pet_options.use_penman_monteith_method ==1)  printf("Penman Monteith method:\n");
 
     printf("calculated instantaneous potential evapotranspiration (PET) =%8.6e m/s\n",model->pet_m_per_s);
-    if (model->bmi.verbose > 1)
+    if (model->bmi_pet.verbose > 1)
       printf("calculated instantaneous potential evapotranspiration (PET) =%8.6lf mm/d\n",model->pet_m_per_s*86400.0*1000.0);
   
   }

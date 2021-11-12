@@ -427,7 +427,7 @@ void calculate_intermediate_variables(pet_model* model)
     {
       // this is bad.   Actual vapor pressure of air should not be higher than saturated value.
       // warn and reset to something meaningful
-      if (model->bmi.verbose>=1){
+      if (model->bmi_pet.verbose>=1){
         fprintf(stderr,"Invalid value of specific humidity with no supplied rel. humidity in PET calc. function:\n");
         fprintf(stderr,"Relative Humidity: %lf percent\n",model->pet_forcing.relative_humidity_percent);
         fprintf(stderr,"Specific Humidity: %lf kg/kg\n",model->pet_forcing.specific_humidity_2m_kg_per_kg);

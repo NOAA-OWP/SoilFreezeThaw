@@ -210,7 +210,7 @@ struct intermediate_vars
   //double water_latent_heat_of_vaporization_J_per_kg;
   double psychrometric_constant_Pa_per_C;      // gamma
 };
-struct bmi
+struct bmi_pet
 {
   /*    
       JMFRAME: Fred suggested changing time step size to make the units of seconds explicit...
@@ -264,7 +264,7 @@ struct pet_model{
   struct solar_radiation_parameters solar_params;
   struct solar_radiation_results    solar_results;
 
-  struct bmi bmi;
+  struct bmi_pet bmi_pet;
 
 };
 typedef struct pet_model pet_model;
