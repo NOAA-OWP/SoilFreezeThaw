@@ -12,8 +12,8 @@
 #define CFE_DEGUG 0
 
 #define INPUT_VAR_NAME_COUNT 4
-#define OUTPUT_VAR_NAME_COUNT 7
-#define STATE_VAR_NAME_COUNT 89   // must match var_info array size
+#define OUTPUT_VAR_NAME_COUNT 8
+#define STATE_VAR_NAME_COUNT 90   // must match var_info array size
 
 //----------------------------------------------
 // Put variable info into a struct to simplify
@@ -160,7 +160,8 @@ static const char *output_var_names[OUTPUT_VAR_NAME_COUNT] = {
         "NASH_LATERAL_RUNOFF",
         "DEEP_GW_TO_CHANNEL_FLUX",
         "Q_OUT",
-	"SMCT"
+	"SMCT",
+	"SMCT_BULK"
 };
 
 static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
@@ -170,6 +171,7 @@ static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
         "double",
         "double",
         "double",
+	"double",
 	"double"
 };
 
@@ -180,6 +182,7 @@ static const int output_var_item_count[OUTPUT_VAR_NAME_COUNT] = {
         1,
         1,
         1,
+	1,
 	1
 };
 
@@ -190,6 +193,7 @@ static const char *output_var_units[OUTPUT_VAR_NAME_COUNT] = {
         "m",
         "m",
         "m",
+	"m",
 	"m"
 };
 
@@ -200,6 +204,7 @@ static const int output_var_grids[OUTPUT_VAR_NAME_COUNT] = {
         0,
         0,
         0,
+	0,
 	0
 };
 
@@ -210,7 +215,8 @@ static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
         "node",
-	"domain"
+	"domain",
+	"node"
 };
 
 // Don't forget to update Get_value/Get_value_at_indices (and setter) implementation if these are adjusted
@@ -444,7 +450,6 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
 #if CFE_DEGUG >= 2
         printf("Config Value - Param: '%s' | Value: '%s'\n", param_key, param_value);
 #endif
-
         if (strcmp(param_key, "forcing_file") == 0) {
             model->forcing_file = strdup(param_value);
             is_forcing_file_set = TRUE;
@@ -1340,11 +1345,24 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
     }
 
     if (strcmp (name, "SMCT") == 0) {
+      /* // delete it later, for testing only - AJ
+      void * src_ = NULL;
+      //cfe_ptr->soil_reservoir.smct_m = a;
+      //src_ = (void*)(&cfe_ptr->soil_reservoir.smct_m);
+      src_ = (void *) ((cfe_state_struct *)(self->data))->soil_reservoir.smct_m;
+      *dest = src_;//(void*)&cfe_ptr->soil_reservoir.smct_m;*/
+      
+      *dest = (void *) ((cfe_state_struct *)(self->data))->soil_reservoir.smct_m;
+      return BMI_SUCCESS;
+    }
+    
+    if (strcmp (name, "SMCT_BULK") == 0) {
       cfe_state_struct *cfe_ptr;
       cfe_ptr = (cfe_state_struct *) self->data;
       *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
-        return BMI_SUCCESS;
+      return BMI_SUCCESS;
     }
+	
     /***********************************************************/
     /***********    INPUT    ***********************************/
     /***********************************************************/
@@ -1363,10 +1381,10 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
     if (strcmp (name, "soil__ice_fraction") == 0) {
         cfe_state_struct *cfe_ptr;
         cfe_ptr = (cfe_state_struct *) self->data;
-        *dest = (void*)&cfe_ptr->ice_fraction;
+        *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction;
         return BMI_SUCCESS;
     }
-    if (strcmp (name, "soil__SMCT") == 0) {
+    if (strcmp (name, "soil__SMCT_BULK") == 0) {
         cfe_state_struct *cfe_ptr;
         cfe_ptr = (cfe_state_struct *) self->data;
         *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
@@ -1397,15 +1415,24 @@ static int Get_value_at_indices (Bmi *self, const char *name, void *dest, int *i
 
     // For now, all variables are non-array scalar values, with only 1 item of type double
     
-    // Thus, there is only ever one value to return (len must be 1) and it must always be from index 0
-    if (len > 1 || inds[0] != 0) 
+    // Thus, there is only ever one value to return (len must be 1) and it must always be from index 0; the SMC distribution needs a vector to be returned so modifying AJ
+    if (name == "SMCT") {
+      void *ptr = NULL;
+      status = Get_value_ptr(self, name, &ptr);
+      len = ((cfe_state_struct *)(self->data))->soil_reservoir.nz;
+      memcpy(dest, ptr, var_item_size * len);
+      if (status ==  BMI_SUCCESS)
+        return  BMI_SUCCESS;
+    }
+    else if (len > 1 || inds[0] != 0) 
         return BMI_FAILURE;
-
+    
     void* ptr;
     status = Get_value_ptr(self, name, &ptr);
     if (status == BMI_FAILURE)
         return BMI_FAILURE;
     memcpy(dest, ptr, var_item_size * len);
+    
     return BMI_SUCCESS;
 }
 
@@ -1797,7 +1824,8 @@ static int Get_state_var_ptrs (Bmi *self, void *ptr_list[])
     ptr_list[86] = &(state->direct_runoff_params_struct.a_Xinanjiang_inflection_point_parameter );
     ptr_list[87] = &(state->direct_runoff_params_struct.b_Xinanjiang_shape_parameter );
     ptr_list[88] = &(state->direct_runoff_params_struct.x_Xinanjiang_shape_parameter );
-    //-------------------------------------------------------------                
+    //-------------------------------------------------------------
+    ptr_list[89] =  &(state->soil_reservoir.smct_m);
     return BMI_SUCCESS;
 }
 
@@ -2085,6 +2113,7 @@ static int Get_state_var_ptrs (Bmi *self, void *ptr_list[])
     else if (index == 84){
         // verbosity is not a pointer
         state->verbosity = *(int *)src; }
+
     //--------------------------------------------------------------------------
     // direct_runoff_params_struc vars (includes xinanjiang AND schaake)
     //--------------------------------------------------------------------------
@@ -2097,6 +2126,12 @@ static int Get_state_var_ptrs (Bmi *self, void *ptr_list[])
     else if (index == 88){ 
         state->direct_runoff_params_struct.x_Xinanjiang_shape_parameter = *(double *)src; }       
     
+    else if (index == 85){
+      for (i=0; i<8; i++) {
+	//  state->soil_reservoir.smct_m[i] = *( ((double *)src) + i);
+      }
+    }
+
     return BMI_SUCCESS;
 }*/
 
@@ -2291,7 +2326,6 @@ cfe_state_struct *new_bmi_cfe(void)
     data->flux_lat_m = NULL;
     data->flux_nash_lateral_runoff_m = NULL;
     data->flux_perc_m = NULL;
-
     return data;
 }
 
@@ -2441,6 +2475,7 @@ extern void init_soil_reservoir(cfe_state_struct* cfe_ptr, double alpha_fc, doub
     // making them the same, but they don't have 2B
     cfe_ptr->soil_reservoir.storage_threshold_secondary_m = cfe_ptr->soil_reservoir.storage_threshold_primary_m;
     cfe_ptr->soil_reservoir.storage_m = init_reservoir_storage(is_storage_ratios, storage, max_storage);
+    
 }
 
 extern double init_reservoir_storage(int is_ratio, double amount, double max_amount) {

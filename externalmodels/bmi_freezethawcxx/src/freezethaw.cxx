@@ -293,10 +293,6 @@ Advance()
   this->time += this->dt;
 
   SetSMCBulk();
-  for (int i=0; i < 8; i++) {
-    std::cout<<"After update: "<<this->SMCT[i]<<" "<<this->ST[i]<<"\n";
-  }
-
   this->nsteps += 1;
 }
 

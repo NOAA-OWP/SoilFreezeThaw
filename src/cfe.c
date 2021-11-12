@@ -70,6 +70,10 @@ extern void cfe(
     double lateral_flux=0.0;      // flux from soil to lateral flow Nash cascade +to cascade  [m/timestep]
     double percolation_flux=0.0;  // flux from soil to gw nonlinear researvoir, +downward  [m/timestep]
 
+  // store current soil storage_m in a temp. variable
+  double storage_temp_m = soil_reservoir_struct->storage_m;
+
+  
   //##################################################
   // partition rainfall using Schaake function
   //##################################################
@@ -175,8 +179,12 @@ extern void cfe(
   gw_reservoir_struct->storage_m   += flux_perc_m;
   soil_reservoir_struct->storage_m -= flux_perc_m;
   soil_reservoir_struct->storage_m -= flux_lat_m;
+
   massbal_struct->vol_soil_to_lat_flow     += flux_lat_m;  //TODO add this to nash cascade as input
   massbal_struct->volout=massbal_struct->volout+flux_lat_m;
+
+  // get change in storage
+  soil_reservoir_struct->storage_change_m = soil_reservoir_struct->storage_m - storage_temp_m ;
   
   conceptual_reservoir_flux_calc(gw_reservoir_struct,&primary_flux,&secondary_flux);
   
@@ -215,7 +223,8 @@ extern void cfe(
 #endif
 
   Qout_m = giuh_runoff_m + nash_lateral_runoff_m + flux_from_deep_gw_to_chan_m;
-    
+
+
     // #### COPY BACK STATE VALUES BY POINTER REFERENCE SO VISIBLE TO FRAMEWORK    ####    
     *soil_reservoir_storage_deficit_m_ptr = soil_reservoir_storage_deficit_m;
 
@@ -232,7 +241,8 @@ extern void cfe(
     *nash_lateral_runoff_m_ptr            = nash_lateral_runoff_m;
     *Qout_m_ptr                           = Qout_m;
 
-
+    //soil_reservoir_struct->nz = 8;
+    soil_moisture_vertical_distribution(soil_reservoir_struct, &NWM_soil_params_struct);
 
 } // END CFE STATE SPACE FUNCTIONS
   //####################################################################################################
@@ -733,3 +743,101 @@ if(fabs(a)<epsilon) return(TRUE);
 else                return(FALSE);
 }
 
+// given bulk soil moisture quantity, distribute vertically 
+extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soil_res, struct NWM_soil_parameters *soil_parms)
+{
+  
+  double lam=0.692; //soil_res->lambda; // pore distribution index
+  double hb=7.82;  //[cm] //soil_res->hp;     
+  double D= soil_parms->D * 100.;
+  double z1= 10; //soil_res->z1; [cm]
+  double z0=0;        /* bottom of computational domain */
+  double Vmax=D* soil_parms->smcmax;
+  double beta=1.0-lam;
+  double alpha=pow(hb,lam)/beta;
+  double tol=0.000001;
+  double phi = soil_parms->smcmax;
+  double V1 = 100*(soil_res->storage_m - soil_res->storage_change_m);  //change in soil moisture
+  
+  
+  double Vinit=V1;
+  double V2=100*soil_res->storage_m;  /* start-up condition before adding any water */
+  soil_res->nz = 4;
+  soil_res->smct_m = malloc(sizeof(double) * soil_res->nz);
+  double Z[] = {0.1,0.4,0.6,1.0};
+  double Dz[] = {0.1,0.5,1.0,2.0};
+  int count = 0;
+  
+  if(V2>=Vmax) {
+    //printf("fully saturated \n",i);
+    for(int j=0;j<soil_res->nz;j++)
+      soil_res->smct_m[j] = phi;
+    return;
+  }
+   
+   double diff=1000.0;
+
+   double f, df, z2, z2new, df_dz2;
+
+   z2=z1;  /* first guess, use Newton-Raphson to find new Z2 */
+   do {
+     count++;
+    
+     if(count>15000) {
+       printf("no convergence loop count: after 15000 iterations\n");
+       exit(-9);
+     }
+     
+     f=phi*(z2-z1) + alpha * phi * (pow((D-z2),beta)-pow((D-z1),beta)) - (V2-V1);
+     
+     df_dz2=phi - alpha*phi*beta*pow((D-z2),(beta-1.0));
+     
+     z2new=z2-f/df_dz2*1.0;
+     
+     diff=z2new-z2;
+     z2=z2new;
+     
+   } while (fabs(diff)>tol);
+
+   z1=z2;  // reset to new water table elevation value
+   
+   //V1= phi*(z2-z0) + phi*hb + alpha*phi*(pow((D-z2),beta)-pow(hb,beta)); // cm of water depth (without porosity) in cell
+   
+   /* get a high resolution curve */
+   int z_hres = 51;
+   double *smct_m_temp = malloc(sizeof(double) * z_hres);
+   double *z_temp = malloc(sizeof(double) * z_hres);
+   double dz1 = hb;
+   double dz2 = Dz[soil_res->nz-1]*100;
+     
+   for (int i=0;i<z_hres;i++) {
+     smct_m_temp[i] = pow((hb/dz1),lam)*phi;
+     z_temp[i] = z1 + hb  + dz1;
+     
+     //printf ("Value: %d %lf %lf %lf %lf \n", i, smct_m_temp[i], z_temp[i], dz1, dz2);
+     dz1 += (dz2-hb)/50;
+   }
+   
+   for (int i=0; i<soil_res->nz; i++) {
+     for (int j=0; j<z_hres; j++) {
+       if (z_temp[j]  > (Dz[i]*100) ) {
+	 soil_res->smct_m[soil_res->nz-1-i] = smct_m_temp[j];
+	 //printf("HERE: %d %lf %lf \n",j,  z_temp[j],smct_m_temp[j]);
+	 break;
+	 }
+     }
+     //     printf("SMCT in CFE2: %d, %d, %lf \n",i, soil_res->nz-1-i, soil_res->smct_m[i]);
+   }
+
+   /*     
+   //   z=z1+hb;
+   //  double theta_test[] = {0.36, 0.16, 0.12, 0.1,  0.09, 0.08, 0.08, 0.08};
+   z1=hb;
+   for(int j=0;j<soil_res->nz;j++) {
+     z1= Dz[j]*100;//(D-Z[j]-hb);
+     soil_res->smct_m[j] = pow((hb/z1),lam)*phi;
+     printf("SMCT in CFE1: %lf,  %lf \n",soil_res->smct_m[j], z1);
+   }
+   //   printf("SMCT in CFE2: %lf \n",soil_res->smct_m);
+   */
+}

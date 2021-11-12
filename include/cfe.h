@@ -77,12 +77,16 @@ struct conceptual_reservoir
 int    is_exponential;  // set this true TRUE to use the exponential form of the discharge equation
 double storage_max_m;   // maximum storage in this reservoir
 double storage_m;       // state variable.
+double storage_change_m; // storage change in the current step
 double coeff_primary;    // the primary outlet
 double exponent_primary;
 double storage_threshold_primary_m;
 double storage_threshold_secondary_m;
 double coeff_secondary;
 double exponent_secondary;
+int nz; // number of soil layers
+double *smct_m; //soil moisture content total (ice+liquid) per layer
+double ice_fraction;
 };
 
 struct NWM_soil_parameters
@@ -171,6 +175,8 @@ extern void et_from_rainfall(double *timestep_rainfall_input_m, struct evapotran
 extern void et_from_soil(struct conceptual_reservoir *soil_res, struct evapotranspiration_structure *et_struct, struct NWM_soil_parameters *soil_parms);
 
 extern int is_fabs_less_than_epsilon(double a,double epsilon);
+
+extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soil_res, struct NWM_soil_parameters *soil_parms);
 
 extern void cfe(
         double *soil_reservoir_storage_deficit_m_ptr,
