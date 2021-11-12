@@ -29,11 +29,7 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
   ftm_bmi_model.GetValue("soil__moisture_content_ice_bulk", &(ice_fraction_v[0]));
   int nz = *nz_;
   double ice_fraction = *ice_fraction_v;
-  /*
-  double *smct_b = new double[nz];
-  ftm_bmi_model.GetValue("soil__moisture_content_total_bulk", &(smct_b[0]));
-  std::cout<<"soil mc liq= "<< *smct_b<<"\n";
-  */
+
   cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction", &(ice_fraction_v[0]));
   
 }
@@ -47,13 +43,12 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
         TODO: Get variable names through BMI, then loop through those
               so we don't re-write the get/set functions over and over
   ********************************************************************/
-  double time = ftm_bmi_model.GetCurrentTime () ;
-  double end_time = ftm_bmi_model.GetEndTime();
 
-  double *smct_v = new double[8];
+  int *nz_ = new int[1];
+  ftm_bmi_model.GetValue("soil__num_layers", &(nz_[0]));
+  double *smct_v = new double[*nz_];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
-  //  std::cout<<"soil mc from cfe = "<<smct_v[3] <<"\n";
   ftm_bmi_model.SetValue("soil__moisture_content_total", &(smct_v[0]));
   
 }
@@ -160,6 +155,7 @@ int
     aorc_bmi_model->update(aorc_bmi_model);                         // Update model 1
     pass_forcing_from_aorc_to_cfe(cfe_bmi_model, aorc_bmi_model);   // Get and Set values
     pass_icefraction_from_ftm_to_cfe(cfe_bmi_model, ftm_bmi_model);
+    
     if (cfe_model_data->aorc.precip_kg_per_m2 != aorc->aorc.precip_kg_per_m2){
       printf("Precip values do not match\n");
       printf("precip value from AORC is %lf\n", aorc->aorc.precip_kg_per_m2);
@@ -172,8 +168,7 @@ int
       print_cfe_flux_at_timestep(cfe_model_data);
     
     pass_smc_from_cfe_to_ftm(cfe_bmi_model, ftm_bmi_model);
-    //updated_ftm_smc_soil_temperatue(cfe_bmi_model, ftm_bmi_model);
-    ftm_bmi_model.Update();
+    ftm_bmi_model.Update(); // Update model 3
   }
 
   // Run the Mass Balance check

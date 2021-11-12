@@ -265,20 +265,6 @@ GetDt()
 }
 
 void freezethaw::FreezeThaw::
-UpdateSMCDistribution()
-{
-  double d; // depth from the top surface to the last soil layer
-  double d_wt_dry; // depth of the water table for drier conditions
-  double d_wt_cur; // depth of the current water table
-  double smc_top;  // smc in the soil layers (entire domain) [0,d]
-  double smc_bot;  // smc between d and d_wt_cur depths
-  double smc_max;  // maximum smc between d and d_wt_dry depths
-  double mass_w;   // water mass added or removed
-  double smc_total; // smc_top + smc_bot + mass_w
-}
-
-
-void freezethaw::FreezeThaw::
 Advance()
 {
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here

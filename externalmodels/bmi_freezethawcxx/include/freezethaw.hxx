@@ -35,7 +35,6 @@ namespace freezethaw {
     double *Dz; // layer thickness
     double *ST; // soil temperature
     double *HC; //heat capacity
-    //double **M; // coefficient matrix
     double *TC; // thermal conductivity
     double *SMCT; // total soil moisture content
     double *SMCLiq; // liquid moisture content
@@ -67,7 +66,6 @@ namespace freezethaw {
     std::vector<double> ReadVectorData(std::string key);
     void ReadForcingData(std::string key);
     void SetSMCBulk(); // set bulk moisture content per soil column
-    void UpdateSMCDistribution();
     ~FreezeThaw();
   };
 
