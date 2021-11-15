@@ -97,7 +97,7 @@ extern void cfe(
       double smc_ref = 0.249; // taken from noahmp soil_params file for sandy loam
       double frzk = 0.15; // taken from noahmp GENPARM.TBL
       int cv_frz = 3;
-      printf("IceFraction: %lf \n", soil_reservoir_struct->ice_fraction);
+
       if (soil_reservoir_struct->ice_fraction > 1.0E-2) {
 	
         double frz_fact = NWM_soil_params_struct.smcmax/smc_ref * (0.412 / 0.468);
@@ -778,7 +778,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
   double lam=0.692; //soil_res->lambda; // pore distribution index
   double hb=7.82;  //[cm] //soil_res->hp;     
   double D= soil_parms->D * 100.;
-  double z1= 10; //soil_res->z1; [cm]
+  double z1= soil_res->z_prev_wt * 100; //previous water table location, [cm]
   double z0=0;        /* bottom of computational domain */
   double Vmax=D* soil_parms->smcmax;
   double beta=1.0-lam;
@@ -787,7 +787,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
   double phi = soil_parms->smcmax;
   double V1 = 100*(soil_res->storage_m - soil_res->storage_change_m);  //change in soil moisture
   
-  
+
   double Vinit=V1;
   double V2=100*soil_res->storage_m;  /* start-up condition before adding any water */
   soil_res->nz = 4;
@@ -797,7 +797,6 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
   int count = 0;
   
   if(V2>=Vmax) {
-    //printf("fully saturated \n",i);
     for(int j=0;j<soil_res->nz;j++)
       soil_res->smct_m[j] = phi;
     return;
@@ -828,8 +827,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
    } while (fabs(diff)>tol);
 
    z1=z2;  // reset to new water table elevation value
-   
-   //V1= phi*(z2-z0) + phi*hb + alpha*phi*(pow((D-z2),beta)-pow(hb,beta)); // cm of water depth (without porosity) in cell
+   soil_res->z_prev_wt = z1/100.;
    
    /* get a high resolution curve */
    int z_hres = 51;
@@ -841,31 +839,17 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
    for (int i=0;i<z_hres;i++) {
      smct_m_temp[i] = pow((hb/dz1),lam)*phi;
      z_temp[i] = z1 + hb  + dz1;
-     
-     //printf ("Value: %d %lf %lf %lf %lf \n", i, smct_m_temp[i], z_temp[i], dz1, dz2);
      dz1 += (dz2-hb)/50;
    }
-   
+
+   // mapping the updated soil moisture curve to the heat conduction discretization depth (Dz)
    for (int i=0; i<soil_res->nz; i++) {
      for (int j=0; j<z_hres; j++) {
        if (z_temp[j]  > (Dz[i]*100) ) {
 	 soil_res->smct_m[soil_res->nz-1-i] = smct_m_temp[j];
-	 //printf("HERE: %d %lf %lf \n",j,  z_temp[j],smct_m_temp[j]);
 	 break;
 	 }
      }
-     //     printf("SMCT in CFE2: %d, %d, %lf \n",i, soil_res->nz-1-i, soil_res->smct_m[i]);
    }
 
-   /*     
-   //   z=z1+hb;
-   //  double theta_test[] = {0.36, 0.16, 0.12, 0.1,  0.09, 0.08, 0.08, 0.08};
-   z1=hb;
-   for(int j=0;j<soil_res->nz;j++) {
-     z1= Dz[j]*100;//(D-Z[j]-hb);
-     soil_res->smct_m[j] = pow((hb/z1),lam)*phi;
-     printf("SMCT in CFE1: %lf,  %lf \n",soil_res->smct_m[j], z1);
-   }
-   //   printf("SMCT in CFE2: %lf \n",soil_res->smct_m);
-   */
 }

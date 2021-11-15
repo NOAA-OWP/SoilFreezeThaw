@@ -87,6 +87,7 @@ double exponent_secondary;
 int nz; // number of soil layers
 double *smct_m; //soil moisture content total (ice+liquid) per layer
 double ice_fraction;
+double z_prev_wt; //previous (timestep) water table location
 };
 
 struct NWM_soil_parameters

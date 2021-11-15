@@ -2475,7 +2475,7 @@ extern void init_soil_reservoir(cfe_state_struct* cfe_ptr, double alpha_fc, doub
     // making them the same, but they don't have 2B
     cfe_ptr->soil_reservoir.storage_threshold_secondary_m = cfe_ptr->soil_reservoir.storage_threshold_primary_m;
     cfe_ptr->soil_reservoir.storage_m = init_reservoir_storage(is_storage_ratios, storage, max_storage);
-    
+    cfe_ptr->soil_reservoir.z_prev_wt = 0.1; //initial water table location 10 cm
 }
 
 extern double init_reservoir_storage(int is_ratio, double amount, double max_amount) {
