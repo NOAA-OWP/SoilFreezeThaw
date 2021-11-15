@@ -15,20 +15,19 @@ project(cfeft)
 # add the executable
 
 
-add_executable(cfeft ./src/main_pass_forcings.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c)
+## cfe + aorc + ftm
+#add_executable(cfeft ./src/main_pass_forcings.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c)
 
+#add_library(cfelib ./externalmodels/bmi_freezethawcxx/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethawcxx/src/freezethaw.cxx ./externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethawcxx/include/freezethaw.hxx)
+
+## cfe + aorc + pet + ftm 
+add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c ./forcing_code/src/pet.c ./forcing_code/src/bmi_pet.c)
 
 add_library(cfelib ./externalmodels/bmi_freezethawcxx/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethawcxx/src/freezethaw.cxx ./externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethawcxx/include/freezethaw.hxx)
-
-#add_executable(cfeft ./externalmodels/bmi_freezethawcxx/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethawcxx/src/freezethaw.cxx)
-
-
 
 target_link_libraries(cfeft LINK_PUBLIC cfelib)
 target_link_libraries(cfeft PRIVATE m)
 
-#CMAKE_INSTALL_PREFIX='pwd`
-#add_library(cfelib ./src/main_pass_forcings.c ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c ./include/cfe.h ./include/bmi_cfe.h ./forcing_code/include/aorc.h ./forcing_code/include/bmi_aorc.h)
 
-##cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` ../
+##cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=Debug ../
 ##cmake --build .

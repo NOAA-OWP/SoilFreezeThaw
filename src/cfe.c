@@ -91,6 +91,33 @@ extern void cfe(
       {
       Schaake_partitioning_scheme(timestep_h,direct_runoff_params_struct.Schaake_adjusted_magic_constant_by_soil_type,soil_reservoir_storage_deficit_m,
                                   timestep_rainfall_input_m,&direct_output_runoff_m,&infiltration_depth_m);
+
+      // impermeable fraction due to frozen soil
+      double factor = 1;
+      double smc_ref = 0.249; // taken from noahmp soil_params file for sandy loam
+      double frzk = 0.15; // taken from noahmp GENPARM.TBL
+      int cv_frz = 3;
+      printf("IceFraction: %lf \n", soil_reservoir_struct->ice_fraction);
+      if (soil_reservoir_struct->ice_fraction > 1.0E-2) {
+	
+        double frz_fact = NWM_soil_params_struct.smcmax/smc_ref * (0.412 / 0.468);
+        double frzx = frzk * frz_fact;
+        double acrt = cv_frz * frzx / soil_reservoir_struct->ice_fraction;
+        double sum1 =1;
+	
+        for (int i1=1; i1 < cv_frz; i1++) {
+	  int k = 1;
+	  for (int i2=i1+1; i2<cv_frz; i2++)
+            k *= i2;
+	  
+          sum1 += pow(acrt,(cv_frz - i1)) / (double)k;
+        }
+	
+        factor = 1. - exp(-acrt) * sum1;
+      }
+      infiltration_depth_m *= factor;
+      direct_output_runoff_m =  timestep_rainfall_input_m - infiltration_depth_m;;
+      
       }
     else if (direct_runoff_params_struct.surface_partitioning_scheme == Xinanjiang)
       {
@@ -450,12 +477,13 @@ if(0.0 < water_input_depth_m)
 
 
     if( 0.0 < (water_input_depth_m-(*infiltration_depth_m)) )
-      {
       *surface_runoff_depth_m = water_input_depth_m - (*infiltration_depth_m);
-      }
-    else  *surface_runoff_depth_m=0.0;
+    else
+      *surface_runoff_depth_m=0.0;
+    
     *infiltration_depth_m =  water_input_depth_m - (*surface_runoff_depth_m);
     }
+
   }
 else
   {
