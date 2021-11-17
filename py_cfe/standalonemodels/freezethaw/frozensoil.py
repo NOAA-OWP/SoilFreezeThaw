@@ -30,7 +30,7 @@ import pandas as pd
 
 
 class FrozenSoil():
-    def __init__(self, cfg_file=None):
+    def __init__(self, cfg_file=None,tc_constant=False,standalone_HE=False):
         # define domain and soil properties
         self.NSNOW = 0
         self.ISNOW = 0
@@ -49,7 +49,9 @@ class FrozenSoil():
         self.starttime = 0
         self.endtime = 0
         self.dt = 0 # time step
-
+        self.is_TC_constant = tc_constant # if thermal conductivities are constant, default to 1.0
+        self.tc_const = 2.2 # thermal conductivity of saturated sandy soil (used in the damping depth test)
+        self.standalone_HE = standalone_HE # standalone heat equation ignores phase change, set to True for damping depth test
         
     def initialize(self):
         
@@ -76,7 +78,8 @@ class FrozenSoil():
 
         ## Note: we should call PhaseChange here too to get SMCIce initial content, especially it
         ## will be need when soil T in below freezing at the initial time
-        self.PhaseChange()
+        if (not self.standalone_HE):
+            self.PhaseChange()
         
     def read_config_file(self):
         with open(self.cfg_file) as file:
@@ -185,6 +188,7 @@ class FrozenSoil():
 
 
     def soil_heat_capacity(self):
+        
         SMCMAX = self.soil_params["smcmax"]
         for i in range(self.NL):
             sice = self.SMCT[i] - self.SMCLiq[i]
@@ -194,8 +198,10 @@ class FrozenSoil():
     #compute soil bulk thermal properties
     def thermal_conductivity(self):
         
+        if (self.is_TC_constant):
+            return np.ones(self.NL)*self.tc_const
+             
         DF = np.zeros(self.NL)
-    
         for i in range(self.NL):
             DF[i] = self.compute_TC(self.SMCT[i], self.SMCLiq[i])
             
@@ -309,7 +315,7 @@ class FrozenSoil():
         #HCPCT = volumetic heat capacity [J/m3/K]
         # Hm = (T- Tref) * HC * DZ /Dt = K * J/(m3 * K) * m * 1/s = (J/s)*m/m3 = W/m2
         self.soil_heat_capacity()
-    
+
         #if HM < 0 --> freezing energy otherwise melting energy
         for i in range(self.NL):
             if IMELT[i] > 0:
@@ -391,8 +397,9 @@ class FrozenSoil():
 
             
             self.ST = np.array(HE.AdvanceT(Tnew,Told))
-            
-            self.PhaseChange()
+
+            if (not self.standalone_HE):
+                self.PhaseChange()
             DF = self.thermal_conductivity()
             HE.set_thermal_conductivity(DF)
             HE.set_temperature(self.ST)
@@ -422,14 +429,12 @@ class FrozenSoil():
             self.dt = (self.Time[i] - self.Time[i-1])#.seconds
 
             # set boundary conditions
-            #if self.bc_change == True and cycles > 3600:
-            #    HE.set_boundary_conditions(285.)
-            #if self.real_forcing == True:
             HE.set_boundary_conditions(self.BC_T[cycles])
 
             self.ST = np.array(HE.AdvanceT(self.dt))
-            
-            self.PhaseChange()
+
+            if (not self.standalone_HE):
+                self.PhaseChange()
             DF = self.thermal_conductivity()
             HE.set_thermal_conductivity(DF)
             HE.set_temperature(self.ST)
@@ -438,7 +443,7 @@ class FrozenSoil():
             Told = Tnew
 
             self.A.append([Told, copy.copy(self.ST), copy.deepcopy(self.SMCLiq), copy.deepcopy(self.SMCT)])
-# Comparison with FrozenSoilModule running through BMI
+
 
 def read_BMI_data(bmi_outfile, nz):
 
@@ -466,94 +471,3 @@ def read_BMI_data(bmi_outfile, nz):
 
     return bmiST, bmiW, bmiIce
 
-
-def compare_with_bmi_solution(bmi_datafile, outfig_path, nz, Tsteps, step=12):
-
-    bmiST, bmiW, bmiIce = read_BMI_data(bmi_datafile, nz)
-    tmpdir = os.path.join(outfig_path, "tempdir")
-    os.mkdir(tmpdir)
-    
-    # cycles = number of time steps
-    for i in range(0,Tsteps+1,step):
-        fig, axs = plt.subplots(1,2,figsize=(10,6))
-        axs[0].plot(bmiST[i],Z,color='r',label='Soil T (BMI)')
-        axs[0].plot(A[i][1],Z,color='k',linestyle='dashed',label='Soil T (Python)')
-        axs[0].vlines(bmiST[0],ymin=0,ymax=7,color='grey',label='Initial ST',linestyle='dotted')
-        axs[0].set_xlabel('Soil temperature [K]',fontsize=12)
-        
-        axs[1].plot(bmiW[i],Z,color='b',label='Liquid')
-        axs[1].plot(bmiIce[i],Z,color='g',label='Ice')
-        axs[1].plot(A[i][2],Z,color='k',linestyle='dashed',label='Liquid (Python)')
-        axs[1].plot(bmiW[0],Z,color='grey',label='Initial SMC',linestyle='dotted')
-        
-        axs[1].set_xlabel('Soil moisture [K]',fontsize=12)
-        axs[0].text(262.5, 5., 'Time = %s [d]'%(BMI_Time[i]/(3600.*24)), fontsize=12, color="green")
-        
-        axs[0].set_xlim(262,285.1)
-        axs[1].set_xlim(-0.01,0.5)
-    
-        for j in range(2):
-            axs[j].set_ylim(0.,6.9)
-            axs[j].invert_yaxis()
-            axs[j].xaxis.set_tick_params(labelsize=12)
-            axs[j].yaxis.set_tick_params(labelsize=12)
-            axs[0].set_ylabel('Depth [m]',fontsize=12)
-            axs[0].legend(loc = 'lower left',labelspacing=.2,fontsize=10)
-            axs[1].legend(loc = 'lower center',labelspacing=.1,fontsize=10)
-        plt.savefig(outfig + 'fig-%s.png'%(BMI_Time[i]/3600.),dpi=100)
-        plt.close()
-
-    make_movie(tmpdir)
-
-
-def sorted_nicely( l ):
-    convert = lambda text: int(text) if text.isdigit() else text
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key = alphanum_key)
-
-def make_movie(outfile_path):
-    images = []
-    dir_files = os.listdir(outfile_path)
-
-    Files = sorted_nicely(dir_files)
-    Files = [f for f in Files if f.endswith('.png')]
-    print (len(dir_files), Files[:3])
-    
-    for filename in Files:
-        images.append(imageio.imread(outfile_path+filename))
-    imageio.mimsave(outfile_path+'movie.gif', images)
-
-
-
-"""
-# domain information such as number of cells(layers) in a column
-
-#initial heat capacity and thermal conductivities
-SNICE = [0,0,0] 
-SNLIQ = [0, 0, 0]
-SNEQV = 0
-SNH = 0
-QMELT = 0 # [mm/s]
-
-PONDING = 0 #[mm]
-
-
-
-#***************************************************************
-# **** Initial Soil Temperature, Thermal Conductivity **********
-# **** Set boundary conditions ******
-
-
-
-
-
-# Run model till the end time
-run_model(Tend, DT, BC_T, Tsteps=-1)
-
-#SUPERCOOL gives the amount of liquid water that must exist at the given temperature
-
-outfig_path = '/Users/ahmadjan/Core/SimulationsData/postprocessing/frozensoil/'
-bmi_datafile='/Users/ahmadjan/codes/bmi/bmi-frozensoil/_build/testing/bmifrozensoilcxx.out'
-
-#compare_with_bmi_solution(bmi_datafile, outfig_path, Nz, Tsteps, step=12)
-"""

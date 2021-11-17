@@ -9,15 +9,12 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from numpy.linalg import inv
-#import matplotlib.animation as animation
-#from matplotlib.animation import FuncAnimation, PillowWriter 
-
 
 # depth
 N = -1
-#Z = np.array([0.1,0.4,1.0,2.0,3.0,4.0,5.0,6.0])
 
-HFUS = 0.3336E06 # latent heat of fution
+#HFUS = 2.96E6 #for saturated sandy soil
+HFUS = 0.3336E06 # latent heat of fusion (from noahmp.F)
 DF = np.zeros(1) 
 ST = np.zeros(1)
 Z = np.zeros(1)
@@ -58,6 +55,7 @@ def set_boundary_conditions(Ttop, Tbot=-999):
     
 # Ground heat flux at the top surface
 def ground_flux(st):
+    
     GHF = - DF[0] * (st - TPST)/ (Z[0])
     return GHF
 
@@ -79,6 +77,7 @@ def AssembleM(N, DT, ST):
             LAMBD[i] = DT/(4* h * HFUS)
             GHS = ground_flux(ST[i])
             FLUX[i] = LAMBD[i] * (DF[i] * DTDZ + GHS)
+            
         elif (i < N -1):
             h = Z[i+1] - Z[i]
             h1 = Z[i] - Z[i-1]
