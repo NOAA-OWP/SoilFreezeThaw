@@ -1,5 +1,5 @@
 forcing_file=./forcings/Laramie_14Jun09_to_15Apr12.csv
-soil_params.depth=6.0
+soil_params.depth=2.0
 soil_params.b=4.05
 soil_params.mult=1000.0
 soil_params.satdk=0.00000338
@@ -12,7 +12,7 @@ Cgw=0.01
 expon=6.0
 gw_storage=50%
 alpha_fc=0.33
-soil_storage=66.7%
+soil_storage=60.0%
 K_nash=0.03
 K_lf=0.01
 nash_storage=0.0,0.0

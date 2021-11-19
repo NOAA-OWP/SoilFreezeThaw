@@ -2526,11 +2526,11 @@ extern void initialize_volume_trackers(cfe_state_struct* cfe_ptr){
 /**************************************************************************/
 extern void print_cfe_flux_header(){
     printf("#    ,            hourly ,  direct,   giuh ,lateral,  base,   total\n");
-    printf("#Time,           rainfall,  runoff,  runoff, flow  ,  flow,  discharge\n");
-    printf("# (h),             (mm)   ,  (mm) ,   (mm) , (mm)  ,  (mm),    (mm)\n");
+    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm]\n");
+    //    printf("# (h),             (mm)   ,  (mm) ,   (mm) , (mm)  ,  (mm),    (mm)\n");
 }
 extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
-    printf("%d %lf %lf %lf %lf %lf %lf\n",
+    printf("%d, %lf, %lf, %lf, %lf, %lf, %lf\n",
                            cfe_ptr->current_time_step,
                            cfe_ptr->timestep_rainfall_input_m*1000.0,
                            
