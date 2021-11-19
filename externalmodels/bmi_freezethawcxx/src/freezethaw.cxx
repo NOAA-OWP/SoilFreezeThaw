@@ -195,15 +195,26 @@ ReadForcingData(std::string forcing_file)
   std::vector<double> GT_v(0.0);
   std::vector<string> vars;
   std::string line, cell;
-
+  
   //read first line of strings which contains forcing variables names.
   std::getline(fp, line);
   std::stringstream lineStream(line);
+  int ground_temp_index=-1;
+  
   while(std::getline(lineStream,cell, ',')) {
-    vars.push_back(cell);    
+    vars.push_back(cell);
   }
 
+  for (int i=0; i<vars.size();i++) {
+    if (vars[i] ==  "TMP_ground_surface")
+      ground_temp_index = i;
+  }
+
+  if (ground_temp_index <0)
+    ground_temp_index = 6; // 6 is the air temperature column, if not coupled and ground temperatgure is not provided
+    
   int len_v = vars.size(); // number of forcing variables + time
+
   int count = 0;
   while (fp) {
     std::getline(fp, line);
@@ -215,8 +226,8 @@ ReadForcingData(std::string forcing_file)
 	count +=1;
 	continue;
       }
-      if (count % len_v == 6) {
-	// 6 is the air temperature column, needs to be fixed
+
+      if (count % len_v == ground_temp_index) {
 	GT_v.push_back(stod(cell));
 	count +=1;
 	continue;
