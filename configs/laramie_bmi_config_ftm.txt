@@ -5,6 +5,6 @@ Z=0.1,0.5,1.0,2.0
 nz=4
 soil_params.smcmax=0.43
 surface_temperature_bc=260
-soil_temperature=274.15,274.15,274.15,274.15
+soil_temperature=280.15,280.15,280.15,280.15
 soil_total_moisture_content=0.389,0.396,0.397,0.397
 soil_liquid_moisture_content=0.389,0.396,0.397,0.397

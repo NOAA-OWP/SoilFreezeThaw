@@ -2530,7 +2530,7 @@ extern void print_cfe_flux_header(){
     //    printf("# (h),             (mm)   ,  (mm) ,   (mm) , (mm)  ,  (mm),    (mm)\n");
 }
 extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
-    printf("%d, %lf, %lf, %lf, %lf, %lf, %lf\n",
+   printf("%d, %lf, %lf, %lf, %lf, %lf, %lf\n",
                            cfe_ptr->current_time_step,
                            cfe_ptr->timestep_rainfall_input_m*1000.0,
                            

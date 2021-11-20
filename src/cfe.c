@@ -115,7 +115,9 @@ extern void cfe(
 	
         factor = 1. - exp(-acrt) * sum1;
       }
+
       infiltration_depth_m *= factor;
+
       direct_output_runoff_m =  timestep_rainfall_input_m - infiltration_depth_m;;
       
       }
@@ -154,7 +156,7 @@ extern void cfe(
                                  timestep_rainfall_input_m,Schaake_output_runoff_m*1000.0,infiltration_depth_m*1000.0,
                                  timestep_rainfall_input_m-Schaake_output_runoff_m-infiltration_depth_m);                   */
   printf("After direct runoff function: rain:%8.5lf mm  runoff:%8.5lf mm  infiltration:%8.5lf mm  residual:%e m\n",
-                                 timestep_rainfall_input_m,direct_output_runoff_m*1000.0,infiltration_depth_m*1000.0,
+                                 timestep_rainfall_input_m*1000,direct_output_runoff_m*1000.0,infiltration_depth_m*1000.0,
                                  timestep_rainfall_input_m-direct_output_runoff_m-infiltration_depth_m);
 #endif  
 
@@ -471,8 +473,7 @@ if(0.0 < water_input_depth_m)
     Px=water_input_depth_m;   // Total water input to partitioning scheme this time step [m]
   
     // This is eqn 24 from Schaake et al.  NOTE: this is 0 in the case of a saturated soil column, when Ic=0.  
-    // Physically happens only if soil has no-flow lower b.c.
-    
+    // Physically happens only if soil has no-flow lower b.c.   
     *infiltration_depth_m = (Px * (Ic / (Px + Ic)));  
 
 

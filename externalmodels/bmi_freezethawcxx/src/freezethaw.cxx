@@ -265,8 +265,13 @@ SetSMCBulk()
   for (int i =0; i < nz; i++) val += this->SMCIce[i];
   this->smcice_bulk = val;
 
-  this->ice_fraction = this->smcice_bulk / this->smct_bulk;
-  assert (this->ice_fraction <= 1.0);
+  //this->ice_fraction = this->smcice_bulk / this->smct_bulk; //noahmp does not do it this way
+
+  val = this->SMCIce[0]*this->Z[0];
+  for (int i =1; i < nz; i++) val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+  this->ice_fraction = val;
+
+  assert (this->ice_fraction <= 1.0); //fix this later
 }
   
 double freezethaw::FreezeThaw::
