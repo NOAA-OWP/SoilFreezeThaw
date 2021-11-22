@@ -24,6 +24,8 @@ project(cfeft)
 add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c ./forcing_code/src/pet.c ./forcing_code/src/bmi_pet.c)
 
 add_library(cfelib ./externalmodels/bmi_freezethawcxx/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethawcxx/src/freezethaw.cxx ./externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethawcxx/include/freezethaw.hxx)
+add_library(freezethaw SHARED ./externalmodels/bmi_freezethawcxx/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethawcxx/src/freezethaw.cxx ./externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethawcxx/include/freezethaw.hxx)
+add_library(cfebmi SHARED src/bmi_cfe.c src/cfe.c)
 
 target_link_libraries(cfeft LINK_PUBLIC cfelib)
 target_link_libraries(cfeft PRIVATE m)
