@@ -48,6 +48,7 @@ namespace freezethaw {
     double smcliq_bulk;
     double smcice_bulk;
     double ice_fraction;
+    std::string ice_fraction_scheme;
     
     FreezeThaw();
     FreezeThaw(std::string config_file);
@@ -86,7 +87,7 @@ namespace freezethaw {
     const double quartz_; //loamy sand
     const double tcmineral_; // TC of other mineral 
     const double tfrez_;    // freezing/melting point (k)
-    const double smcmax_; // porosity (maximum soil moisture)
+    //const double smcmax_; // porosity (maximum soil moisture)
     const double bexp_; // Clap-Honnberger parameter
     const double wdensity_; // [kg/m3]
     Properties();

@@ -35,6 +35,7 @@ FreezeThaw()
   this->smct_bulk = 0.;
   this->forcing_file= " ";
   this->nsteps=0;
+  this->ice_fraction_scheme= " ";
 }
 
 freezethaw::FreezeThaw::
@@ -157,6 +158,10 @@ InitFromConfigFile()
       }
       continue;
     }
+     if (key_sub == "ice_fraction_scheme") {
+      this->ice_fraction_scheme = key.substr(loc+1,key.length());
+      continue;
+    }
   }
 
   fp.close();
@@ -267,10 +272,19 @@ SetSMCBulk()
 
   //this->ice_fraction = this->smcice_bulk / this->smct_bulk; //noahmp does not do it this way
 
-  val = this->SMCIce[0]*this->Z[0];
-  for (int i =1; i < nz; i++) val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
-  this->ice_fraction = val;
-
+  if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
+    val = this->SMCIce[0]*this->Z[0];
+    for (int i =1; i < nz; i++)
+      val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+    this->ice_fraction = val;
+  }
+  else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
+    double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);
+    double A = 4.0; // taken from NWM SOILWATER subroutine
+    double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
+    this->ice_fraction = fcr;
+  }
+  
   assert (this->ice_fraction <= 1.0); //fix this later
 }
   
@@ -438,7 +452,7 @@ ThermalConductivity() {
   const int n_z = this->shape[0];
   
   for (int i=0; i<n_z;i++) {
-    double sat_ratio = SMCT[i]/ prop.smcmax_;
+    double sat_ratio = SMCT[i]/ this->smcmax;
     
     //TC of solids Eq. (10) Peters-Lidard
     double tc_solid = pow(prop.tcquartz_,prop.quartz_) * pow(prop.tcmineral_, (1. - prop.quartz_));
@@ -448,11 +462,11 @@ ThermalConductivity() {
     //UNFROZEN VOLUME FOR SATURATION (POROSITY*XUNFROZ)
     double x_unfrozen = SMCLiq[i] / SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
     
-    double xu = x_unfrozen * prop.smcmax_; // unfrozen volume fraction
-    double tc_sat = pow(tc_solid,(1. - prop.smcmax_)) * pow(prop.tcice_, (prop.smcmax_ - xu)) * pow(prop.tcwater_,xu);
+    double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
+    double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(prop.tcice_, (this->smcmax - xu)) * pow(prop.tcwater_,xu);
     
     //DRY THERMAL CONDUCTIVITY
-    double gammd = (1. - prop.smcmax_)*2700.; // dry density
+    double gammd = (1. - this->smcmax)*2700.; // dry density
     double tc_dry = (0.135* gammd+ 64.7)/ (2700. - 0.947* gammd);
     
     // Kersten Number
@@ -476,7 +490,7 @@ SoilHeatCapacity() {
   //def soil_heat_capacity(domain, prop,SMC, SOLIQ, HCPCT, SMCMAX):
   for (int i=0; i<n_z;i++) {
     double sice = SMCT[i] - SMCLiq[i];
-    HC[i] = SMCLiq[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-prop.smcmax_)*prop.hcsoil_ + (prop.smcmax_-SMCT[i])*prop.hcair_;
+    HC[i] = SMCLiq[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-SMCT[i])*prop.hcair_;
   }
 
 }
@@ -539,7 +553,7 @@ PhaseChange() {
   for (int i=0; i<n_z;i++) {
     if (ST[i] < prop.tfrez_) {
       double SMP = prop.lhf_ /(prop.grav_*ST[i]) * (prop.tfrez_ - ST[i]);     // [m] Soil Matrix potential
-      Supercool[i] = prop.smcmax_* pow((SMP/prop.psisat_),b); //SMCMAX = porsity
+      Supercool[i] = this->smcmax* pow((SMP/prop.psisat_),b); //SMCMAX = porsity
       Supercool[i] = Supercool[i]*Dz[i]* prop.wdensity_; //[kg/m2];
     }
   }
@@ -640,7 +654,6 @@ Properties() :
   quartz_   (0.6), 
   tcmineral_ (2.0),
   tfrez_     (273.15),
-  smcmax_  (0.4), 
   bexp_  (2.9), 
   wdensity_ (1000)
 {}
