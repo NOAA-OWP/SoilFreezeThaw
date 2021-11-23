@@ -57,10 +57,7 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
   ********************************************************************/
   int *nz_ = new int[1];
   double *ice_fraction_v = new double[1];
-  
-  ftm_bmi_model.GetValue("soil__num_layers", &(nz_[0]));
-  ftm_bmi_model.GetValue("soil__moisture_content_ice_bulk", &(ice_fraction_v[0]));
-  int nz = *nz_;
+  ftm_bmi_model.GetValue("soil__frozen_fraction", &(ice_fraction_v[0]));
   double ice_fraction = *ice_fraction_v;
   cfe_bmi_model->set_value(cfe_bmi_model, "soil__frozen_fraction", &(ice_fraction_v[0]));
 }

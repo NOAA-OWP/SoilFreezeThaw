@@ -121,9 +121,9 @@ InitFromConfigFile()
       this->nz = vec.size();
       continue;
     }
-    if (key_sub == "nz") {
+    if (key_sub == "nz") {//remove it
       int nz_t = std::stod(key.substr(loc+1,key.length()));
-      //      assert (nz_t == this->nz);
+      //assert (nz_t == this->nz);
       continue;
     }
     if (key_sub == "soil_params.smcmax") {
@@ -273,24 +273,26 @@ SetSMCBulk()
   this->smcice_bulk = val;
 
   if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
-    /*
+    
     val = this->SMCIce[0]*this->Z[0];
     for (int i =1; i < nz; i++)
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
     this->ice_fraction = val;
-    */
+    
+    /*
     val = 0.;
-    int j =0;
+    int j =1;
     for (int i=0; i < nz; i++) {
-      if (this->Z[i] == Z_noahmp[0])
+      if (this->Z[i] == Z_noahmp[0]) {
 	val += this->SMCIce[i]*this->Z[i];
+      }
       else {
 	if (this->Z[i] == Z_noahmp[j]) {
-	  val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+	  val += this->SMCIce[i] * (Z_noahmp[j] -  Z_noahmp[j-1]);//(this->Z[i] - this->Z[i-1]);
 	  j++;
 	}
       }
-    }
+      }*/    
     this->ice_fraction = val;
   }
   else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
