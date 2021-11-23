@@ -62,8 +62,7 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
   ftm_bmi_model.GetValue("soil__moisture_content_ice_bulk", &(ice_fraction_v[0]));
   int nz = *nz_;
   double ice_fraction = *ice_fraction_v;
-  cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction", &(ice_fraction_v[0]));
-  
+  cfe_bmi_model->set_value(cfe_bmi_model, "soil__frozen_fraction", &(ice_fraction_v[0]));
 }
 
 /***************************************************************
@@ -81,9 +80,7 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
   double *smct_v = new double[*nz_];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
-  //std::cout<<"MAIN-MCT: "<<smct_v[0]<<" "<<smct_v[1]<<" "<<smct_v[2]<<" "<<smct_v[3]<<"\n";
   ftm_bmi_model.SetValue("soil__moisture_content_total", &(smct_v[0]));
-  
 }
 
 /***************************************************************

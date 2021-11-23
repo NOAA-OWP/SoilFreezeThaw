@@ -97,11 +97,11 @@ extern void cfe(
       double frzk = 0.15; // taken from noahmp GENPARM.TBL
       int cv_frz = 3;
 
-      if (soil_reservoir_struct->ice_fraction > 1.0E-2) {
+      if (soil_reservoir_struct->frozen_fraction > 1.0E-2) {
 	
         double frz_fact = NWM_soil_params_struct.smcmax/smc_ref * (0.412 / 0.468);
         double frzx = frzk * frz_fact;
-        double acrt = cv_frz * frzx / soil_reservoir_struct->ice_fraction;
+        double acrt = cv_frz * frzx / soil_reservoir_struct->frozen_fraction;
         double sum1 =1;
 	
         for (int i1=1; i1 < cv_frz; i1++) {
