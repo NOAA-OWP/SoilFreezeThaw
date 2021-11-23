@@ -145,6 +145,7 @@ Variable var_info[] = {
     { 87, "b_Xinanjiang_shape_parameter",                   "double", 1},
     { 88, "x_Xinanjiang_shape_parameter",                   "double", 1}
     //---------------------------------------
+    /*Soil Freeze-thaw model paramaters*/
 };
 
 int i = 0;
@@ -237,7 +238,7 @@ static const char *input_var_types[INPUT_VAR_NAME_COUNT] = {
 static const char *input_var_units[INPUT_VAR_NAME_COUNT] = {
         "mm h-1", //"atmosphere_water__liquid_equivalent_precipitation_rate"
         "m s-1"   //"water_potential_evaporation_flux"
-	" ",       // dimensionless
+	"m ",    // ice fraction in meters
 	"m"
 };
 
@@ -420,6 +421,7 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_gw_storage_set = FALSE;
 
     int is_giuh_originates_string_val_set = FALSE;
+    int is_soil_dz_string_val_set = FALSE;
 
     // Default value
     double refkdt = 3.0;
@@ -432,10 +434,9 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_nash_storage_string_val_set = FALSE;
     // Similarly as for Nash, track stuff for GIUH ordinates
     char* giuh_originates_string_val;
-
+    char* soil_dz_string_val;
 
     // Additionally,
-
     for (i = 0; i < config_line_count; i++) {
         char *param_key, *param_value;
         fgets(config_line, max_config_line_length + 1, fp);
@@ -607,8 +608,15 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
                 is_x_Xinanjiang_shape_parameter_set = TRUE;
             }
         }
+	if (strcmp(param_key, "soil.Dz") == 0) {
+#if CFE_DEGUG >= 1
+	  printf("Found configured soil depth values ('%s')\n", param_value);
+#endif
+            soil_dz_string_val = strdup(param_value);
+            is_soil_dz_string_val_set = TRUE;
+            continue;
+        }
     }
-
     if (is_forcing_file_set == FALSE) {
 #if CFE_DEGUG >= 1
         printf("Config param 'forcing_file' not found in config file\n");
@@ -784,6 +792,32 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
         model->giuh_ordinates[i++] = strtod(value, NULL);
     // Finally, free the original string memory
     free(giuh_originates_string_val);
+    
+    // Soil discretization : handle soil depth discretizaiton, bailing if they were not provided when run with freeze-thaw model
+    if (is_soil_dz_string_val_set == FALSE) {
+#if CFE_DEGUG >= 1
+        printf("Soil depth string/values not set!\n");
+#endif
+        return BMI_FAILURE;
+    }
+#if CFE_DEGUG >= 1
+    printf("Soil depth string value found in config ('%s')\n", is_soil_dz_string_val_set);
+#endif
+    model->soil_reservoir.nz = count_delimited_values(soil_dz_string_val, ",");
+#if CFE_DEGUG >= 1
+    printf("Counted number of soil depths (%d)\n", model->soil_reservoir.nz);
+#endif
+    if (model->soil_reservoir.nz < 1)
+        return BMI_FAILURE;
+    
+    model->soil_reservoir.Dz_m = malloc(sizeof(double) * model->soil_reservoir.nz);
+    copy = soil_dz_string_val;
+    
+    i = 0;
+    while ((value = strsep(&copy, ",")) != NULL)
+        model->soil_reservoir.Dz_m[i++] = strtod(value, NULL);
+    // Finally, free the original string memory
+    free(soil_dz_string_val);
 
     // Now handle the Nash storage array properly
     if (is_nash_storage_string_val_set == TRUE) {
@@ -1390,7 +1424,6 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
         return BMI_SUCCESS;
     }
-    
     return BMI_FAILURE;
 }
 
@@ -1488,11 +1521,10 @@ static int Set_value (Bmi *self, const char *name, void *array)
 
     // Here, for now at least, we know all the variables are scalar, so
     int inds[] = {0};
-    
+
     // Then we can just ...
     return Set_value_at_indices(self, name, inds, 1, array);
-
-/*  This is the sample code from read the docs
+    /* This is the sample code from read the docs
     void * dest = NULL;
     int nbytes = 0;
 
@@ -1503,9 +1535,8 @@ static int Set_value (Bmi *self, const char *name, void *array)
         return BMI_FAILURE;
 
     memcpy (dest, array, nbytes);
-
-    return BMI_SUCCESS;
-*/    
+    
+    return BMI_SUCCESS; */
 }
 
 

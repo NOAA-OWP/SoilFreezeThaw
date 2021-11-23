@@ -77,7 +77,6 @@ extern void cfe(
   //##################################################
   // partition rainfall using Schaake function
   //##################################################
-
   soil_reservoir_storage_deficit_m=(NWM_soil_params_struct.smcmax*NWM_soil_params_struct.D-soil_reservoir_struct->storage_m);
 
   evap_struct->potential_et_m_per_timestep = evap_struct->potential_et_m_per_s * time_step_size;
@@ -270,7 +269,6 @@ extern void cfe(
     *nash_lateral_runoff_m_ptr            = nash_lateral_runoff_m;
     *Qout_m_ptr                           = Qout_m;
 
-    //soil_reservoir_struct->nz = 8;
     soil_moisture_vertical_distribution(soil_reservoir_struct, &NWM_soil_params_struct);
 
 } // END CFE STATE SPACE FUNCTIONS
@@ -790,10 +788,10 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
   
   double Vinit=V1;
   double V2=100*soil_res->storage_m;  /* start-up condition before adding any water */
-  soil_res->nz = 4;
+  //soil_res->nz = 4;
   soil_res->smct_m = malloc(sizeof(double) * soil_res->nz);
-  double Z[] = {0.1,0.4,0.6,1.0};
-  double Dz[] = {0.1,0.5,1.0,2.0};
+  //double Z[] = {0.1,0.4,0.6,1.0};
+  //double Dz[] = {0.1,0.5,1.0,2.0};
   int count = 0;
   
   if(V2>=Vmax) {
@@ -834,7 +832,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
    double *smct_m_temp = malloc(sizeof(double) * z_hres);
    double *z_temp = malloc(sizeof(double) * z_hres);
    double dz1 = hb;
-   double dz2 = Dz[soil_res->nz-1]*100;
+   double dz2 = soil_res->Dz_m[soil_res->nz-1]*100;
    
    for (int i=0;i<z_hres;i++) {
      smct_m_temp[i] = pow((hb/dz1),lam)*phi;
@@ -845,7 +843,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
    // mapping the updated soil moisture curve to the heat conduction discretization depth (Dz)
    for (int i=0; i<soil_res->nz; i++) {
      for (int j=0; j<z_hres; j++) {
-       if (z_temp[j]  >= (Dz[i]*100) ) {
+       if (z_temp[j]  >= (soil_res->Dz_m[i]*100) ) {
 	 soil_res->smct_m[soil_res->nz-1-i] = smct_m_temp[j];
 	 break;
 	 }
