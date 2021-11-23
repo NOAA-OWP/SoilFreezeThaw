@@ -139,7 +139,7 @@ typedef struct massbal massbal;
 
 // define data types
 //--------------------------
-typedef enum {Schaake, Xinanjiang} surface_water_partition_type;
+typedef enum {Schaake=1, Xinanjiang=2} surface_water_partition_type;
 
 /* xinanjiang_dev*/
 struct direct_runoff_parameters_structure{

@@ -129,7 +129,7 @@ extern void cfe(
       }
     else
       {
-      fprintf(stderr,"Problem, must specify one of Schaake of Xinanjiang partitioning scheme.\n");
+      fprintf(stderr,"Problem, must specify one of Schaake or Xinanjiang partitioning scheme.\n");
       fprintf(stderr,"Program terminating.\n");
       exit(-1);   // note -1 is arbitrary   #############BOMB################ NEW FLO
       }
