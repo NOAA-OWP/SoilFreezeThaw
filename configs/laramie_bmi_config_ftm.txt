@@ -8,5 +8,5 @@ surface_temperature_bc=260
 soil_temperature=280.15,280.15,280.15,280.15
 soil_total_moisture_content=0.389,0.396,0.397,0.397
 soil_liquid_moisture_content=0.389,0.396,0.397,0.397
-#ice_fraction_scheme=Schaake
-ice_fraction_scheme=Xinanjiang
+ice_fraction_scheme=Schaake
+#ice_fraction_scheme=Xinanjiang
