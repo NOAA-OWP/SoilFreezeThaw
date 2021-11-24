@@ -13,7 +13,7 @@
 
 #define INPUT_VAR_NAME_COUNT 4
 #define OUTPUT_VAR_NAME_COUNT 8
-#define STATE_VAR_NAME_COUNT 90   // must match var_info array size
+#define STATE_VAR_NAME_COUNT 91   // must match var_info array size
 
 //----------------------------------------------
 // Put variable info into a struct to simplify
@@ -143,9 +143,11 @@ Variable var_info[] = {
     { 85, "Schaake_adjusted_magic_constant_by_soil_type",   "double", 1},
     { 86, "a_Xinanjiang_inflection_point_parameter",        "double", 1},
     { 87, "b_Xinanjiang_shape_parameter",                   "double", 1},
-    { 88, "x_Xinanjiang_shape_parameter",                   "double", 1}
+    { 88, "x_Xinanjiang_shape_parameter",                   "double", 1},
+    { 89, "urban_decimal_fraction",			    "double", 1}, //urban fraction used in Xinanjiang runoff scheme
     //---------------------------------------
     /*Soil Freeze-thaw model paramaters*/
+    { 90, "soil__frozen_fraction",			    "double", 1} //should it be here?? I don't see other input/outut variables in this list- AJ
 };
 
 int i = 0;
@@ -415,7 +417,8 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_a_Xinanjiang_inflection_point_parameter_set = FALSE;
     int is_b_Xinanjiang_shape_parameter_set = FALSE;
     int is_x_Xinanjiang_shape_parameter_set = FALSE;
-
+    int is_urban_decimal_fraction_set = FALSE;
+    
     // Keep track these in particular, because the "true" storage value may be a ratio and need both storage and max
     int is_gw_max_set = FALSE;
     int is_gw_storage_set = FALSE;
@@ -607,6 +610,10 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
                 model->direct_runoff_params_struct.x_Xinanjiang_shape_parameter = strtod(param_value, NULL);
                 is_x_Xinanjiang_shape_parameter_set = TRUE;
             }
+	    if (strcmp(param_key, "urban_decimal_fraction") == 0) {
+		model->direct_runoff_params_struct.urban_decimal_fraction = strtod(param_value, NULL);
+		is_urban_decimal_fraction_set = TRUE;
+	    }
         }
 	if (strcmp(param_key, "soil.Dz") == 0) {
 #if CFE_DEGUG >= 1
@@ -750,7 +757,13 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
             printf("Config param 'x_Xinanjiang_shape_parameter' not found in config file\n");
 #endif
             return BMI_FAILURE;
-        }   
+        }
+	if (is_urban_decimal_fraction_set == FALSE) {
+#if CFE_DEGUG >= 1
+	  printf("Config param 'urban_decimal_fraction' not found in config file\n");
+#endif
+	  return BMI_FAILURE;
+	}  
     }
 
     if(model->direct_runoff_params_struct.surface_partitioning_scheme == Schaake){
@@ -1855,8 +1868,9 @@ static int Get_state_var_ptrs (Bmi *self, void *ptr_list[])
     ptr_list[86] = &(state->direct_runoff_params_struct.a_Xinanjiang_inflection_point_parameter );
     ptr_list[87] = &(state->direct_runoff_params_struct.b_Xinanjiang_shape_parameter );
     ptr_list[88] = &(state->direct_runoff_params_struct.x_Xinanjiang_shape_parameter );
+    ptr_list[89] = &(state->direct_runoff_params_struct.urban_decimal_fraction );
     //-------------------------------------------------------------
-    ptr_list[89] =  &(state->soil_reservoir.smct_m);
+    ptr_list[90] =  &(state->soil_reservoir.smct_m);
     return BMI_SUCCESS;
 }
 
@@ -2506,7 +2520,7 @@ extern void init_soil_reservoir(cfe_state_struct* cfe_ptr, double alpha_fc, doub
     // making them the same, but they don't have 2B
     cfe_ptr->soil_reservoir.storage_threshold_secondary_m = cfe_ptr->soil_reservoir.storage_threshold_primary_m;
     cfe_ptr->soil_reservoir.storage_m = init_reservoir_storage(is_storage_ratios, storage, max_storage);
-    cfe_ptr->soil_reservoir.z_prev_wt = 0.1; //initial water table location 10 cm
+    cfe_ptr->soil_reservoir.z_prev_wt = cfe_ptr->NWM_soil_params.D - 1.9; //initial water table location 1.9 m deep
 }
 
 extern double init_reservoir_storage(int is_ratio, double amount, double max_amount) {

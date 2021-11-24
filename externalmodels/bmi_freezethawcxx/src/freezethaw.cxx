@@ -27,7 +27,7 @@ FreezeThaw()
   this->dt = 3600;
   this->lhf = 0.3336E06;
   this->ttop = 260.;
-  this->tbot = 272.;
+  this->tbot = 275.15;
   this->opt_botb = 1;
   this->opt_topb = 2;
   this->smcliq_bulk = 0.;
@@ -46,8 +46,8 @@ FreezeThaw(std::string config_file)
   this->forcing_file= " ";
   this->lhf = 0.3336E06;
   this->ttop = 260.;
-  this->tbot = 272.;
-  this->opt_botb = 1;
+  this->tbot = 275.15;
+  this->opt_botb = 1; // 1: zero thermal flux, 2: constant Temp
   this->opt_topb = 2; // 1: constant temp, 2: from a file
 
   this->InitFromConfigFile();
@@ -275,8 +275,10 @@ SetSMCBulk()
   if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
     
     val = this->SMCIce[0]*this->Z[0];
-    for (int i =1; i < nz; i++)
+    for (int i =1; i < nz; i++) {
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+    }
+
     this->ice_fraction = val;
     
     /*
@@ -292,8 +294,8 @@ SetSMCBulk()
 	  j++;
 	}
       }
-      }*/    
-    this->ice_fraction = val;
+      }
+      this->ice_fraction = val;*/
   }
   else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
     double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);

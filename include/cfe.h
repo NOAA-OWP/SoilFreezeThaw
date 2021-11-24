@@ -148,6 +148,7 @@ struct direct_runoff_parameters_structure{
     double a_Xinanjiang_inflection_point_parameter;
     double b_Xinanjiang_shape_parameter;
     double x_Xinanjiang_shape_parameter;
+    double urban_decimal_fraction;
 };
 typedef struct direct_runoff_parameters_structure direct_runoff_parameters_structure;
 
@@ -160,7 +161,7 @@ extern void Schaake_partitioning_scheme(double dt, double magic_number, double d
 // xinanjiang_dev: XinJiang function written by Rachel adapted by Jmframe and FLO, 
 extern void Xinanjiang_partitioning_scheme(double water_input_depth_m, double field_capacity_m,
                                     double max_soil_moisture_storage_m, double column_total_soil_water_m,
-                                    struct direct_runoff_parameters_structure *parms, 
+                                    struct direct_runoff_parameters_structure *parms, double ice_fraction_top_layer,
                                     double *surface_runoff_depth_m, double *infiltration_depth_m);
 
 extern void conceptual_reservoir_flux_calc(struct conceptual_reservoir *da_reservoir,

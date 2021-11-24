@@ -15,6 +15,7 @@
 #include "../externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx"
 #include "../externalmodels/bmi_freezethawcxx/include/freezethaw.hxx"
 
+#define FrozenFraction true
 /***************************************************************
     Function to pass PET to CFE using BMI.
 ***************************************************************/
@@ -55,7 +56,6 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
         TODO: Get variable names through BMI, then loop through those
               so we don't re-write the get/set functions over and over
   ********************************************************************/
-  int *nz_ = new int[1];
   double *ice_fraction_v = new double[1];
   ftm_bmi_model.GetValue("soil__frozen_fraction", &(ice_fraction_v[0]));
   double ice_fraction = *ice_fraction_v;
@@ -238,8 +238,9 @@ int
     pass_forcing_from_aorc_to_cfe(cfe_bmi_model, aorc_bmi_model);   // Get and Set values
 
     pass_pet_to_cfe(cfe_bmi_model, pet_bmi_model);   // Get and Set values
-    
-    pass_icefraction_from_ftm_to_cfe(cfe_bmi_model, ftm_bmi_model);
+
+    if (FrozenFraction)
+      pass_icefraction_from_ftm_to_cfe(cfe_bmi_model, ftm_bmi_model);
 
     if (pet->aorc.air_temperature_2m_K != aorc->aorc.air_temperature_2m_K){
       printf("ERROR: Temperature values do not match from AORC and PET\n");
