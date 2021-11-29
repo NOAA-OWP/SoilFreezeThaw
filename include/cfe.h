@@ -156,7 +156,7 @@ typedef struct direct_runoff_parameters_structure direct_runoff_parameters_struc
 // function prototypes
 // --------------------------------
 extern void Schaake_partitioning_scheme(double dt, double magic_number, double deficit, double qinsur,
-                                        double *runsrf, double *pddum);
+                                        double ice_fraction, double smcmax, double *runsrf, double *pddum);
 
 // xinanjiang_dev: XinJiang function written by Rachel adapted by Jmframe and FLO, 
 extern void Xinanjiang_partitioning_scheme(double water_input_depth_m, double field_capacity_m,
