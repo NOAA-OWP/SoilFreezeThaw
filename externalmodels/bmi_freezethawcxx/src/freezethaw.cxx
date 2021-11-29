@@ -88,7 +88,7 @@ InitFromConfigFile()
 { 
   std::ifstream fp;
   fp.open(config_file);
-  
+  int n1, n2, n3;
   while (fp) {
     
     std::string key;
@@ -123,7 +123,6 @@ InitFromConfigFile()
     }
     if (key_sub == "nz") {//remove it
       int nz_t = std::stod(key.substr(loc+1,key.length()));
-      //assert (nz_t == this->nz);
       continue;
     }
     if (key_sub == "soil_params.smcmax") {
@@ -136,6 +135,7 @@ InitFromConfigFile()
       this->ST = new double[vec.size()];
       for (int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
+      n1 = vec.size();
       continue;
 
     }
@@ -143,9 +143,9 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
       this->SMCT = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++) {
+      for (int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
-      }
+      n2 = vec.size();
       continue;
     }
     if (key_sub == "soil_liquid_moisture_content") {
@@ -156,6 +156,7 @@ InitFromConfigFile()
 	//	assert (this->SMCT[i] >= vec[i]);
 	this->SMCLiq[i] = vec[i];
       }
+      n3 = vec.size();
       continue;
     }
      if (key_sub == "ice_fraction_scheme") {
@@ -164,6 +165,10 @@ InitFromConfigFile()
     }
   }
 
+  // check if the size of the input data is consistent
+  assert (n1 == this->nz);
+  assert (n2 == this->nz);
+  assert (n3 == this->nz);
   fp.close();
   return 1;
 }
