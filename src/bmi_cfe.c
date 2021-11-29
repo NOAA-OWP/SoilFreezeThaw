@@ -424,7 +424,7 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_gw_storage_set = FALSE;
 
     int is_giuh_originates_string_val_set = FALSE;
-    int is_soil_dz_string_val_set = FALSE;
+    int is_soil_z_string_val_set = FALSE;
 
     // Default value
     double refkdt = 3.0;
@@ -437,7 +437,7 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_nash_storage_string_val_set = FALSE;
     // Similarly as for Nash, track stuff for GIUH ordinates
     char* giuh_originates_string_val;
-    char* soil_dz_string_val;
+    char* soil_z_string_val;
 
     // Additionally,
     for (i = 0; i < config_line_count; i++) {
@@ -615,12 +615,12 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
 		is_urban_decimal_fraction_set = TRUE;
 	    }
         }
-	if (strcmp(param_key, "soil.Dz") == 0) {
+	if (strcmp(param_key, "soil.Z") == 0) {
 #if CFE_DEGUG >= 1
 	  printf("Found configured soil depth values ('%s')\n", param_value);
 #endif
-            soil_dz_string_val = strdup(param_value);
-            is_soil_dz_string_val_set = TRUE;
+            soil_z_string_val = strdup(param_value);
+            is_soil_z_string_val_set = TRUE;
             continue;
         }
     }
@@ -807,30 +807,30 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     free(giuh_originates_string_val);
     
     // Soil discretization : handle soil depth discretizaiton, bailing if they were not provided when run with freeze-thaw model
-    if (is_soil_dz_string_val_set == FALSE) {
+    if (is_soil_z_string_val_set == FALSE) {
 #if CFE_DEGUG >= 1
         printf("Soil depth string/values not set!\n");
 #endif
         return BMI_FAILURE;
     }
 #if CFE_DEGUG >= 1
-    printf("Soil depth string value found in config ('%s')\n", is_soil_dz_string_val_set);
+    printf("Soil depth string value found in config ('%s')\n", is_soil_z_string_val_set);
 #endif
-    model->soil_reservoir.nz = count_delimited_values(soil_dz_string_val, ",");
+    model->soil_reservoir.nz = count_delimited_values(soil_z_string_val, ",");
 #if CFE_DEGUG >= 1
     printf("Counted number of soil depths (%d)\n", model->soil_reservoir.nz);
 #endif
     if (model->soil_reservoir.nz < 1)
         return BMI_FAILURE;
     
-    model->soil_reservoir.Dz_m = malloc(sizeof(double) * model->soil_reservoir.nz);
-    copy = soil_dz_string_val;
+    model->soil_reservoir.Z_m = malloc(sizeof(double) * model->soil_reservoir.nz);
+    copy = soil_z_string_val;
     
     i = 0;
     while ((value = strsep(&copy, ",")) != NULL)
-        model->soil_reservoir.Dz_m[i++] = strtod(value, NULL);
+        model->soil_reservoir.Z_m[i++] = strtod(value, NULL);
     // Finally, free the original string memory
-    free(soil_dz_string_val);
+    free(soil_z_string_val);
 
     // Now handle the Nash storage array properly
     if (is_nash_storage_string_val_set == TRUE) {
@@ -2571,10 +2571,10 @@ extern void initialize_volume_trackers(cfe_state_struct* cfe_ptr){
 /**************************************************************************/
 extern void print_cfe_flux_header(){
     printf("#    ,            hourly ,  direct,   giuh ,lateral,  base,   total\n");
-    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],frozen_fraction [mm]\n");
+    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],storage [mm],frozen_fraction [mm]\n");
 }
 extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
-   printf("%d, %lf, %lf, %lf, %lf, %lf, %lf, %lf\n",
+   printf("%d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf \n",
                            cfe_ptr->current_time_step,
                            cfe_ptr->timestep_rainfall_input_m*1000.0,
                            
@@ -2586,6 +2586,7 @@ extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
                            *cfe_ptr->flux_nash_lateral_runoff_m*1000.0, 
                            *cfe_ptr->flux_from_deep_gw_to_chan_m*1000.0,
 	                   *cfe_ptr->flux_Qout_m*1000.0,
+	                   cfe_ptr->soil_reservoir.storage_m*1000.0,
 	                   cfe_ptr->soil_reservoir.frozen_fraction*1000.0 );
 }
 

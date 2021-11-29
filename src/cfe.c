@@ -791,7 +791,7 @@ else                return(FALSE);
 extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soil_res, struct NWM_soil_parameters *soil_parms)
 {
   
-  double lam=0.692; //soil_res->lambda; // pore distribution index
+  double lam=1.0/soil_parms->bb; // pore distribution index
   double hb=7.82;  //[cm] //soil_res->hp;     
   double D= soil_parms->D * 100.;
   double z1= soil_res->z_prev_wt * 100; //previous water table location, [cm]
@@ -840,31 +840,31 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
      z2=z2new;
      
    } while (fabs(diff)>tol);
-
+   
    z1=z2;  // reset to new water table elevation value
    soil_res->z_prev_wt = z1/100.;
 
    /* get a high resolution curve */
-   int z_hres = 101;
+   int z_hres = 1001;
    double *smct_m_temp = malloc(sizeof(double) * z_hres);
    double *z_temp = malloc(sizeof(double) * z_hres);
    double dz1 = hb;
-   double dz2 = soil_res->Dz_m[soil_res->nz-1]*100 - z1;
+   double dz2 = soil_res->Z_m[soil_res->nz-1]*100.0 - z1;
    
    for (int i=0;i<z_hres;i++) {
      smct_m_temp[i] = pow((hb/dz1),lam)*phi;
      z_temp[i] = z1  + dz1;
      dz1 += dz2/(z_hres-1);
-
    }
    
    // mapping the updated soil moisture curve to the heat conduction discretization depth (Dz)
    for (int i=0; i<soil_res->nz; i++) {
      for (int j=0; j<z_hres; j++) {
-       if (z_temp[j]  >= (soil_res->Dz_m[i]*100) ) {
-	 soil_res->smct_m[soil_res->nz-1-i] = smct_m_temp[j];
+       if (z_temp[j]  >= (D - soil_res->Z_m[i]*100) ) {
+	 soil_res->smct_m[i] = smct_m_temp[j];
 	 break;
 	 }
      }
    }
+
 }

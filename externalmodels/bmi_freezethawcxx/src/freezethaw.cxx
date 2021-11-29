@@ -28,7 +28,7 @@ FreezeThaw()
   this->lhf = 0.3336E06;
   this->ttop = 260.;
   this->tbot = 275.15;
-  this->opt_botb = 1;
+  this->opt_botb = 2;
   this->opt_topb = 2;
   this->smcliq_bulk = 0.;
   this->smcice_bulk = 0.;
@@ -47,7 +47,7 @@ FreezeThaw(std::string config_file)
   this->lhf = 0.3336E06;
   this->ttop = 260.;
   this->tbot = 275.15;
-  this->opt_botb = 1; // 1: zero thermal flux, 2: constant Temp
+  this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
   this->opt_topb = 2; // 1: constant temp, 2: from a file
 
   this->InitFromConfigFile();
@@ -303,8 +303,6 @@ SetSMCBulk()
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
     this->ice_fraction = fcr;
   }
-  
-  assert (this->ice_fraction <= 1.0); //fix this later
 }
   
 double freezethaw::FreezeThaw::
@@ -329,6 +327,7 @@ Advance()
 
   SetSMCBulk();
   this->nsteps += 1;
+  assert (this->ST[0] >200.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
 }
 
 double freezethaw::FreezeThaw::
