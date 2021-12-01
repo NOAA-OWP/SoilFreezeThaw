@@ -43,6 +43,16 @@ make (the resulting executable is moved to parent directory in the Makefile scri
 cd ..  
 ./run_cfe_bmi ./configs/cat_89_bmi_config_cfe.txt  
 
+## Running SoilFreezeThaw model and CFE Model, where CFE gets forcings AND Potential Evapotranspiration through BMIs
+The CFE has functionality to remove mass through evapotranspiration (directly from precipitation and from soil using the Bydukko function). The steps to test this functionality are very similar to the example above, but with just adding two additional src files, which come from the AORC BMI Module in the `forcing_code` directory.
+1. Building SoilFreezeThaw model and CFE
+   - (a) create build directory (e.g., mkdir _build && cd _build)
+   - (b) `cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=Debug ../`
+   - (c) `cmake --build .`
+   - (d) Note: setup up CXX and CC flag (if on HPC machine do `module load gnu/x.y.z`) -- this needs to be done before steps (b) and (c)\
+   - (e) These steps should generate an executable inside the _build called, for example, **cfeft**
+2. Outside _build directory run `./make_run_cfe_aorc_pet_ftm.sh` to run cfe soil freeze thaw modules.
+
 
 # The CFE was based on the t-shirt approximation of the National Water Model
 # t-shirt approximation of the hydrologic routing functionality of the National Water Model v 1.2, 2.0, and 2.1
