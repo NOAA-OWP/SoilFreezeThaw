@@ -17,23 +17,15 @@ class NotImplemented : public std::logic_error {
 class BmiFreezeThaw : public bmi::Bmi {
   public:
     BmiFreezeThaw() {
-      this->input_var_names[0] = "soil_surface__temperature";
-      this->input_var_names[1] = "soil__moisture_content_total";
-      this->input_var_names[2] = "soil__moisture_content_liquid";
-      this->input_var_names[3] = "soil__moisture_content_total_bulk";
-      this->input_var_names[4] = "soil__moisture_content_liquid_bulk";
-      this->input_var_names[5] = "soil__moisture_content_ice_bulk";
+      this->input_var_names[0] = "soil__moisture_content_total";
+      this->input_var_names[1] = "soil__moisture_content_liquid";
       
       this->output_var_names[0] = "soil__temperature";
       this->output_var_names[1] = "soil__moisture_content_total";
       this->output_var_names[2] = "soil__moisture_content_liquid";
       this->output_var_names[3] = "soil__moisture_content_ice";
-      this->output_var_names[4] = "soil__moisture_content_total_bulk";
-      this->output_var_names[5] = "soil__moisture_content_liquid_bulk";
-      this->output_var_names[6] = "soil__moisture_content_ice_bulk";
-      this->output_var_names[7] = "soil__frozen_fraction";
-      this->output_var_names[8] = "soil__num_layers";
-      this->output_var_names[9] = "soil__z_depth";
+      this->output_var_names[4] = "soil__frozen_fraction";
+      this->output_var_names[5] = "soil__num_layers";
     };
 
     void Initialize(std::string config_file);
@@ -89,11 +81,11 @@ class BmiFreezeThaw : public bmi::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     freezethaw::FreezeThaw _model;
-    static const int input_var_name_count = 6;
-    static const int output_var_name_count = 10;
+    static const int input_var_name_count = 2;
+    static const int output_var_name_count = 6;
 
-    std::string input_var_names[6];
-    std::string output_var_names[10];
+    std::string input_var_names[2];
+    std::string output_var_names[6];
 };
 
 #endif

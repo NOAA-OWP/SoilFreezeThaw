@@ -65,7 +65,7 @@ GetVarGrid(std::string name)
     return 0;
   else if (name.compare("soil__z_depth") == 0 )
     return 0;
-  else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
+  else if (name.compare("soil__frozen_fraction") == 0)
     return 2;
   else if (name.compare("soil__num_layers") == 0 )
     return 1;
@@ -77,13 +77,9 @@ GetVarGrid(std::string name)
 std::string BmiFreezeThaw::
 GetVarType(std::string name)
 {
-  if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_total_bulk") == 0)
+  if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0)
     return "double";
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
-    return "double";
-  else if (name.compare("soil__z_depth") == 0)
-    return "double";
-  else if (name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
+  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__frozen_fraction") == 0 || name.compare("soil__z_depth"))
     return "double";
   else if (name.compare("soil__num_layers") == 0 )
     return "int";
@@ -99,9 +95,7 @@ GetVarItemsize(std::string name)
     return sizeof(double);
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
     return sizeof(double);
-  else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__frozen_fraction") == 0)
-    return sizeof(double);
-  else if (name.compare("soil__z_depth") == 0 )
+  else if (name.compare("soil__frozen_fraction") == 0 || name.compare("soil__z_depth") == 0 )
     return sizeof(double);
   else if (name.compare("soil__num_layers") == 0 )
     return sizeof(int);
@@ -115,8 +109,14 @@ GetVarUnits(std::string name)
 {
   if (name.compare("soil__temperature") == 0)
     return "K";
-  else if (name.compare("soil__moisture_content_total_bulk") == 0 || name.compare("soil__moisture_content_liquid_bulk") == 0 || name.compare("soil__moisture_content_ice_bulk") == 0 || name.compare("soil__z_depth") == 0)
+  else if (name.compare("soil__z_depth") == 0)
     return "m";
+  else if (name.compare("soil__frozen_fraction") == 0) {
+    if (this->_model.ice_fraction_scheme == "Schaake" || this->_model.ice_fraction_scheme == "schaake" )
+      return "m";
+    else
+      return "";
+  } 
   else
     return "";
 }
@@ -144,6 +144,8 @@ GetVarLocation(std::string name)
     return "node";
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__z_depth") == 0)
     return "node";
+  else if (name.compare("soil__frozen_fraction") == 0 ||  name.compare("soil__num_layers") == 0)
+    return "domain";
   else
     return "";
 }
@@ -191,7 +193,7 @@ GetGridSize(const int grid)
 {
   if (grid == 0)
     return this->_model.shape[0];
-  if (grid == 1 || grid == 2)
+  if (grid == 1 || grid == 2) // this needs to be changed AJ..
     return 1;
   else
     return -1;
@@ -304,12 +306,6 @@ GetValuePtr (std::string name)
     return (void*)this->_model.SMCLiq;
   else if (name.compare("soil__moisture_content_ice") == 0)
     return (void*)this->_model.SMCIce;
-  else if (name.compare("soil__moisture_content_total_bulk") == 0)
-    return (void*)(&this->_model.smct_bulk);
-  else if (name.compare("soil__moisture_content_liquid_bulk") == 0)
-    return (void*)(&this->_model.smcliq_bulk);
-  else if (name.compare("soil__moisture_content_ice_bulk") == 0)
-    return (void*)(&this->_model.smcice_bulk);
   else if (name.compare("soil__num_layers") == 0)
     return (void*)(&this->_model.nz);
   else if (name.compare("soil__frozen_fraction") == 0)
@@ -421,7 +417,7 @@ GetOutputVarNames()
 {
   std::vector<std::string> names;
 
-  for (int i=0; i<this->input_var_name_count; i++)
+  for (int i=0; i<this->output_var_name_count; i++)
     names.push_back(this->output_var_names[i]);
 
   return names;

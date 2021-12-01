@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include "../include/freezethaw.hxx"
 #define OK (1)
@@ -30,9 +30,6 @@ FreezeThaw()
   this->tbot = 275.15;
   this->opt_botb = 2;
   this->opt_topb = 2;
-  this->smcliq_bulk = 0.;
-  this->smcice_bulk = 0.;
-  this->smct_bulk = 0.;
   this->forcing_file= " ";
   this->nsteps=0;
   this->ice_fraction_scheme= " ";
@@ -60,9 +57,6 @@ FreezeThaw(std::string config_file)
   this->origin[0] = 0.;
   this->origin[1] = 0.;
 
-  this->smcliq_bulk = 0.;
-  this->smcice_bulk = 0.;
-  this->smct_bulk = 0.;
   this->InitializeArrays();
   SetLayerThickness(); // get soil layer thickness
   SetSMCBulk();
@@ -122,7 +116,7 @@ InitFromConfigFile()
       continue;
     }
     if (key_sub == "nz") {//remove it
-      int nz_t = std::stod(key.substr(loc+1,key.length()));
+      //      int nz_t = std::stod(key.substr(loc+1,key.length()));
       continue;
     }
     if (key_sub == "soil_params.smcmax") {
@@ -201,6 +195,11 @@ ReadForcingData(std::string forcing_file)
 {
   std::ifstream fp;
   fp.open(forcing_file);
+  if (!fp) {
+    cout<<"file "<<forcing_file<<" doesn't exist. \n";
+    abort();
+  }
+   
   std::vector<double> Time_v(0.0);
   std::vector<double> GT_v(0.0);
   std::vector<string> vars;
@@ -263,9 +262,8 @@ ReadForcingData(std::string forcing_file)
 void freezethaw::FreezeThaw::
 SetSMCBulk()
 {
-  double Z_noahmp[] = {0.1,0.5,1.0,2.0};
-  
   double val = 0;
+  /*
   for (int i =0; i < nz; i++) val += this->SMCT[i];
   this->smct_bulk = val;
 
@@ -276,31 +274,15 @@ SetSMCBulk()
   val = 0;
   for (int i =0; i < nz; i++) val += this->SMCIce[i];
   this->smcice_bulk = val;
-
+  */
+  
   if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
     
     val = this->SMCIce[0]*this->Z[0];
     for (int i =1; i < nz; i++) {
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
     }
-
     this->ice_fraction = val;
-    
-    /*
-    val = 0.;
-    int j =1;
-    for (int i=0; i < nz; i++) {
-      if (this->Z[i] == Z_noahmp[0]) {
-	val += this->SMCIce[i]*this->Z[i];
-      }
-      else {
-	if (this->Z[i] == Z_noahmp[j]) {
-	  val += this->SMCIce[i] * (Z_noahmp[j] -  Z_noahmp[j-1]);//(this->Z[i] - this->Z[i-1]);
-	  j++;
-	}
-      }
-      }
-      this->ice_fraction = val;*/
   }
   else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
     double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);

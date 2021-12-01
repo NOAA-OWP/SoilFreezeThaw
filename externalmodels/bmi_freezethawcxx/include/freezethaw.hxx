@@ -11,6 +11,7 @@
 
 using namespace std;
 
+
 class Properties;
 namespace freezethaw {
   
@@ -44,9 +45,6 @@ namespace freezethaw {
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
-    double smct_bulk;
-    double smcliq_bulk;
-    double smcice_bulk;
     double ice_fraction;
     std::string ice_fraction_scheme;
     
