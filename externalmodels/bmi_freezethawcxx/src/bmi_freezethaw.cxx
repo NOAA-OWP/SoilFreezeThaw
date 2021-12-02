@@ -382,7 +382,7 @@ SetValueAtIndices (std::string name, int * inds, int len, void *src)
 std::string BmiFreezeThaw::
 GetComponentName()
 {
-  return "The Frozen Soil Model";
+  return "Soil Freeze Thaw Model";
 }
 
 

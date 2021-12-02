@@ -290,6 +290,10 @@ SetSMCBulk()
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
     this->ice_fraction = fcr;
   }
+  else {
+    std::cout<<"Ice Frozen Scheme not specified in the config file. Options: Schaake or Xinanjiang \n";
+    abort();
+  }
 }
   
 double freezethaw::FreezeThaw::
