@@ -73,7 +73,7 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
   ********************************************************************/
 
   int *nz_ = new int[1];
-  ftm_bmi_model.GetValue("soil__num_layers", &(nz_[0]));
+  ftm_bmi_model.GetValue("soil__num_cells", &(nz_[0]));
   double *smct_v = new double[*nz_];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
