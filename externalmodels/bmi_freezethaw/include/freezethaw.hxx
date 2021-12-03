@@ -1,23 +1,25 @@
 #ifndef FSH_INCLUDED
 #define FSH_INCLUDED
+
+
 #include <vector>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 using namespace std;
+
 
 class Properties;
 namespace freezethaw {
   
   class FreezeThaw{
   private:
-    //double *tmp_z;
-    //double *tmp_t;
     std::string config_file;
     std::string forcing_file;
-    void _initialize_arrays(void);
+    void InitializeArrays(void);
     
   public:
     int shape[3];
@@ -25,6 +27,7 @@ namespace freezethaw {
     double origin[3];
     double time;
     double endtime;
+    int nsteps;
     double dt;
     int nz;
     double lhf; // latent heat of fusion
@@ -33,34 +36,35 @@ namespace freezethaw {
     double *Dz; // layer thickness
     double *ST; // soil temperature
     double *HC; //heat capacity
-    //double **M; // coefficient matrix
     double *TC; // thermal conductivity
     double *SMCT; // total soil moisture content
     double *SMCLiq; // liquid moisture content
     double *SMCIce; // ice moisture content
-    double *GT; // ground/air temeperature
-    double *Time;
+    double *GT; // ground/air temperature
+    double *Time_;
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
+    double ice_fraction;
+    std::string ice_fraction_scheme;
     
     FreezeThaw();
     FreezeThaw(std::string config_file);
     
-    void advance_in_time ();
+    void Advance();
     void SolveDiffusionEq();
     double GroundHeatFlux(double surfT);
     bool SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double> &c, const vector<double> &d, vector<double> &X);
     void PhaseChange();
     void ThermalConductivity();
     void SoilHeatCapacity();
-    void LayerThickness();
-    int init_from_config_file();
-    double get_dt();
+    void SetLayerThickness();
+    int InitFromConfigFile();
+    double GetDt();
     
-    std::vector<double> read_vector_data(std::string key);
-    //    std::vector<double> read_forcing_data(std::string key);
-    void read_forcing_data(std::string key);
+    std::vector<double> ReadVectorData(std::string key);
+    void ReadForcingData(std::string key);
+    void SetSMCBulk(); // set bulk moisture content per soil column
     ~FreezeThaw();
   };
 
@@ -81,7 +85,7 @@ namespace freezethaw {
     const double quartz_; //loamy sand
     const double tcmineral_; // TC of other mineral 
     const double tfrez_;    // freezing/melting point (k)
-    const double smcmax_; // porosity (maximum soil moisture)
+    //const double smcmax_; // porosity (maximum soil moisture)
     const double bexp_; // Clap-Honnberger parameter
     const double wdensity_; // [kg/m3]
     Properties();

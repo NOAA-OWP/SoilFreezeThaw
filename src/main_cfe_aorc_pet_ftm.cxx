@@ -12,8 +12,8 @@
 
 
 #include "../include/bmi.hxx"
-#include "../externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx"
-#include "../externalmodels/bmi_freezethawcxx/include/freezethaw.hxx"
+#include "../externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx"
+#include "../externalmodels/bmi_freezethaw/include/freezethaw.hxx"
 
 #define FrozenFraction true
 /***************************************************************

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include "../include/freezethaw.hxx"
 #define OK (1)
@@ -27,12 +27,12 @@ FreezeThaw()
   this->dt = 3600;
   this->lhf = 0.3336E06;
   this->ttop = 260.;
-  this->tbot = 272.;
-  this->opt_botb = 1;
+  this->tbot = 275.15;
+  this->opt_botb = 2;
   this->opt_topb = 2;
-  //this->init_from_config_file();
-  //this->_initialize_arrays();
   this->forcing_file= " ";
+  this->nsteps=0;
+  this->ice_fraction_scheme= " ";
 }
 
 freezethaw::FreezeThaw::
@@ -43,11 +43,11 @@ FreezeThaw(std::string config_file)
   this->forcing_file= " ";
   this->lhf = 0.3336E06;
   this->ttop = 260.;
-  this->tbot = 272.;
-  this->opt_botb = 1;
-  this->opt_topb = 2;
+  this->tbot = 275.15;
+  this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
+  this->opt_topb = 2; // 1: constant temp, 2: from a file
 
-  this->init_from_config_file();
+  this->InitFromConfigFile();
 
   this->shape[0] = this->nz;
   this->shape[1] = 1;
@@ -56,13 +56,17 @@ FreezeThaw(std::string config_file)
   this->spacing[1] = 1.;
   this->origin[0] = 0.;
   this->origin[1] = 0.;
-  this->_initialize_arrays();
-  LayerThickness(); // get soil layer thickness
+
+  this->InitializeArrays();
+  SetLayerThickness(); // get soil layer thickness
+  SetSMCBulk();
+  this->time = 0.;
+  this->nsteps = 0;
 }
 
 
 void freezethaw::FreezeThaw::
-_initialize_arrays(void)
+InitializeArrays(void)
 {
   this->TC = new double[nz];
   this->HC = new double[nz];
@@ -71,15 +75,14 @@ _initialize_arrays(void)
   
   for (int i=0;i<nz;i++)
     this->SMCIce[i] = this->SMCT[i] - this->SMCLiq[i];
-
 }
 
 int freezethaw::FreezeThaw::
-init_from_config_file()
+InitFromConfigFile()
 { 
   std::ifstream fp;
   fp.open(config_file);
-  
+  int n1, n2, n3;
   while (fp) {
     
     std::string key;
@@ -91,7 +94,7 @@ init_from_config_file()
     if (key_sub == "forcing_file") {
       //this->forcing_file = key.substr(loc+1,key.length());
       std::string tmp_key = key.substr(loc+1,key.length());
-      this->read_forcing_data(tmp_key);
+      this->ReadForcingData(tmp_key);
       continue;
     }
     if (key_sub == "end_time_d") {
@@ -105,16 +108,15 @@ init_from_config_file()
     }
     if (key_sub == "Z") {
       std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = read_vector_data(tmp_key);
+      std::vector<double> vec = ReadVectorData(tmp_key);
       this->Z = new double[vec.size()];
       for (int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
       this->nz = vec.size();
       continue;
     }
-    if (key_sub == "nz") {
-      int nz_t = std::stod(key.substr(loc+1,key.length()));
-      assert (nz_t == this->nz);
+    if (key_sub == "nz") {//remove it
+      //      int nz_t = std::stod(key.substr(loc+1,key.length()));
       continue;
     }
     if (key_sub == "soil_params.smcmax") {
@@ -123,46 +125,56 @@ init_from_config_file()
     }
     if (key_sub == "soil_temperature") {
       std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = read_vector_data(tmp_key);
+      std::vector<double> vec = ReadVectorData(tmp_key);
       this->ST = new double[vec.size()];
       for (int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
+      n1 = vec.size();
       continue;
 
     }
     if (key_sub == "soil_total_moisture_content") {
       std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = read_vector_data(tmp_key);
+      std::vector<double> vec = ReadVectorData(tmp_key);
       this->SMCT = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++) {
+      for (int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
-      }
+      n2 = vec.size();
       continue;
     }
     if (key_sub == "soil_liquid_moisture_content") {
       std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = read_vector_data(tmp_key);
+      std::vector<double> vec = ReadVectorData(tmp_key);
       this->SMCLiq = new double[vec.size()];
       for (int i=0; i < vec.size(); i++) {
-	assert (this->SMCT[i] >= vec[i]);
+	//	assert (this->SMCT[i] >= vec[i]);
 	this->SMCLiq[i] = vec[i];
       }
+      n3 = vec.size();
+      continue;
+    }
+     if (key_sub == "ice_fraction_scheme") {
+      this->ice_fraction_scheme = key.substr(loc+1,key.length());
       continue;
     }
   }
 
+  // check if the size of the input data is consistent
+  assert (n1 == this->nz);
+  assert (n2 == this->nz);
+  assert (n3 == this->nz);
   fp.close();
   return 1;
 }
 
 
 std::vector<double> freezethaw::FreezeThaw::
-read_vector_data(std::string key)
+ReadVectorData(std::string key)
 {
   int pos =0;
   std::string delimiter = ",";
   std::vector<double> z_value(0.0);
-  std::string z1 = key; //key.substr(loc+2,key.length()-1);
+  std::string z1 = key;
   
   while ((pos = z1.find(delimiter)) != std::string::npos) {
     //std::ostringstream z_vv;
@@ -178,25 +190,40 @@ read_vector_data(std::string key)
   return z_value;
 }
 
-//std::vector<double> freezethaw::FreezeThaw::
 void freezethaw::FreezeThaw::
-read_forcing_data(std::string forcing_file)
+ReadForcingData(std::string forcing_file)
 {
   std::ifstream fp;
   fp.open(forcing_file);
+  if (!fp) {
+    cout<<"file "<<forcing_file<<" doesn't exist. \n";
+    abort();
+  }
+   
   std::vector<double> Time_v(0.0);
   std::vector<double> GT_v(0.0);
   std::vector<string> vars;
   std::string line, cell;
-
+  
   //read first line of strings which contains forcing variables names.
   std::getline(fp, line);
   std::stringstream lineStream(line);
+  int ground_temp_index=-1;
+  
   while(std::getline(lineStream,cell, ',')) {
-    vars.push_back(cell);    
+    vars.push_back(cell);
   }
 
+  for (int i=0; i<vars.size();i++) {
+    if (vars[i] ==  "TMP_ground_surface")
+      ground_temp_index = i;
+  }
+
+  if (ground_temp_index <0)
+    ground_temp_index = 6; // 6 is the air temperature column, if not coupled and ground temperatgure is not provided
+    
   int len_v = vars.size(); // number of forcing variables + time
+
   int count = 0;
   while (fp) {
     std::getline(fp, line);
@@ -208,7 +235,8 @@ read_forcing_data(std::string forcing_file)
 	count +=1;
 	continue;
       }
-      if (count % len_v == 6) {
+
+      if (count % len_v == ground_temp_index) {
 	GT_v.push_back(stod(cell));
 	count +=1;
 	continue;
@@ -220,28 +248,63 @@ read_forcing_data(std::string forcing_file)
 
   int size_v = Time_v.size();
 
-  this->Time = new double[size_v];
+  this->Time_ = new double[size_v];
   this->GT = new double[size_v];
 
   
   for (int i=0; i<size_v; i++) {
-    this->Time[i] = Time_v[i];
+    this->Time_[i] = Time_v[i];
     this->GT[i] = GT_v[i];
   }
 
 }
 
+void freezethaw::FreezeThaw::
+SetSMCBulk()
+{
+  double val = 0;
+  /*
+  for (int i =0; i < nz; i++) val += this->SMCT[i];
+  this->smct_bulk = val;
+
+  val = 0;
+  for (int i =0; i < nz; i++) val += this->SMCLiq[i];
+  this->smcliq_bulk = val;
+
+  val = 0;
+  for (int i =0; i < nz; i++) val += this->SMCIce[i];
+  this->smcice_bulk = val;
+  */
+  
+  if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
+    
+    val = this->SMCIce[0]*this->Z[0];
+    for (int i =1; i < nz; i++) {
+      val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+    }
+    this->ice_fraction = val;
+  }
+  else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
+    double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);
+    double A = 4.0; // taken from NWM SOILWATER subroutine
+    double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
+    this->ice_fraction = fcr;
+  }
+  else {
+    std::cout<<"Ice Frozen Scheme not specified in the config file. Options: Schaake or Xinanjiang \n";
+    abort();
+  }
+}
+  
 double freezethaw::FreezeThaw::
-get_dt()
+GetDt()
 {
   return this->dt;
 }
 
 void freezethaw::FreezeThaw::
-advance_in_time ()
+Advance()
 {
-  //  const int n_elements = this->shape[0];
-
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 
@@ -252,14 +315,21 @@ advance_in_time ()
   PhaseChange();
 
   this->time += this->dt;
-  if (this->time >dt*3600)
-    this->ttop = 285;
+
+  SetSMCBulk();
+  this->nsteps += 1;
+  assert (this->ST[0] >200.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
 }
 
 double freezethaw::FreezeThaw::
-GroundHeatFlux(double surfT) {
-  if (opt_topb == 2) {
-    double ghf = - TC[0] * (surfT  - ttop) / Z[0];
+GroundHeatFlux(double surfT)
+{  
+  if (opt_topb == 1) {
+    double ghf = - TC[0] * (surfT  - ttop) / Z[0];   //temperature specified as constant
+    return ghf; 
+  }
+  else if (opt_topb == 2) {
+    double ghf = - TC[0] * (surfT  - GT[this->nsteps]) / Z[0];  //temperature from a file
     return ghf; 
   }
   else
@@ -391,7 +461,7 @@ ThermalConductivity() {
   const int n_z = this->shape[0];
   
   for (int i=0; i<n_z;i++) {
-    double sat_ratio = SMCT[i]/ prop.smcmax_;
+    double sat_ratio = SMCT[i]/ this->smcmax;
     
     //TC of solids Eq. (10) Peters-Lidard
     double tc_solid = pow(prop.tcquartz_,prop.quartz_) * pow(prop.tcmineral_, (1. - prop.quartz_));
@@ -401,11 +471,11 @@ ThermalConductivity() {
     //UNFROZEN VOLUME FOR SATURATION (POROSITY*XUNFROZ)
     double x_unfrozen = SMCLiq[i] / SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
     
-    double xu = x_unfrozen * prop.smcmax_; // unfrozen volume fraction
-    double tc_sat = pow(tc_solid,(1. - prop.smcmax_)) * pow(prop.tcice_, (prop.smcmax_ - xu)) * pow(prop.tcwater_,xu);
+    double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
+    double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(prop.tcice_, (this->smcmax - xu)) * pow(prop.tcwater_,xu);
     
     //DRY THERMAL CONDUCTIVITY
-    double gammd = (1. - prop.smcmax_)*2700.; // dry density
+    double gammd = (1. - this->smcmax)*2700.; // dry density
     double tc_dry = (0.135* gammd+ 64.7)/ (2700. - 0.947* gammd);
     
     // Kersten Number
@@ -429,13 +499,13 @@ SoilHeatCapacity() {
   //def soil_heat_capacity(domain, prop,SMC, SOLIQ, HCPCT, SMCMAX):
   for (int i=0; i<n_z;i++) {
     double sice = SMCT[i] - SMCLiq[i];
-    HC[i] = SMCLiq[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-prop.smcmax_)*prop.hcsoil_ + (prop.smcmax_-SMCT[i])*prop.hcair_;
+    HC[i] = SMCLiq[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-SMCT[i])*prop.hcair_;
   }
 
 }
 
 void freezethaw::FreezeThaw::
-LayerThickness() {
+SetLayerThickness() {
   const int n_z = this->shape[0];
 
   Dz[0] = Z[0];
@@ -492,7 +562,7 @@ PhaseChange() {
   for (int i=0; i<n_z;i++) {
     if (ST[i] < prop.tfrez_) {
       double SMP = prop.lhf_ /(prop.grav_*ST[i]) * (prop.tfrez_ - ST[i]);     // [m] Soil Matrix potential
-      Supercool[i] = prop.smcmax_* pow((SMP/prop.psisat_),b); //SMCMAX = porsity
+      Supercool[i] = this->smcmax* pow((SMP/prop.psisat_),b); //SMCMAX = porsity
       Supercool[i] = Supercool[i]*Dz[i]* prop.wdensity_; //[kg/m2];
     }
   }
@@ -593,7 +663,6 @@ Properties() :
   quartz_   (0.6), 
   tcmineral_ (2.0),
   tfrez_     (273.15),
-  smcmax_  (0.4), 
   bexp_  (2.9), 
   wdensity_ (1000)
 {}
@@ -602,7 +671,7 @@ freezethaw::FreezeThaw::
 ~FreezeThaw()
 {
   this->forcing_file=" ";
-  this->time = 0.;
+  //this->time = 0.;
 }
 
 #endif

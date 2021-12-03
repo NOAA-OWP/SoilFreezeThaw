@@ -9,8 +9,8 @@
 #include "../forcing_code/include/bmi_aorc.h"
 
 #include "../include/bmi.hxx"
-#include "../externalmodels/bmi_freezethawcxx/include/bmi_freezethaw.hxx"
-#include "../externalmodels/bmi_freezethawcxx/include/freezethaw.hxx"
+#include "../externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx"
+#include "../externalmodels/bmi_freezethaw/include/freezethaw.hxx"
 
 
 /***************************************************************

@@ -1,9 +1,10 @@
 #ifndef BMI_FS_H_INCLUDED
 #define BMI_FS_H_INCLUDED
 
-#include <string>
-#include <iostream>
-#include <bmi.hxx>
+using namespace std;
+
+#include <string.h>
+#include "../../../include/bmi.hxx"
 #include "freezethaw.hxx"
 
 
@@ -16,12 +17,15 @@ class NotImplemented : public std::logic_error {
 class BmiFreezeThaw : public bmi::Bmi {
   public:
     BmiFreezeThaw() {
-      this->input_var_names[0] = "soil_surface__temperature";
-      this->output_var_names[1] = "soil__mctotal";
-      this->output_var_names[2] = "soil__mcliq";
+      this->input_var_names[0] = "soil__moisture_content_total";
+      this->input_var_names[1] = "soil__moisture_content_liquid";
+      
       this->output_var_names[0] = "soil__temperature";
-      this->output_var_names[1] = "soil__mctotal";
-      this->output_var_names[2] = "soil__mcliq";
+      this->output_var_names[1] = "soil__moisture_content_total";
+      this->output_var_names[2] = "soil__moisture_content_liquid";
+      this->output_var_names[3] = "soil__moisture_content_ice";
+      this->output_var_names[4] = "soil__frozen_fraction";
+      this->output_var_names[5] = "soil__num_cells";
     };
 
     void Initialize(std::string config_file);
@@ -75,14 +79,13 @@ class BmiFreezeThaw : public bmi::Bmi {
     void GetGridFaceEdges(const int grid, int *face_edges);
     void GetGridFaceNodes(const int grid, int *face_nodes);
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
-
   private:
     freezethaw::FreezeThaw _model;
-    static const int input_var_name_count = 3;
-    static const int output_var_name_count = 3;
+    static const int input_var_name_count = 2;
+    static const int output_var_name_count = 6;
 
-    std::string input_var_names[3];
-    std::string output_var_names[3];
+    std::string input_var_names[2];
+    std::string output_var_names[6];
 };
 
 #endif
