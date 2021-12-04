@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
-#include "../include/bmi.hxx"
+#include "../../../include/bmi.hxx"
 #include "../include/bmi_freezethaw.hxx"
 #include "../include/freezethaw.hxx"
 
-#define FAILURE -1
+#define FAILURE 0
 #define VERBOSITY 1
 
 int main(int argc, char *argv[])
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   if (argc != 2) {
     printf("Usage: run_bmifrozensoilcxx CONFIGURATION_FILE\n\n");
     printf("Run the frozensoilcxx model through its BMI with a configuration file.\n");
-    return bmi::BMI_SUCCESS;
+    return FAILURE;
   }
 
   std::cout<<"\n**************** BEGIN SoilFreezeThaw BMI UNIT TEST *******************\n";
@@ -637,5 +637,5 @@ int main(int argc, char *argv[])
   passed = test_status > 0 ? "Yes" : "No";
   std::cout<<"*************** Summary of the Unit Test ***************\n";
   std::cout<<"Test passed = "<<passed<<" \nError (L2-norm) =  "<<error<<" \nFrozen fraction = "<<err_frozen_frac_mm<<"\n";
-  return bmi::BMI_SUCCESS;
+  return FAILURE;
 }

@@ -2,18 +2,23 @@ cmake_minimum_required(VERSION 3.10)
 
 #set(CMAKE_C_COMPILER $CC)
 #set(CMAKE_CXX_COMPILER $CXX)
-set(CMAKE_BUILD_TYPE Debug)
+
 
 # set the project name
 project(cfeft)
 
+set(CMAKE_BUILD_TYPE Debug)
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    message("Debug build.")
+ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
+message(CMAKE_CXX_COMPILER " ${CMAKE_CXX_COMPILER}")
+message(CMAKE_C_COMPILER " ${CMAKE_CC_COMPILER}")
+message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#set(CMAKE_CXX_FLAGS "-std=c++0x")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-##set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libcxx -lc++abi")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+
 # add the executable
-
 
 ## cfe + aorc + ftm
 #add_executable(cfeft ./src/main_pass_forcings.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c)

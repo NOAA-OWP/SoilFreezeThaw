@@ -110,7 +110,7 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
       this->Z = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++)
+      for (unsigned int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
       this->nz = vec.size();
       continue;
@@ -127,7 +127,7 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
       this->ST = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++)
+      for (unsigned int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
       n1 = vec.size();
       continue;
@@ -137,7 +137,7 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
       this->SMCT = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++)
+      for (unsigned int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
       n2 = vec.size();
       continue;
@@ -146,7 +146,7 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
       this->SMCLiq = new double[vec.size()];
-      for (int i=0; i < vec.size(); i++) {
+      for (unsigned int i=0; i < vec.size(); i++) {
 	//	assert (this->SMCT[i] >= vec[i]);
 	this->SMCLiq[i] = vec[i];
       }
@@ -173,21 +173,23 @@ ReadVectorData(std::string key)
 {
   int pos =0;
   std::string delimiter = ",";
-  std::vector<double> z_value(0.0);
+  std::vector<double> value(0);
   std::string z1 = key;
-  
-  while ((pos = z1.find(delimiter)) != std::string::npos) {
+
+  while (z1.find(delimiter) != std::string::npos) {
+    pos = z1.find(delimiter);
     //std::ostringstream z_vv;
     //z_vv << std::setprecision(8) << z1.substr(0, pos);
     std::string z_v = z1.substr(0, pos);
-    z_value.push_back(stod(z_v.c_str()));
+
+    value.push_back(stod(z_v.c_str()));
 
     z1.erase(0, pos + delimiter.length());
     if (z1.find(delimiter) == std::string::npos)
-      z_value.push_back(stod(z1));
+      value.push_back(stod(z1));
   }
-  
-  return z_value;
+
+  return value;
 }
 
 void freezethaw::FreezeThaw::
@@ -214,7 +216,7 @@ ReadForcingData(std::string forcing_file)
     vars.push_back(cell);
   }
 
-  for (int i=0; i<vars.size();i++) {
+  for (unsigned int i=0; i<vars.size();i++) {
     if (vars[i] ==  "TMP_ground_surface")
       ground_temp_index = i;
   }
@@ -376,7 +378,6 @@ SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double
 void freezethaw::FreezeThaw::
 SolveDiffusionEq ()
 {
-    int i;
     const int nz = this->shape[0];
 
     // local variables
@@ -387,9 +388,9 @@ SolveDiffusionEq ()
     std::vector<double> RHS(nz);
     std::vector<double> Lambd(nz);
     std::vector<double> X(nz);
-    double h, botflux;
+    double h=0.0, botflux=0.0;
     // compute matrix coefficient using Crank-Nicolson discretization scheme
-    for (i=0;i<nz; i++) {
+    for (int i=0;i<nz; i++) {
       if (i == 0) {
 	h = Z[i];
 	double dtdz  = (ST[i+1] - ST[i])/ h;
@@ -409,9 +410,9 @@ SolveDiffusionEq ()
       else if (i == nz-1) {
 	h = (Z[i] - Z[i-1]);
 	Lambd[i] = dt/(4* h* lhf);
-	if (opt_botb == 1) 
+	if (this->opt_botb == 1) 
 	  botflux = 0.;
-	else if (opt_botb == 2) {
+	else if (this->opt_botb == 2) {
 	  double dtdz1 = (ST[i] - tbot) / ( Z[i] - Z[i-1]);
 	  botflux  = - TC[i] * dtdz1;
 	}
@@ -420,7 +421,7 @@ SolveDiffusionEq ()
       }
     }
     // put coefficients in the corresponding vectors A,B,C, RHS
-    for (i=0; i<nz;i++) {
+    for (int i=0; i<nz;i++) {
       if (i == 0) {
 	AI[i] = 0;
 	CI[i] = - Lambd[i] *TC[i]/Z[i];
@@ -440,7 +441,7 @@ SolveDiffusionEq ()
     }
 
     // add the previous timestep ST to the RHS at the boundaries
-    for (i=0; i<nz;i++) {
+    for (int i=0; i<nz;i++) {
       if (i ==0)
 	RHS[i] = ST[i] + RHS[i];
       else if (i == nz-1)
