@@ -611,8 +611,8 @@ int main(int argc, char *argv[])
     model_cyc.Update();    
   }
 
-  double solution[] = {272.523, 273.15,274.183,275.155};
-  double frozen_fraction = 0.0397824;
+  double solution[] = {272.519, 273.15,274.181,275.154};
+  double frozen_fraction = 0.0374381;
   double *var_st = new double[nz];
   double *ice_frac = new double[1];
   model_cyc.GetValue("soil__temperature",&var_st[0]);
@@ -620,7 +620,7 @@ int main(int argc, char *argv[])
   double error = 0;
   for (int i1=0; i1<nz;i1++) {
     error += std::pow(var_st[i1] - solution[i1],2.);
-    //  std::cout<<"SS: "<<var_st[i1]<<" "<<ice_frac[0]<<"\n";
+    //std::cout<<"SS: "<<var_st[i1]<<" "<<ice_frac[0]<<" "<<*ice_frac<<"\n";
   }
   error = std::pow(error,0.5);
   if (error < 1.e-3)

@@ -45,6 +45,8 @@ namespace freezethaw {
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
+    double bexp;  // pore size distribution [-], beta exponent on Clapp-Hornberger (1978)
+    double psisat; // saturated capillary head (saturated moisture potential) [m]
     double ice_fraction;
     std::string ice_fraction_scheme;
     
@@ -59,7 +61,7 @@ namespace freezethaw {
     void ThermalConductivity();
     void SoilHeatCapacity();
     void SetLayerThickness();
-    int InitFromConfigFile();
+    void InitFromConfigFile();
     double GetDt();
     
     std::vector<double> ReadVectorData(std::string key);

@@ -312,8 +312,12 @@ GetValuePtr (std::string name)
     return (void*)(&this->_model.ice_fraction);
   else if (name.compare("soil__z_depth") == 0)
     return (void*)(&this->_model.Dz);
-  else
+  else {
+    std::stringstream errMsg;
+    errMsg << "variable "<< name << " does not exist";
+    throw std::runtime_error(errMsg.str());
     return NULL;
+  }
 }
 
 

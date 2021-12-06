@@ -8,6 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <stdexcept>
 #include "../include/freezethaw.hxx"
 #define OK (1)
 
@@ -77,12 +78,25 @@ InitializeArrays(void)
     this->SMCIce[i] = this->SMCT[i] - this->SMCLiq[i];
 }
 
-int freezethaw::FreezeThaw::
+void freezethaw::FreezeThaw::
 InitFromConfigFile()
 { 
   std::ifstream fp;
   fp.open(config_file);
   int n1, n2, n3;
+
+  bool is_forcing_file_set = false;
+  bool is_endtime_set = false;
+  bool is_dt_set = false;
+  bool is_Z_set = false;
+  bool is_smcmax_set = false;
+  bool is_bexp_set = false;
+  bool is_psisat_set = false;
+  bool is_ST_set = false;
+  bool is_SMCT_set = false; //total moisture content
+  bool is_SMCL_set = false; //liquid moisture content
+  bool is_IFS_set = false; //ice fraction scheme
+    
   while (fp) {
     
     std::string key;
@@ -95,15 +109,18 @@ InitFromConfigFile()
       //this->forcing_file = key.substr(loc+1,key.length());
       std::string tmp_key = key.substr(loc+1,key.length());
       this->ReadForcingData(tmp_key);
+      is_forcing_file_set = true;
       continue;
     }
     if (key_sub == "end_time_d") {
       this->endtime = std::stod(key.substr(loc+1,key.length()));
       this->endtime *= 86400;
+      is_endtime_set = true;
       continue;
     }
     if (key_sub == "dt_s") {
       this->dt = std::stod(key.substr(loc+1,key.length()));
+      is_dt_set = true;
       continue;
     }
     if (key_sub == "Z") {
@@ -113,6 +130,7 @@ InitFromConfigFile()
       for (unsigned int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
       this->nz = vec.size();
+      is_Z_set = true;
       continue;
     }
     if (key_sub == "nz") {//remove it
@@ -121,6 +139,18 @@ InitFromConfigFile()
     }
     if (key_sub == "soil_params.smcmax") {
       this->smcmax = std::stod(key.substr(loc+1,key.length()));
+      is_smcmax_set = true;
+      continue;
+    }
+    if (key_sub == "soil_params.b") {
+      this->bexp = std::stod(key.substr(loc+1,key.length()));
+      assert (this->bexp > 0);
+      is_bexp_set = true;
+      continue;
+    }
+    if (key_sub == "soil_params.psisat") {
+      this->psisat = std::stod(key.substr(loc+1,key.length()));
+      is_psisat_set = true;
       continue;
     }
     if (key_sub == "soil_temperature") {
@@ -130,6 +160,8 @@ InitFromConfigFile()
       for (unsigned int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
       n1 = vec.size();
+      
+      is_ST_set = true;
       continue;
 
     }
@@ -140,6 +172,7 @@ InitFromConfigFile()
       for (unsigned int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
       n2 = vec.size();
+      is_SMCT_set = true;
       continue;
     }
     if (key_sub == "soil_liquid_moisture_content") {
@@ -151,20 +184,47 @@ InitFromConfigFile()
 	this->SMCLiq[i] = vec[i];
       }
       n3 = vec.size();
+      is_SMCL_set = true;
       continue;
     }
-     if (key_sub == "ice_fraction_scheme") {
+    if (key_sub == "ice_fraction_scheme") {
       this->ice_fraction_scheme = key.substr(loc+1,key.length());
+      is_IFS_set = true;
       continue;
     }
   }
-
+  fp.close();
+  
   // check if the size of the input data is consistent
   assert (n1 == this->nz);
   assert (n2 == this->nz);
   assert (n3 == this->nz);
-  fp.close();
-  return 1;
+
+
+  if (!is_forcing_file_set)
+    throw std::runtime_error("Forcing file not set in the config file!");
+  if (!is_endtime_set)
+    throw std::runtime_error("End time not set in the config file!");
+
+  if (!is_dt_set)
+    throw std::runtime_error("Time step (dt) not set in the config file!");
+  if (!is_Z_set)
+    throw std::runtime_error("Z not set in the config file!");
+  if (!is_smcmax_set)
+    throw std::runtime_error("smcmax not set in the config file!");
+  if (!is_bexp_set)
+    throw std::runtime_error("bexp (Clapp-Hornberger's parameter) not set in the config file!");
+  if (!is_psisat_set)
+    throw std::runtime_error("psisat not set in the config file!");
+  if (!is_ST_set)
+    throw std::runtime_error("Soil temperature not set in the config file!");
+  if (!is_SMCT_set)
+    throw std::runtime_error("Total soil moisture content not set in the config file!");
+  if (!is_SMCL_set)
+    throw std::runtime_error("Liquid soil moisture content not set in the config file!");
+  if (!is_IFS_set)
+    throw std::runtime_error("Ice fraction scheme not set in the config file!");
+  
 }
 
 
@@ -559,11 +619,11 @@ PhaseChange() {
   /*------------------------------------------------------------------- */
   //Soil water potential
   // SUPERCOOL is the maximum liquid water that can exist below (T - TFRZ) freezing point
-  double b = -1./prop.bexp_;
+  double lam = -1./(this->bexp);
   for (int i=0; i<n_z;i++) {
     if (ST[i] < prop.tfrez_) {
       double SMP = prop.lhf_ /(prop.grav_*ST[i]) * (prop.tfrez_ - ST[i]);     // [m] Soil Matrix potential
-      Supercool[i] = this->smcmax* pow((SMP/prop.psisat_),b); //SMCMAX = porsity
+      Supercool[i] = this->smcmax* pow((SMP/this->psisat), lam); //SMCMAX = porsity
       Supercool[i] = Supercool[i]*Dz[i]* prop.wdensity_; //[kg/m2];
     }
   }

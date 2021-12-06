@@ -796,7 +796,7 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
 {
   
   double lam=1.0/soil_parms->bb; // pore distribution index
-  double hb=7.82;  //[cm] //soil_res->hp;     
+  double hb=soil_parms->satpsi * 100.; //7.82;  //[cm] //soil_res->hp;     
   double D= soil_parms->D * 100.;
   double z1= soil_res->z_prev_wt * 100; //previous water table location, [cm]
   double z0=0;        /* bottom of computational domain */
@@ -809,10 +809,9 @@ extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soi
   
   double Vinit=V1;
   double V2=100*soil_res->storage_m;  /* start-up condition before adding any water */
-  //soil_res->nz = 4;
+  
   soil_res->smct_m = malloc(sizeof(double) * soil_res->nz);
-  //double Z[] = {0.1,0.4,0.6,1.0};
-  //double Dz[] = {0.1,0.5,1.0,2.0};
+  
   int count = 0;
   
   if(V2>=Vmax) {
