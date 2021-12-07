@@ -86,6 +86,7 @@ InitFromConfigFile()
   int n1, n2, n3;
 
   bool is_forcing_file_set = false;
+  this->is_SMC_BMI_set = false;
   bool is_endtime_set = false;
   bool is_dt_set = false;
   bool is_Z_set = false;
@@ -110,6 +111,10 @@ InitFromConfigFile()
       std::string tmp_key = key.substr(loc+1,key.length());
       this->ReadForcingData(tmp_key);
       is_forcing_file_set = true;
+      continue;
+    }
+    if (key_sub == "SMC_BMI") {
+      this->is_SMC_BMI_set = true;
       continue;
     }
     if (key_sub == "end_time_d") {
@@ -194,13 +199,16 @@ InitFromConfigFile()
     }
   }
   fp.close();
+ 
+  // simply allocate space for SMCLiq and SMCT arrays, as they will be set through CFE_BMI
+  if (this->is_SMC_BMI_set) {
+    this->SMCT = new double[this->nz]();
+    this->SMCLiq = new double[this->nz]();
+    n2 = this->nz;
+    n3 = this->nz;
+    is_SMCT_set = true;
+  }
   
-  // check if the size of the input data is consistent
-  assert (n1 == this->nz);
-  assert (n2 == this->nz);
-  assert (n3 == this->nz);
-
-
   if (!is_forcing_file_set)
     throw std::runtime_error("Forcing file not set in the config file!");
   if (!is_endtime_set)
@@ -218,13 +226,17 @@ InitFromConfigFile()
     throw std::runtime_error("psisat not set in the config file!");
   if (!is_ST_set)
     throw std::runtime_error("Soil temperature not set in the config file!");
-  if (!is_SMCT_set)
+  if (!is_SMCT_set && !this->is_SMC_BMI_set)
     throw std::runtime_error("Total soil moisture content not set in the config file!");
-  if (!is_SMCL_set)
+  if (!is_SMCL_set && !this->is_SMC_BMI_set)
     throw std::runtime_error("Liquid soil moisture content not set in the config file!");
   if (!is_IFS_set)
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
-  
+
+  // check if the size of the input data is consistent
+  assert (n1 == this->nz);
+  assert (n2 == this->nz);
+  assert (n3 == this->nz);
 }
 
 
@@ -261,7 +273,7 @@ ReadForcingData(std::string forcing_file)
     cout<<"file "<<forcing_file<<" doesn't exist. \n";
     abort();
   }
-   
+  
   std::vector<double> Time_v(0.0);
   std::vector<double> GT_v(0.0);
   std::vector<string> vars;
@@ -367,6 +379,13 @@ GetDt()
 void freezethaw::FreezeThaw::
 Advance()
 {
+  if (this->is_SMC_BMI_set) {
+    for (int i=0; i<this->nz;i++) {
+      this->SMCLiq[i] = this->SMCT[i];
+    }
+    this->is_SMC_BMI_set = false;
+  }
+  
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 

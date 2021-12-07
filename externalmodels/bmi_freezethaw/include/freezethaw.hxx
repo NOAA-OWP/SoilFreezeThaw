@@ -49,6 +49,7 @@ namespace freezethaw {
     double psisat; // saturated capillary head (saturated moisture potential) [m]
     double ice_fraction;
     std::string ice_fraction_scheme;
+    bool is_SMC_BMI_set;
     
     FreezeThaw();
     FreezeThaw(std::string config_file);
