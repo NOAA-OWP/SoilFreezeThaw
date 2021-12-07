@@ -385,13 +385,13 @@ Advance()
     }
     this->is_SMC_BMI_set = false;
   }
-  
+
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 
   // call Diffusion Eq. first to get the updated soil temperatures
   SolveDiffusionEq();
-  
+
   // call phase change to get water/ice partition for the updated temperature
   PhaseChange();
 
@@ -399,7 +399,7 @@ Advance()
 
   SetSMCBulk();
   this->nsteps += 1;
-  assert (this->ST[0] >200.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
+  assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
 }
 
 double freezethaw::FreezeThaw::
@@ -410,7 +410,8 @@ GroundHeatFlux(double surfT)
     return ghf; 
   }
   else if (opt_topb == 2) {
-    double ghf = - TC[0] * (surfT  - GT[this->nsteps]) / Z[0];  //temperature from a file
+    assert (this->Z[0] >0);
+    double ghf = - TC[0] * (surfT  - GT[this->nsteps]) / this->Z[0];  //temperature from a file
     return ghf; 
   }
   else
