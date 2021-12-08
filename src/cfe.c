@@ -89,7 +89,7 @@ extern void cfe(
     if (direct_runoff_params_struct.surface_partitioning_scheme == Schaake)
       {
       Schaake_partitioning_scheme(timestep_h,direct_runoff_params_struct.Schaake_adjusted_magic_constant_by_soil_type,soil_reservoir_storage_deficit_m,
-                                  timestep_rainfall_input_m,soil_reservoir_struct->frozen_fraction,NWM_soil_params_struct.smcmax,
+                                  timestep_rainfall_input_m,soil_reservoir_struct->ice_fraction,NWM_soil_params_struct.smcmax,
 				  &direct_output_runoff_m,&infiltration_depth_m);
       
       }
@@ -98,7 +98,7 @@ extern void cfe(
       Xinanjiang_partitioning_scheme(timestep_rainfall_input_m, soil_reservoir_struct->storage_threshold_primary_m,
                                      soil_reservoir_struct->storage_max_m, soil_reservoir_struct->storage_m,
                                      &direct_runoff_params_struct,
-				     soil_reservoir_struct->frozen_fraction,
+				     soil_reservoir_struct->ice_fraction,
                                      &direct_output_runoff_m, &infiltration_depth_m);
       }
     else

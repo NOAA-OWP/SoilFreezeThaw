@@ -147,7 +147,7 @@ Variable var_info[] = {
     { 89, "urban_decimal_fraction",			    "double", 1}, //urban fraction used in Xinanjiang runoff scheme
     //---------------------------------------
     /*Soil Freeze-thaw model paramaters*/
-    { 90, "soil__frozen_fraction",			    "double", 1} //should it be here?? I don't see other input/outut variables in this list- AJ
+    { 90, "soil__ice_fraction",			    "double", 1} //should it be here?? I don't see other input/outut variables in this list- AJ
 };
 
 int i = 0;
@@ -226,7 +226,7 @@ static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
 static const char *input_var_names[INPUT_VAR_NAME_COUNT] = {
         "atmosphere_water__liquid_equivalent_precipitation_rate",
         "water_potential_evaporation_flux",
-	"soil__frozen_fraction",
+	"soil__ice_fraction",
 	"soil__SMCT"
 };
 
@@ -1425,10 +1425,10 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = (void*)&cfe_ptr->aorc.precip_kg_per_m2;
         return BMI_SUCCESS;
     }
-    if (strcmp (name, "soil__frozen_fraction") == 0) {
+    if (strcmp (name, "soil__ice_fraction") == 0) {
         cfe_state_struct *cfe_ptr;
         cfe_ptr = (cfe_state_struct *) self->data;
-        *dest = (void*)&cfe_ptr->soil_reservoir.frozen_fraction;
+        *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction;
         return BMI_SUCCESS;
     }
     if (strcmp (name, "soil__SMCT_BULK") == 0) {
@@ -2571,7 +2571,7 @@ extern void initialize_volume_trackers(cfe_state_struct* cfe_ptr){
 /**************************************************************************/
 extern void print_cfe_flux_header(){
     printf("#    ,            hourly ,  direct,   giuh ,lateral,  base,   total\n");
-    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],storage [mm],frozen_fraction [mm]\n");
+    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],storage [mm],ice_fraction [mm]\n");
 }
 extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
    printf("%d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf \n",
@@ -2587,7 +2587,7 @@ extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
                            *cfe_ptr->flux_from_deep_gw_to_chan_m*1000.0,
 	                   *cfe_ptr->flux_Qout_m*1000.0,
 	                   cfe_ptr->soil_reservoir.storage_m*1000.0,
-	                   cfe_ptr->soil_reservoir.frozen_fraction*1000.0 );
+	                   cfe_ptr->soil_reservoir.ice_fraction*1000.0 );
 }
 
 extern void mass_balance_check(cfe_state_struct* cfe_ptr){

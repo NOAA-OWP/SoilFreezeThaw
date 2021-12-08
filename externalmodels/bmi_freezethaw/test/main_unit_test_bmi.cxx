@@ -467,7 +467,7 @@ int main(int argc, char *argv[])
     int *indices = NULL;
     
     if (var_name.compare("soil__num_cells") != 0) {
-      if (var_name.compare("soil__frozen_fraction") == 0 ) {
+      if (var_name.compare("soil__ice_fraction") == 0 ) {
 	len = 1;
 	indices = new int[len];
 	indices[0] = 0;
@@ -532,7 +532,7 @@ int main(int argc, char *argv[])
 	for (int i1=0; i1<nz;i1++)
 	  var_new[i] = 290+1.5*(i+1);
       }
-      else if (var_name == "soil__frozen_fraction")
+      else if (var_name == "soil__ice_fraction")
 	var_new[0] = 0.05;
       else
 	var_new[0] = 0.324;
@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
       model.GetValueAtIndices(var_name, dest_new_up,  &indices[0], len);
       std::cout<<" Get value at indices: "<<dest_new_up[0]<<"\n";
       int c = 2;
-      if (var_name == "soil__frozen_fraction") // frozen fraction is just a single number
+      if (var_name == "soil__ice_fraction") // frozen fraction is just a single number
 	c=0;
       if (dest_new[c] == dest_new_up[c])
 	test_status &= true;
@@ -612,11 +612,11 @@ int main(int argc, char *argv[])
   }
 
   double solution[] = {272.519, 273.15,274.181,275.154};
-  double frozen_fraction = 0.0374381;
+  double ice_fraction = 0.0374381;
   double *var_st = new double[nz];
   double *ice_frac = new double[1];
   model_cyc.GetValue("soil__temperature",&var_st[0]);
-  model_cyc.GetValue("soil__frozen_fraction",&ice_frac[0]);
+  model_cyc.GetValue("soil__ice_fraction",&ice_frac[0]);
   double error = 0;
   for (int i1=0; i1<nz;i1++) {
     error += std::pow(var_st[i1] - solution[i1],2.);
@@ -628,7 +628,7 @@ int main(int argc, char *argv[])
   else
     test_status &= false;
 
-  double err_frozen_frac_mm = fabs(frozen_fraction - ice_frac[0]) *1000; 
+  double err_frozen_frac_mm = fabs(ice_fraction - ice_frac[0]) *1000; 
   if (err_frozen_frac_mm < 1.e-3)
     test_status &= true;
   else

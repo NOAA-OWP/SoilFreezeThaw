@@ -24,7 +24,7 @@ class BmiFreezeThaw : public bmi::Bmi {
       this->output_var_names[1] = "soil__moisture_content_total";
       this->output_var_names[2] = "soil__moisture_content_liquid";
       this->output_var_names[3] = "soil__moisture_content_ice";
-      this->output_var_names[4] = "soil__frozen_fraction";
+      this->output_var_names[4] = "soil__ice_fraction";
       this->output_var_names[5] = "soil__num_cells";
     };
 
