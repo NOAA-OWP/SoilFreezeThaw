@@ -64,8 +64,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     std::string passed = test_status == true ? "Yes" : "No";
     std::cout<<"Test passed: "<<passed<<"\n";
-    std::cout<<"Why? Number of input variables are different."<<"\n";
-    abort();
+    std::stringstream errMsg;
+    errMsg << "Number of input variables are different. "<< count_in << " != "<< num_input_vars << "\n";
+    throw std::runtime_error(errMsg.str());
   }
 
   // Test GetInputVarNames 
@@ -95,8 +96,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     std::string passed = test_status == true ? "Yes" : "No";
     std::cout<<"Test passed: "<<passed<<"\n";
-    std::cout<<"Why? Number of output variables are different."<<"\n";
-    abort();
+    std::stringstream errMsg;
+    errMsg << "Number of output variables are different. "<< count_out <<" != "<< num_output_vars <<"\n";
+    throw std::runtime_error(errMsg.str());
   }
   
   // Test BMI: VARIABLE INFORMATION FUNCTIONS
@@ -174,8 +176,9 @@ int main(int argc, char *argv[])
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
-	std::cout<<"Why? number of bytes for input var"<<var_name<< " should be "<<nbytes_input<<"\n";
-	abort();
+	std::stringstream errMsg;
+	errMsg << "Number of bytes for input var"<<var_name<< " should be "<<nbytes_input<<"\n";
+	throw std::runtime_error(errMsg.str());
       }
     }
   }
@@ -251,8 +254,9 @@ int main(int argc, char *argv[])
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
-	std::cout<<"Why? number of bytes for out var"<<var_name<< " should be "<<nbytes_input<<"\n";
-	abort();
+	std::stringstream errMsg;
+	errMsg << "Number of bytes for output var"<<var_name<< " should be "<<nbytes_input<<"\n";
+	throw std::runtime_error(errMsg.str());
       }
     }
     
@@ -286,8 +290,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     std::string passed = test_status == true ? "Yes" : "No";
     std::cout<<"Test passed: "<<passed<<"\n";
-    std::cout<<"Why? Grid size of should be "<<nz<<"\n";
-    abort();
+    std::stringstream errMsg;
+    errMsg << "Grid size of should be "<<nz<<"\n";
+    throw std::runtime_error(errMsg.str());
   }
 
   /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -323,8 +328,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     std::string passed = test_status == true ? "Yes" : "No";
     std::cout<<"Test passed: "<<passed<<"\n";
-    std::cout<<"Why? End time should be ["<<endtime/3600.<<" hours] \n";
-    abort();
+    std::stringstream errMsg;
+    errMsg << "End time should be ["<<endtime/3600.<<" hours] \n";
+    throw std::runtime_error(errMsg.str());
   }
 
   /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -349,8 +355,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     std::string passed = test_status == true ? "Yes" : "No";
     std::cout<<"Test passed: "<<passed<<"\n";
-    std::cout<<"Why? Time units should be seconds [s], but the model returned"<<units_time<<"\n";
-    abort();
+    std::stringstream errMsg;
+    errMsg << "Time units should be seconds [s], but the model returned"<<units_time<<"\n";
+    throw std::runtime_error(errMsg.str());
   }
 
   /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -402,8 +409,9 @@ int main(int argc, char *argv[])
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
-	std::cout<<"Why? Soil temperatures should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "<<soil_T[2]<<" "<<soil_T[3]<<"\n";
-	abort();
+	std::stringstream errMsg;
+	errMsg << "Soil temperatures should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "<<soil_T[2]<<" "<<soil_T[3]<<"\n";
+	throw std::runtime_error(errMsg.str());
       }
     }
     
@@ -427,8 +435,9 @@ int main(int argc, char *argv[])
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
-	std::cout<<"Why? Getter/Setters are not working properly.\n";
-	abort();
+	std::stringstream errMsg;
+	errMsg << "Getter/Setters are not working properly.\n";
+	throw std::runtime_error(errMsg.str());
       }
     }
     
@@ -494,9 +503,10 @@ int main(int argc, char *argv[])
 	  test_status &= false;
 	  std::string passed = test_status == true ? "Yes" : "No";
 	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::cout<<"Why? Soil temperatures should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "<<soil_T[2]<<" "<<soil_T[3]<<" ";
-	  std::cout<<"but it is: "<<var[0]<<" "<<var[1]<<" "<<var[2]<<" "<<var[3]<<"\n";
-	  abort();
+	  std::stringstream errMsg;
+	  errMsg << "Soil temperatures should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "<<soil_T[2]<<" "<<soil_T[3]
+		 <<" but are: "<<var[0]<<" "<<var[1]<<" "<<var[2]<<" "<<var[3]<<"\n";
+	  throw std::runtime_error(errMsg.str());
 	}
       }
       
@@ -512,9 +522,9 @@ int main(int argc, char *argv[])
 	  test_status &= false;
 	  std::string passed = test_status == true ? "Yes" : "No";
 	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::cout<<"Why? Soil moisture content should be: "<<soil_MCT[0]<<" "<<soil_MCT[1]<<" "<<soil_MCT[2]<<" "<<soil_MCT[3]<<" ";
-	  std::cout<<"but it is: "<<dest[0]<<" "<<dest[1]<<" "<<dest[2]<<" "<<dest[3]<<"\n";
-	  abort();
+	  std::stringstream errMsg;
+	  errMsg << "Soil moisture content should be: "<<soil_MCT[0]<<" "<<soil_MCT[1]<<" "<<soil_MCT[2]<<" "<<soil_MCT[3]<<" but are: "<<dest[0]<<" "<<dest[1]<<" "<<dest[2]<<" "<<dest[3]<<"\n";
+	  throw std::runtime_error(errMsg.str());
 	}
       }
       
@@ -550,8 +560,9 @@ int main(int argc, char *argv[])
 	  test_status &= false;
 	  std::string passed = test_status == true ? "Yes" : "No";
 	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::cout<<"Why? Getter/Setters are not working properly for output variables.\n";
-	  abort();
+	  std::stringstream errMsg;
+	  errMsg << "Getter/Setters are not working properly for output variables.\n";
+	  throw std::runtime_error(errMsg.str());
 	}
       }
 
@@ -635,7 +646,9 @@ int main(int argc, char *argv[])
     test_status &= false;
     
   passed = test_status > 0 ? "Yes" : "No";
+  std::cout<<"\n\n*********************************************************\n";
   std::cout<<"*************** Summary of the Unit Test ***************\n";
+  std::cout<<"*********************************************************\n";
   std::cout<<"Test passed = "<<passed<<" \nError (L2-norm) =  "<<error<<" \nFrozen fraction = "<<err_frozen_frac_mm<<"\n";
   return FAILURE;
 }
