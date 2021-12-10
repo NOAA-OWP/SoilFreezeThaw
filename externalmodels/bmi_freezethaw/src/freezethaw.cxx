@@ -389,6 +389,9 @@ Advance()
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 
+  // Update volumetric heat capacity
+  SoilHeatCapacity();
+  
   // call Diffusion Eq. first to get the updated soil temperatures
   SolveDiffusionEq();
 
@@ -468,38 +471,41 @@ SolveDiffusionEq ()
     std::vector<double> RHS(nz);
     std::vector<double> Lambd(nz);
     std::vector<double> X(nz);
-    double h=0.0, botflux=0.0;
+    double botflux=0.0;
+    double h1 =0.0, h2 =0.0;
+    
     // compute matrix coefficient using Crank-Nicolson discretization scheme
     for (int i=0;i<nz; i++) {
       if (i == 0) {
-	h = Z[i];
-	double dtdz  = (ST[i+1] - ST[i])/ h;
-	Lambd[i] = dt/(4* h * lhf);
-	double ghf = this->GroundHeatFlux(ST[0]);
+	h1 = Z[i];
+	double dtdz  = (ST[i+1] - ST[i])/ h1;
+	Lambd[i] = dt/(2.0 * h1 * HC[i]);
+	double ghf = this->GroundHeatFlux(ST[i]);
 	Flux[i] = Lambd[i] * (TC[i] * dtdz + ghf);
       }
-      else if (i < nz -1) {
-	h = Z[i+1] - Z[i];
-        double h1 = Z[i] - Z[i-1];
-	Lambd[i] = dt/(4*h* lhf);
-	double a_ = - Lambd[i] * TC[i] /h1;
-        double c_ = - Lambd[i] * TC[i+1] /h;
+      else if (i < nz-1) {
+	double h1 = Z[i] - Z[i-1];
+        double h2 = Z[i+1] - Z[i];
+	Lambd[i] = dt/(2.0 * h2 * HC[i]);
+	double a_ = - Lambd[i] * TC[i-1] / h1;
+        double c_ = - Lambd[i] * TC[i] / h2;
 	double b_ = 1 + a_ + c_;
 	Flux[i] = -a_ * ST[i-1] + b_ * ST[i] - c_ * ST[i+1];
       }
       else if (i == nz-1) {
-	h = (Z[i] - Z[i-1]);
-	Lambd[i] = dt/(4* h* lhf);
+	h1 = Z[i] - Z[i-1];
+	Lambd[i] = dt/(2.0 * h1 * HC[i]);
 	if (this->opt_botb == 1) 
 	  botflux = 0.;
 	else if (this->opt_botb == 2) {
-	  double dtdz1 = (ST[i] - tbot) / ( Z[i] - Z[i-1]);
+	  double dtdz1 = (ST[i] - tbot) / h1;
 	  botflux  = - TC[i] * dtdz1;
 	}
-	double dtdz = (ST[i] - ST[i-1] )/ h;
+	double dtdz = (ST[i] - ST[i-1] )/ h1;
 	Flux[i]  = Lambd[i] * (-TC[i]*dtdz  + botflux);
       }
     }
+    
     // put coefficients in the corresponding vectors A,B,C, RHS
     for (int i=0; i<nz;i++) {
       if (i == 0) {
@@ -508,8 +514,8 @@ SolveDiffusionEq ()
 	BI[i] = 1 - CI[i];
       }
       else if (i < nz-1) {
-	AI[i] = - Lambd[i] * TC[i]/(Z[i] - Z[i-1]);
-	CI[i] = - Lambd[i] * TC[i+1]/(Z[i+1] - Z[i]);
+	AI[i] = - Lambd[i] * TC[i-1]/(Z[i] - Z[i-1]);
+	CI[i] = - Lambd[i] * TC[i]/(Z[i+1] - Z[i]);
 	BI[i] = 1 - AI[i] - CI[i];
       }
       else if (i == nz-1) { 
@@ -658,7 +664,8 @@ PhaseChange() {
       IndexMelt[i] = 2;
   }
 
-  SoilHeatCapacity();
+  //SoilHeatCapacity();
+  
   /*------------------------------------------------------------------- */
   // ****** get excess or deficit of energy during phase change (use Hm) ********
   //  HC = volumetic heat capacity [J/m3/K]
