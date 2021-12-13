@@ -832,6 +832,9 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     // Finally, free the original string memory
     free(soil_z_string_val);
 
+    // Set soil column depth; overwrite soil_params.depth here (or throwing an exception can be an option)
+    model->NWM_soil_params.D =  model->soil_reservoir.Z_m[model->soil_reservoir.nz-1];
+
     // Now handle the Nash storage array properly
     if (is_nash_storage_string_val_set == TRUE) {
         // First, when there are values, read how many there are, and have that override any set count value

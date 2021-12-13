@@ -34,6 +34,8 @@ FreezeThaw()
   this->forcing_file= " ";
   this->nsteps=0;
   this->ice_fraction_scheme= " ";
+  this->Zd =0.0;
+  this->ice_fraction =0.0;
 }
 
 freezethaw::FreezeThaw::
@@ -60,7 +62,7 @@ FreezeThaw(std::string config_file)
 
   this->InitializeArrays();
   SetLayerThickness(); // get soil layer thickness
-  SetSMCBulk();
+  GetIceFraction();
   this->time = 0.;
   this->nsteps = 0;
 }
@@ -135,6 +137,7 @@ InitFromConfigFile()
       for (unsigned int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
       this->nz = vec.size();
+      this->Zd = this->Z[this->nz-1];
       is_Z_set = true;
       continue;
     }
@@ -334,7 +337,7 @@ ReadForcingData(std::string forcing_file)
 }
 
 void freezethaw::FreezeThaw::
-SetSMCBulk()
+GetIceFraction()
 {
   double val = 0;
   /*
@@ -356,6 +359,7 @@ SetSMCBulk()
     for (int i =1; i < nz; i++) {
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
     }
+    assert (this->ice_fraction <= this->Zd);
     this->ice_fraction = val;
   }
   else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
@@ -365,8 +369,7 @@ SetSMCBulk()
     this->ice_fraction = fcr;
   }
   else {
-    std::cout<<"Ice Frozen Scheme not specified in the config file. Options: Schaake or Xinanjiang \n";
-    abort();
+    throw std::runtime_error("Ice Frozen Scheme not specified in the config file. Options: Schaake or Xinanjiang!");
   }
 }
   
@@ -382,6 +385,7 @@ Advance()
   if (this->is_SMC_BMI_set) {
     for (int i=0; i<this->nz;i++) {
       this->SMCLiq[i] = this->SMCT[i];
+      this->SMCIce[i] = 0.0;
     }
     this->is_SMC_BMI_set = false;
   }
@@ -400,7 +404,8 @@ Advance()
 
   this->time += this->dt;
 
-  SetSMCBulk();
+  GetIceFraction();
+
   this->nsteps += 1;
   assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
 }
@@ -484,8 +489,8 @@ SolveDiffusionEq ()
 	Flux[i] = Lambd[i] * (TC[i] * dtdz + ghf);
       }
       else if (i < nz-1) {
-	double h1 = Z[i] - Z[i-1];
-        double h2 = Z[i+1] - Z[i];
+	h1 = Z[i] - Z[i-1];
+        h2 = Z[i+1] - Z[i];
 	Lambd[i] = dt/(2.0 * h2 * HC[i]);
 	double a_ = - Lambd[i] * TC[i-1] / h1;
         double c_ = - Lambd[i] * TC[i] / h2;

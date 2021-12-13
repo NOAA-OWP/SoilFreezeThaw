@@ -30,6 +30,7 @@ namespace freezethaw {
     int nsteps;
     double dt;
     int nz;
+    double Zd; //depth of the column/domain
     double lhf; // latent heat of fusion
     double tbot,ttop;
     double *Z; // depth
@@ -67,7 +68,7 @@ namespace freezethaw {
     
     std::vector<double> ReadVectorData(std::string key);
     void ReadForcingData(std::string key);
-    void SetSMCBulk(); // set bulk moisture content per soil column
+    void GetIceFraction(); // set bulk moisture content per soil column
     ~FreezeThaw();
   };
 

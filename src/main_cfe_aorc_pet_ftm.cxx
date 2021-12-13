@@ -56,10 +56,12 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
         TODO: Get variable names through BMI, then loop through those
               so we don't re-write the get/set functions over and over
   ********************************************************************/
-  double *ice_fraction_v = new double[1];
-  ftm_bmi_model.GetValue("soil__ice_fraction", &(ice_fraction_v[0]));
-  double ice_fraction = *ice_fraction_v;
-  cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction", &(ice_fraction_v[0]));
+  
+  double ice_frac_v=0.0;
+  double *ice_frac_ptr = &ice_frac_v;
+  
+  ftm_bmi_model.GetValue("soil__ice_fraction", ice_frac_ptr);
+  cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction", ice_frac_ptr);
 }
 
 /***************************************************************
@@ -227,7 +229,7 @@ int
   printf("looping through and calling updata\n");
   if (cfe->verbosity > 0)
     print_cfe_flux_header();
-  for (int i = 0; i < 24862; i++){
+  for (int i = 0; i < 24866; i++){
     
     aorc_bmi_model->update(aorc_bmi_model);                         // Update model 1
 
