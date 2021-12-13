@@ -204,7 +204,7 @@ InitFromConfigFile()
   fp.close();
  
   // simply allocate space for SMCLiq and SMCT arrays, as they will be set through CFE_BMI
-  if (this->is_SMC_BMI_set) {
+  if (this->is_SMC_BMI_set && is_Z_set) {
     this->SMCT = new double[this->nz]();
     this->SMCLiq = new double[this->nz]();
     n2 = this->nz;
