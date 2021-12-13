@@ -51,6 +51,7 @@ namespace freezethaw {
     double ice_fraction;
     std::string ice_fraction_scheme;
     bool is_SMC_BMI_set;
+    int total_nsteps; // total number of timesteps (set by the SFT model forcing data)
     
     FreezeThaw();
     FreezeThaw(std::string config_file);

@@ -334,6 +334,8 @@ ReadForcingData(std::string forcing_file)
     this->GT[i] = GT_v[i];
   }
 
+  // this is needed to make sure external calls (such as CFE BMI) don't exceed the length of the SFT forcing data
+  this->total_nsteps = size_v;
 }
 
 void freezethaw::FreezeThaw::
@@ -408,6 +410,7 @@ Advance()
 
   this->nsteps += 1;
   assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
+  assert (this->nsteps < this->total_nsteps);
 }
 
 double freezethaw::FreezeThaw::
