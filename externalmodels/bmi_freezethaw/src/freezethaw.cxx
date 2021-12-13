@@ -384,6 +384,8 @@ GetDt()
 void freezethaw::FreezeThaw::
 Advance()
 {
+  assert (this->nsteps < this->total_nsteps);
+  
   if (this->is_SMC_BMI_set) {
     for (int i=0; i<this->nz;i++) {
       this->SMCLiq[i] = this->SMCT[i];
@@ -408,9 +410,10 @@ Advance()
 
   GetIceFraction();
 
-  this->nsteps += 1;
+  
   assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
-  assert (this->nsteps < this->total_nsteps);
+  
+  this->nsteps += 1;
 }
 
 double freezethaw::FreezeThaw::
