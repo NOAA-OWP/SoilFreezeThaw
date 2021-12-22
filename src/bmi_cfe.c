@@ -1465,7 +1465,7 @@ static int Get_value_at_indices (Bmi *self, const char *name, void *dest, int *i
     // For now, all variables are non-array scalar values, with only 1 item of type double
     
     // Thus, there is only ever one value to return (len must be 1) and it must always be from index 0; the SMC distribution needs a vector to be returned so modifying AJ
-    if (name == "SMCT") {
+    if (strcmp(name,"SMCT") == 0) {
       void *ptr = NULL;
       status = Get_value_ptr(self, name, &ptr);
       len = ((cfe_state_struct *)(self->data))->soil_reservoir.nz;
