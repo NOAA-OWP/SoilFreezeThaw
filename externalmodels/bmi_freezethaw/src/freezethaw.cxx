@@ -85,7 +85,7 @@ InitFromConfigFile()
 { 
   std::ifstream fp;
   fp.open(config_file);
-  int n1, n2, n3;
+  int n_st, n_mct, n_mcl;
 
   bool is_forcing_file_set = false;
   this->is_SMC_BMI_set = false;
@@ -167,7 +167,7 @@ InitFromConfigFile()
       this->ST = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
-      n1 = vec.size();
+      n_st = vec.size();
       
       is_ST_set = true;
       continue;
@@ -179,7 +179,7 @@ InitFromConfigFile()
       this->SMCT = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
-      n2 = vec.size();
+      n_mct = vec.size();
       is_SMCT_set = true;
       continue;
     }
@@ -191,7 +191,7 @@ InitFromConfigFile()
 	//	assert (this->SMCT[i] >= vec[i]);
 	this->SMCLiq[i] = vec[i];
       }
-      n3 = vec.size();
+      n_mcl = vec.size();
       is_SMCL_set = true;
       continue;
     }
@@ -207,8 +207,8 @@ InitFromConfigFile()
   if (this->is_SMC_BMI_set && is_Z_set) {
     this->SMCT = new double[this->nz]();
     this->SMCLiq = new double[this->nz]();
-    n2 = this->nz;
-    n3 = this->nz;
+    n_mct = this->nz;
+    n_mcl = this->nz;
     is_SMCT_set = true;
   }
   
@@ -237,9 +237,9 @@ InitFromConfigFile()
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
 
   // check if the size of the input data is consistent
-  assert (n1 == this->nz);
-  assert (n2 == this->nz);
-  assert (n3 == this->nz);
+  assert (n_st == this->nz);
+  assert (n_mct == this->nz);
+  assert (n_mcl == this->nz);
 }
 
 

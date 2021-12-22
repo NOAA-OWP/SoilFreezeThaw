@@ -74,9 +74,9 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
               so we don't re-write the get/set functions over and over
   ********************************************************************/
 
-  int *nz_ = new int[1];
-  ftm_bmi_model.GetValue("soil__num_cells", &(nz_[0]));
-  double *smct_v = new double[*nz_];
+  int *nz = new int[1];
+  ftm_bmi_model.GetValue("soil__num_cells", &(nz[0]));
+  double *smct_v = new double[*nz];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
   ftm_bmi_model.SetValue("soil__moisture_content_total", &(smct_v[0]));
