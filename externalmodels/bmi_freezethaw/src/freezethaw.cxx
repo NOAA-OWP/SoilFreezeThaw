@@ -567,7 +567,9 @@ ThermalConductivity() {
     //SATURATED THERMAL CONDUCTIVITY
     
     //UNFROZEN VOLUME FOR SATURATION (POROSITY*XUNFROZ)
-    double x_unfrozen = SMCLiq[i] / SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
+    double x_unfrozen= 1.0; //prevents zero division
+    if (this->SMCT[i] > 0)
+      x_unfrozen = this->SMCLiq[i] / this->SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
     
     double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
     double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(prop.tcice_, (this->smcmax - xu)) * pow(prop.tcwater_,xu);
@@ -577,12 +579,18 @@ ThermalConductivity() {
     double tc_dry = (0.135* gammd+ 64.7)/ (2700. - 0.947* gammd);
     
     // Kersten Number
-    // for frozen soil
+    
     double KN;
-    if (SMCLiq[i] + 0.001 > SMCT[i])
-      KN = sat_ratio;
-    else
-      KN = sat_ratio > 0.1 ? log10(sat_ratio) + 1. : 0.0;
+    if ( (SMCLiq[i] + 0.0005) < SMCT[i])
+      KN = sat_ratio; // for frozen soil
+    else {
+      if (sat_ratio > 0.1)
+	KN = log10(sat_ratio) + 1.;
+      else if (sat_ratio > 0.05)
+	KN = 0.7 * log10(sat_ratio) + 1.;
+      else
+	KN = 0.0;
+    }
     
     // Thermal conductivity
     TC[i] = KN * (tc_sat - tc_dry) + tc_dry;
