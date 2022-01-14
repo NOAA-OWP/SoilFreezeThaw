@@ -94,6 +94,7 @@ InitFromConfigFile()
   bool is_Z_set = false;
   bool is_smcmax_set = false;
   bool is_bexp_set = false;
+  bool is_quartz_set = false;
   bool is_psisat_set = false;
   bool is_ST_set = false;
   bool is_SMCT_set = false; //total moisture content
@@ -156,7 +157,13 @@ InitFromConfigFile()
       is_bexp_set = true;
       continue;
     }
-    if (key_sub == "soil_params.psisat") {
+    if (key_sub == "soil_params.quartz") {
+      this->quartz = std::stod(key.substr(loc+1,key.length()));
+      assert (this->quartz > 0);
+      is_quartz_set = true;
+      continue;
+    }
+    if (key_sub == "soil_params.psisat") {  //Soil saturated matrix potential
       this->psisat = std::stod(key.substr(loc+1,key.length()));
       is_psisat_set = true;
       continue;
@@ -225,6 +232,8 @@ InitFromConfigFile()
     throw std::runtime_error("smcmax not set in the config file!");
   if (!is_bexp_set)
     throw std::runtime_error("bexp (Clapp-Hornberger's parameter) not set in the config file!");
+  if (!is_quartz_set)
+    throw std::runtime_error("quartz (soil parameter) not set in the config file!");
   if (!is_psisat_set)
     throw std::runtime_error("psisat not set in the config file!");
   if (!is_ST_set)
@@ -557,12 +566,17 @@ void freezethaw::FreezeThaw::
 ThermalConductivity() {
   Properties prop;
   const int n_z = this->shape[0];
+
+  double tcmineral = this->quartz > 0.2 ? 2.0 : 3.0; //TC of other mineral
+  double tcquartz = 7.7; // TC of Quartz
+  double tcwater  = 0.57; // TC of water
+  double tcice    = 2.2;  // thermal conductiviyt of ice
   
   for (int i=0; i<n_z;i++) {
     double sat_ratio = SMCT[i]/ this->smcmax;
-    
+
     //TC of solids Eq. (10) Peters-Lidard
-    double tc_solid = pow(prop.tcquartz_,prop.quartz_) * pow(prop.tcmineral_, (1. - prop.quartz_));
+    double tc_solid = pow(tcquartz,this->quartz) * pow(tcmineral, (1. - this->quartz));
 
     //SATURATED THERMAL CONDUCTIVITY
     
@@ -572,7 +586,7 @@ ThermalConductivity() {
       x_unfrozen = this->SMCLiq[i] / this->SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
     
     double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
-    double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(prop.tcice_, (this->smcmax - xu)) * pow(prop.tcwater_,xu);
+    double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(tcice, (this->smcmax - xu)) * pow(tcwater,xu);
     
     //DRY THERMAL CONDUCTIVITY
     double gammd = (1. - this->smcmax)*2700.; // dry density
@@ -761,16 +775,16 @@ Properties() :
   hcice_   (2.094E06), 
   hcair_   (1004.64),
   hcsoil_  (2.00E+6),
-  tcice_   (2.2), 
+  //  tcice_   (2.2), 
   lhf_     (0.3336E06),
-  psisat_  (0.759),
+  //  psisat_  (0.759),
   grav_    (9.86),
-  tcwater_  (0.57),
-  tcquartz_ (7.7), 
-  quartz_   (0.6), 
-  tcmineral_ (2.0),
+  //tcwater_  (0.57),
+  //tcquartz_ (7.7), 
+  //  quartz_   (0.6), 
+  //  tcmineral_ (2.0),
   tfrez_     (273.15),
-  bexp_  (2.9), 
+  //  bexp_  (2.9), 
   wdensity_ (1000)
 {}
 

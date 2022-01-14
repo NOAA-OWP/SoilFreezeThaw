@@ -52,6 +52,9 @@ namespace freezethaw {
     std::string ice_fraction_scheme;
     bool is_SMC_BMI_set;
     int total_nsteps; // total number of timesteps (set by the SFT model forcing data)
+
+
+    double quartz;
     
     FreezeThaw();
     FreezeThaw(std::string config_file);
@@ -81,17 +84,17 @@ namespace freezethaw {
     const double hcice_; // ice heat capacity
     const double hcair_;  // air heat capacity
     const double hcsoil_; // rock/soil heat capacity
-    const double tcice_;  // thermal conductiviyt of ice
+    //const double tcice_;  // thermal conductiviyt of ice
     const double lhf_; // latent heat of fusion (j/kg)
-    const double psisat_;  //Saturated matrix potential for soil type = silt loam
+    //    const double psisat_;  //Saturated matrix potential for soil type = silt loam
     const double grav_;
-    const double tcwater_;// TC of water
-    const double tcquartz_; // TC of Quartz
-    const double quartz_; //loamy sand
-    const double tcmineral_; // TC of other mineral 
+    //const double tcwater_;// TC of water
+    //const double tcquartz_; // TC of Quartz
+    // const double quartz_; //loamy sand
+    //const double tcmineral_; // TC of other mineral 
     const double tfrez_;    // freezing/melting point (k)
     //const double smcmax_; // porosity (maximum soil moisture)
-    const double bexp_; // Clap-Honnberger parameter
+    //const double bexp_; // Clap-Honnberger parameter
     const double wdensity_; // [kg/m3]
     Properties();
     ~Properties(){}
