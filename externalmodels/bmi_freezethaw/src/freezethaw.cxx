@@ -693,7 +693,8 @@ PhaseChange() {
   for (int i=0; i<n_z;i++) {
     if (MIce_L[i] > 0 && ST[i] > prop.tfrez_) //Melting condition
       IndexMelt[i] = 1;
-    else if (MLiq_L[i] > Supercool[i] && ST[i] <= prop.tfrez_)// freezing condition
+    //else if (MLiq_L[i] > Supercool[i] && ST[i] <= prop.tfrez_)// freezing condition in NoahMP
+    else if (MLiq_L[i] > 0.0 && ST[i] <= prop.tfrez_)// freezing condition
       IndexMelt[i] = 2;
   }
 
