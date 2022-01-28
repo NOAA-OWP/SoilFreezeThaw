@@ -48,13 +48,16 @@ namespace freezethaw {
     double smcmax; //porosity
     double bexp;  // pore size distribution [-], beta exponent on Clapp-Hornberger (1978)
     double psisat; // saturated capillary head (saturated moisture potential) [m]
-    double ice_fraction;
+    double ice_fraction_schaake;
+    double ice_fraction_xinan;
     std::string ice_fraction_scheme;
+    int *ice_fraction_scheme_bmi;
     bool is_SMC_BMI_set;
     int total_nsteps; // total number of timesteps (set by the SFT model forcing data)
 
 
     double quartz;
+    enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
     
     FreezeThaw();
     FreezeThaw(std::string config_file);

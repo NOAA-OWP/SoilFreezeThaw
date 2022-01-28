@@ -65,9 +65,9 @@ GetVarGrid(std::string name)
     return 0;
   else if (name.compare("soil__z_depth") == 0 )
     return 0;
-  else if (name.compare("soil__ice_fraction") == 0)
+  else if (name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0)
     return 2;
-  else if (name.compare("soil__num_cells") == 0 )
+  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
     return 1;
   else
     return -1;
@@ -79,9 +79,9 @@ GetVarType(std::string name)
 {
   if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0)
     return "double";
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__ice_fraction") == 0 || name.compare("soil__z_depth"))
+  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0 || name.compare("soil__z_depth") == 0)
     return "double";
-  else if (name.compare("soil__num_cells") == 0 )
+  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
     return "int";
   else
     return "";
@@ -95,9 +95,9 @@ GetVarItemsize(std::string name)
     return sizeof(double);
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
     return sizeof(double);
-  else if (name.compare("soil__ice_fraction") == 0 || name.compare("soil__z_depth") == 0 )
+  else if (name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0 || name.compare("soil__z_depth") == 0 )
     return sizeof(double);
-  else if (name.compare("soil__num_cells") == 0 )
+  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
     return sizeof(int);
   else
     return 0;
@@ -111,12 +111,8 @@ GetVarUnits(std::string name)
     return "K";
   else if (name.compare("soil__z_depth") == 0)
     return "m";
-  else if (name.compare("soil__ice_fraction") == 0) {
-    if (this->_model.ice_fraction_scheme == "Schaake" || this->_model.ice_fraction_scheme == "schaake" )
-      return "m";
-    else
-      return "";
-  } 
+  else if (name.compare("soil__ice_fraction_schaake") == 0)
+    return "m";
   else
     return "";
 }
@@ -144,7 +140,9 @@ GetVarLocation(std::string name)
     return "node";
   else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__z_depth") == 0)
     return "node";
-  else if (name.compare("soil__ice_fraction") == 0 ||  name.compare("soil__num_cells") == 0)
+  else if (name.compare("soil__ice_fraction_xinan") == 0)
+    return "node";
+  else if (name.compare("soil__ice_fraction_schaake") == 0 ||  name.compare("soil__num_cells") == 0)
     return "domain";
   else
     return "";
@@ -308,8 +306,15 @@ GetValuePtr (std::string name)
     return (void*)this->_model.SMCIce;
   else if (name.compare("soil__num_cells") == 0)
     return (void*)(&this->_model.nz);
-  else if (name.compare("soil__ice_fraction") == 0)
-    return (void*)(&this->_model.ice_fraction);
+  else if (name.compare("soil__ice_fraction_schaake") == 0) {
+    return (void*)(&this->_model.ice_fraction_schaake);
+  }
+  else if (name.compare("soil__ice_fraction_xinan") == 0){
+    int val = this->_model.ice_fraction_xinan;
+    return (void*)(&this->_model.ice_fraction_xinan);
+  }
+  else if (name.compare("soil__ice_fraction_scheme_bmi") == 0)
+    return (void*)this->_model.ice_fraction_scheme_bmi;
   else if (name.compare("soil__z_depth") == 0)
     return (void*)(&this->_model.Dz);
   else {

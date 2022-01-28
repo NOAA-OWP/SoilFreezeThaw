@@ -1,4 +1,5 @@
 #include "../include/cfe.h"
+#include <assert.h>
 #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })
 #define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })
 
@@ -82,14 +83,14 @@ extern void cfe(
   evap_struct->potential_et_m_per_timestep = evap_struct->potential_et_m_per_s * time_step_size;
 
   et_from_rainfall(&timestep_rainfall_input_m,evap_struct);
- 
+  
   // NEW FLO
   if(0.0 < timestep_rainfall_input_m) 
     {
     if (direct_runoff_params_struct.surface_partitioning_scheme == Schaake)
       {
       Schaake_partitioning_scheme(timestep_h,direct_runoff_params_struct.Schaake_adjusted_magic_constant_by_soil_type,soil_reservoir_storage_deficit_m,
-                                  timestep_rainfall_input_m,soil_reservoir_struct->ice_fraction,NWM_soil_params_struct.smcmax,
+                                  timestep_rainfall_input_m,soil_reservoir_struct->ice_fraction_schaake,NWM_soil_params_struct.smcmax,
 				  &direct_output_runoff_m,&infiltration_depth_m);
       
       }
@@ -98,7 +99,7 @@ extern void cfe(
       Xinanjiang_partitioning_scheme(timestep_rainfall_input_m, soil_reservoir_struct->storage_threshold_primary_m,
                                      soil_reservoir_struct->storage_max_m, soil_reservoir_struct->storage_m,
                                      &direct_runoff_params_struct,
-				     soil_reservoir_struct->ice_fraction,
+				     soil_reservoir_struct->ice_fraction_xinan,
                                      &direct_output_runoff_m, &infiltration_depth_m);
       }
     else
@@ -390,7 +391,7 @@ return;
 //##############################################################
 void Schaake_partitioning_scheme(double timestep_h, double Schaake_adjusted_magic_constant_by_soil_type, 
            double column_total_soil_moisture_deficit_m,
-	   double water_input_depth_m, double ice_fraction, double smcmax,
+	   double water_input_depth_m, double ice_fraction_schaake, double smcmax,
 	   double *surface_runoff_depth_m,double *infiltration_depth_m)
 {
 
@@ -415,7 +416,11 @@ void Schaake_partitioning_scheme(double timestep_h, double Schaake_adjusted_magi
 
 
 --------------------------------------------------------------------------------*/
+
+assert (ice_fraction_schaake >=0.0);
+
 double timestep_d,Schaake_parenthetical_term,Ic,Px;
+
 
 if(0.0 < water_input_depth_m) 
   {
@@ -471,12 +476,12 @@ else
  double smc_ref = 0.249; // taken from noahmp soil_params file for sandy loam
  double frzk = 0.15; // taken from noahmp GENPARM.TBL
  int cv_frz = 3;
- 
- if (ice_fraction > 1.0E-2) {
+
+ if (ice_fraction_schaake > 1.0E-2) {
    
    double frz_fact = smcmax/smc_ref * (0.412 / 0.468);
    double frzx = frzk * frz_fact;
-   double acrt = cv_frz * frzx / ice_fraction;
+   double acrt = cv_frz * frzx / ice_fraction_schaake;
    double sum1 =1;
    
    for (int i1=1; i1 < cv_frz; i1++) {
@@ -505,7 +510,7 @@ return;
 void Xinanjiang_partitioning_scheme(double water_input_depth_m, double field_capacity_m,
                                     double max_soil_moisture_storage_m, double column_total_soil_water_m,
                                     struct direct_runoff_parameters_structure *parms,
-				    double ice_fraction_top_layer,
+				    double ice_fraction_xinan,
                                     double *surface_runoff_depth_m, double *infiltration_depth_m)
 {
   //------------------------------------------------------------------------
@@ -537,7 +542,7 @@ void Xinanjiang_partitioning_scheme(double water_input_depth_m, double field_cap
   //   double  b_shape_parameter             b parameter
   //   double  x_shape_parameter             x parameter
   //   double  urban_decimal_fraction        fraction of land cover in the modeled area that is classified as urban [unitless decimal]
-  //   double  ice_fraction_top_layer        fraction of top soil layer that is frozen [unitless decimal]
+  //   double  ice_fraction_xinan            fraction of top soil layer that is frozen [unitless decimal]
   //
   // Outputs
   //   double  surface_runoff_depth_m        amount of water partitioned to surface water this time step [m]
@@ -572,10 +577,10 @@ void Xinanjiang_partitioning_scheme(double water_input_depth_m, double field_cap
   // urban classification (hard coded 95% [0.95] impervious) and frozen soils (passed to cfe 
   // from freeze-thaw model) using a weighted average. 
   impervious_fraction = (parms->urban_decimal_fraction * 0.95) + 
-			((1 - parms->urban_decimal_fraction) * ice_fraction_top_layer);
+			((1 - parms->urban_decimal_fraction) * ice_fraction_xinan);
   
-  printf("impervious_fraction: %lf\n", impervious_fraction);
-  printf("ice_fraction: %lf\n", ice_fraction_top_layer);
+  //  printf("impervious_fraction: %lf\n", impervious_fraction);
+  //printf("ice_fraction: %lf\n", ice_fraction_top_layer);
   
  
   // Calculate the impervious runoff (see eq. 309 from Knoben et al).

@@ -56,12 +56,25 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
         TODO: Get variable names through BMI, then loop through those
               so we don't re-write the get/set functions over and over
   ********************************************************************/
+  enum {Schaake=1, Xinanjiang=2};
   
   double ice_frac_v=0.0;
   double *ice_frac_ptr = &ice_frac_v;
+
+  int *sf_runoff_scheme = new int[1];
+
+  cfe_bmi_model->get_value(cfe_bmi_model, "SURF_RUNOFF_SCHEME", &sf_runoff_scheme[0]);
+  ftm_bmi_model.SetValue("soil__ice_fraction_scheme_bmi", &(sf_runoff_scheme[0]));
   
-  ftm_bmi_model.GetValue("soil__ice_fraction", ice_frac_ptr);
-  cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction", ice_frac_ptr);
+  if (*sf_runoff_scheme == Schaake) {
+    ftm_bmi_model.GetValue("soil__ice_fraction_schaake", ice_frac_ptr);
+    cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction_schaake", ice_frac_ptr);
+  }
+  else if (*sf_runoff_scheme == Xinanjiang) {
+    ftm_bmi_model.GetValue("soil__ice_fraction_xinan", ice_frac_ptr);
+    cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction_xinan", ice_frac_ptr);
+  }
+  
 }
 
 /***************************************************************

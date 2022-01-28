@@ -11,9 +11,9 @@
 
 #define CFE_DEGUG 0
 
-#define INPUT_VAR_NAME_COUNT 4
-#define OUTPUT_VAR_NAME_COUNT 8
-#define STATE_VAR_NAME_COUNT 91   // must match var_info array size
+#define INPUT_VAR_NAME_COUNT 5
+#define OUTPUT_VAR_NAME_COUNT 9
+#define STATE_VAR_NAME_COUNT 92   // must match var_info array size
 
 //----------------------------------------------
 // Put variable info into a struct to simplify
@@ -147,7 +147,8 @@ Variable var_info[] = {
     { 89, "urban_decimal_fraction",			    "double", 1}, //urban fraction used in Xinanjiang runoff scheme
     //---------------------------------------
     /*Soil Freeze-thaw model paramaters*/
-    { 90, "soil__ice_fraction",			    "double", 1} //should it be here?? I don't see other input/outut variables in this list- AJ
+    { 90, "soil__ice_fraction_schaake",			    "double", 1}, //should it be here?? I don't see other input/outut variables in this list- AJ
+    { 91, "soil__ice_fraction_xinan",			    "double", 1}
 };
 
 int i = 0;
@@ -164,7 +165,8 @@ static const char *output_var_names[OUTPUT_VAR_NAME_COUNT] = {
         "DEEP_GW_TO_CHANNEL_FLUX",
         "Q_OUT",
 	"SMCT",
-	"SMCT_BULK"
+	"SMCT_BULK",
+	"SURF_RUNOFF_SCHEME"
 };
 
 static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
@@ -175,7 +177,8 @@ static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
         "double",
         "double",
 	"double",
-	"double"
+	"double",
+	"int"
 };
 
 static const int output_var_item_count[OUTPUT_VAR_NAME_COUNT] = {
@@ -185,6 +188,7 @@ static const int output_var_item_count[OUTPUT_VAR_NAME_COUNT] = {
         1,
         1,
         1,
+	1,
 	1,
 	1
 };
@@ -197,7 +201,8 @@ static const char *output_var_units[OUTPUT_VAR_NAME_COUNT] = {
         "m",
         "m",
 	"m",
-	"m"
+	"m",
+	""
 };
 
 static const int output_var_grids[OUTPUT_VAR_NAME_COUNT] = {
@@ -207,6 +212,7 @@ static const int output_var_grids[OUTPUT_VAR_NAME_COUNT] = {
         0,
         0,
         0,
+	0,
 	0,
 	0
 };
@@ -219,20 +225,23 @@ static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
 	"domain",
-	"node"
+	"node",
+	" "
 };
 
 // Don't forget to update Get_value/Get_value_at_indices (and setter) implementation if these are adjusted
 static const char *input_var_names[INPUT_VAR_NAME_COUNT] = {
         "atmosphere_water__liquid_equivalent_precipitation_rate",
         "water_potential_evaporation_flux",
-	"soil__ice_fraction",
+	"soil__ice_fraction_schaake",
+	"soil__ice_fraction_xinan",
 	"soil__SMCT"
 };
 
 static const char *input_var_types[INPUT_VAR_NAME_COUNT] = {
         "double",
         "double",
+	"double",
 	"double",
 	"double"
 };
@@ -241,12 +250,14 @@ static const char *input_var_units[INPUT_VAR_NAME_COUNT] = {
         "mm h-1", //"atmosphere_water__liquid_equivalent_precipitation_rate"
         "m s-1"   //"water_potential_evaporation_flux"
 	"m ",    // ice fraction in meters
+	"",     // ice fraction [-]
 	"m"
 };
 
 static const int input_var_item_count[INPUT_VAR_NAME_COUNT] = {
         1,
         1,
+	1,
 	1,
 	1
 };
@@ -255,6 +266,7 @@ static const char input_var_grids[INPUT_VAR_NAME_COUNT] = {
         0,
         0,
 	0,
+	0,
 	0
 };
 
@@ -262,6 +274,7 @@ static const char *input_var_locations[INPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
 	"domain",
+	"node"
 	"node"
 };
 
@@ -1028,6 +1041,9 @@ static int Initialize (Bmi *self, const char *file)
     // Set all the mass balance trackers to zero.
     initialize_volume_trackers(cfe_bmi_data_ptr);
 
+    cfe_bmi_data_ptr->soil_reservoir.ice_fraction_schaake = 0.0;
+    cfe_bmi_data_ptr->soil_reservoir.ice_fraction_xinan = 0.0;
+    
     return BMI_SUCCESS;
 }
 
@@ -1406,6 +1422,13 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
       return BMI_SUCCESS;
     }
     
+    if (strcmp (name, "SURF_RUNOFF_SCHEME") == 0) {
+      cfe_state_struct *cfe_ptr;
+      cfe_ptr = (cfe_state_struct *) self->data;
+      *dest = (void*)&cfe_ptr->direct_runoff_params_struct.surface_partitioning_scheme;
+      return BMI_SUCCESS;
+    }
+    
     if (strcmp (name, "SMCT_BULK") == 0) {
       cfe_state_struct *cfe_ptr;
       cfe_ptr = (cfe_state_struct *) self->data;
@@ -1428,10 +1451,16 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = (void*)&cfe_ptr->aorc.precip_kg_per_m2;
         return BMI_SUCCESS;
     }
-    if (strcmp (name, "soil__ice_fraction") == 0) {
+    if (strcmp (name, "soil__ice_fraction_schaake") == 0) {
         cfe_state_struct *cfe_ptr;
         cfe_ptr = (cfe_state_struct *) self->data;
-        *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction;
+        *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction_schaake;
+        return BMI_SUCCESS;
+    }
+    if (strcmp (name, "soil__ice_fraction_xinan") == 0) {
+        cfe_state_struct *cfe_ptr;
+        cfe_ptr = (cfe_state_struct *) self->data;
+        *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction_xinan;
         return BMI_SUCCESS;
     }
     if (strcmp (name, "soil__SMCT_BULK") == 0) {
@@ -1502,7 +1531,7 @@ static int Set_value_at_indices (Bmi *self, const char *name, int * inds, int le
 {
     if (len < 1)
         return BMI_FAILURE;
-
+    
     // Get "adjusted_index" for variable
     int adjusted_index = Get_adjusted_index_for_variable(name);
     if (adjusted_index < 0)
@@ -1512,7 +1541,6 @@ static int Set_value_at_indices (Bmi *self, const char *name, int * inds, int le
     int status = Get_var_itemsize(self, name, &var_item_size);
     if (status == BMI_FAILURE)
         return BMI_FAILURE;
-
     // For now, all variables are non-array scalar values, with only 1 item of type double
 
     // Thus, there is only ever one value to return (len must be 1) and it must always be from index 0
@@ -2574,10 +2602,10 @@ extern void initialize_volume_trackers(cfe_state_struct* cfe_ptr){
 /**************************************************************************/
 extern void print_cfe_flux_header(){
     printf("#    ,            hourly ,  direct,   giuh ,lateral,  base,   total\n");
-    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],storage [mm],ice_fraction [mm]\n");
+    printf("Time [h],rainfall [mm],runoff [mm],runoff [mm],flow [mm],flow [mm],discharge [mm],storage [mm],ice_fraction_schaake [mm], ice_fraction_xinan [-]\n");
 }
 extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
-   printf("%d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf \n",
+   printf("%d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf \n",
                            cfe_ptr->current_time_step,
                            cfe_ptr->timestep_rainfall_input_m*1000.0,
                            
@@ -2590,7 +2618,8 @@ extern void print_cfe_flux_at_timestep(cfe_state_struct* cfe_ptr){
                            *cfe_ptr->flux_from_deep_gw_to_chan_m*1000.0,
 	                   *cfe_ptr->flux_Qout_m*1000.0,
 	                   cfe_ptr->soil_reservoir.storage_m*1000.0,
-	                   cfe_ptr->soil_reservoir.ice_fraction*1000.0 );
+	                   cfe_ptr->soil_reservoir.ice_fraction_schaake*1000.0,
+	                   cfe_ptr->soil_reservoir.ice_fraction_xinan);
 }
 
 extern void mass_balance_check(cfe_state_struct* cfe_ptr){

@@ -19,13 +19,15 @@ class BmiFreezeThaw : public bmi::Bmi {
     BmiFreezeThaw() {
       this->input_var_names[0] = "soil__moisture_content_total";
       this->input_var_names[1] = "soil__moisture_content_liquid";
+      this->input_var_names[2] = "soil__ice_fraction_scheme_bmi";
       
       this->output_var_names[0] = "soil__temperature";
       this->output_var_names[1] = "soil__moisture_content_total";
       this->output_var_names[2] = "soil__moisture_content_liquid";
       this->output_var_names[3] = "soil__moisture_content_ice";
-      this->output_var_names[4] = "soil__ice_fraction";
-      this->output_var_names[5] = "soil__num_cells";
+      this->output_var_names[4] = "soil__ice_fraction_schaake";
+      this->output_var_names[5] = "soil__ice_fraction_xinan";
+      this->output_var_names[6] = "soil__num_cells";
     };
 
     void Initialize(std::string config_file);
@@ -81,11 +83,11 @@ class BmiFreezeThaw : public bmi::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     freezethaw::FreezeThaw _model;
-    static const int input_var_name_count = 2;
-    static const int output_var_name_count = 6;
+    static const int input_var_name_count = 3;
+    static const int output_var_name_count = 7;
 
-    std::string input_var_names[2];
-    std::string output_var_names[6];
+    std::string input_var_names[3];
+    std::string output_var_names[7];
 };
 
 #endif

@@ -34,8 +34,10 @@ FreezeThaw()
   this->forcing_file= " ";
   this->nsteps=0;
   this->ice_fraction_scheme= " ";
+  this->ice_fraction_scheme_bmi = new int[1];
   this->Zd =0.0;
-  this->ice_fraction =0.0;
+  this->ice_fraction_schaake =0.0;
+  this->ice_fraction_xinan =0.0;
 }
 
 freezethaw::FreezeThaw::
@@ -49,7 +51,8 @@ FreezeThaw(std::string config_file)
   this->tbot = 275.15;
   this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
   this->opt_topb = 2; // 1: constant temp, 2: from a file
-
+  
+  this->ice_fraction_scheme_bmi = new int[1];
   this->InitFromConfigFile();
 
   this->shape[0] = this->nz;
@@ -62,7 +65,10 @@ FreezeThaw(std::string config_file)
 
   this->InitializeArrays();
   SetLayerThickness(); // get soil layer thickness
-  GetIceFraction();
+  this->ice_fraction_schaake =0.0;
+  this->ice_fraction_xinan =0.0;
+  //  if (this->ice_fraction_scheme != "BMI")
+  //  GetIceFraction(); 
   this->time = 0.;
   this->nsteps = 0;
 }
@@ -350,38 +356,34 @@ ReadForcingData(std::string forcing_file)
 void freezethaw::FreezeThaw::
 GetIceFraction()
 {
+
   double val = 0;
-  /*
-  for (int i =0; i < nz; i++) val += this->SMCT[i];
-  this->smct_bulk = val;
-
-  val = 0;
-  for (int i =0; i < nz; i++) val += this->SMCLiq[i];
-  this->smcliq_bulk = val;
-
-  val = 0;
-  for (int i =0; i < nz; i++) val += this->SMCIce[i];
-  this->smcice_bulk = val;
-  */
   
-  if (this->ice_fraction_scheme == "Schaake" || this->ice_fraction_scheme == "schaake") {
+  if (this->ice_fraction_scheme == "Schaake") {
+    *this->ice_fraction_scheme_bmi = 1;
+  }
+  else if (this->ice_fraction_scheme == "Xinanjiang") {
+    *this->ice_fraction_scheme_bmi = 2;
+  }
+  
+  if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
     
     val = this->SMCIce[0]*this->Z[0];
     for (int i =1; i < nz; i++) {
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
     }
-    assert (this->ice_fraction <= this->Zd);
-    this->ice_fraction = val;
+    assert (this->ice_fraction_schaake <= this->Zd);
+    this->ice_fraction_schaake = val;
   }
-  else if (this->ice_fraction_scheme == "Xinanjiang" || this->ice_fraction_scheme == "xinanjiang") {
+ else if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
     double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);
     double A = 4.0; // taken from NWM SOILWATER subroutine
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
-    this->ice_fraction = fcr;
+    this->ice_fraction_xinan = fcr;
   }
   else {
-    throw std::runtime_error("Ice Frozen Scheme not specified in the config file. Options: Schaake or Xinanjiang!");
-  }
+    throw std::runtime_error("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
+    }
 }
   
 double freezethaw::FreezeThaw::
@@ -693,8 +695,7 @@ PhaseChange() {
   for (int i=0; i<n_z;i++) {
     if (MIce_L[i] > 0 && ST[i] > prop.tfrez_) //Melting condition
       IndexMelt[i] = 1;
-    //else if (MLiq_L[i] > Supercool[i] && ST[i] <= prop.tfrez_)// freezing condition in NoahMP
-    else if (MLiq_L[i] > 0.0 && ST[i] <= prop.tfrez_)// freezing condition
+    else if (MLiq_L[i] > Supercool[i] && ST[i] <= prop.tfrez_)// freezing condition in NoahMP
       IndexMelt[i] = 2;
   }
 
