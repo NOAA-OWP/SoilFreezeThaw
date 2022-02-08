@@ -101,7 +101,7 @@ InitFromConfigFile()
   bool is_smcmax_set = false;
   bool is_bexp_set = false;
   bool is_quartz_set = false;
-  bool is_psisat_set = false;
+  bool is_satpsi_set = false;
   bool is_ST_set = false;
   bool is_SMCT_set = false; //total moisture content
   bool is_SMCL_set = false; //liquid moisture content
@@ -169,9 +169,9 @@ InitFromConfigFile()
       is_quartz_set = true;
       continue;
     }
-    if (key_sub == "soil_params.psisat") {  //Soil saturated matrix potential
-      this->psisat = std::stod(key.substr(loc+1,key.length()));
-      is_psisat_set = true;
+    if (key_sub == "soil_params.satpsi") {  //Soil saturated matrix potential
+      this->satpsi = std::stod(key.substr(loc+1,key.length()));
+      is_satpsi_set = true;
       continue;
     }
     if (key_sub == "soil_temperature") {
@@ -225,31 +225,55 @@ InitFromConfigFile()
     is_SMCT_set = true;
   }
   
-  if (!is_forcing_file_set)
+  if (!is_forcing_file_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Forcing file not set in the config file!");
-  if (!is_endtime_set)
+  }
+  if (!is_endtime_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("End time not set in the config file!");
+  }
 
-  if (!is_dt_set)
+  if (!is_dt_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Time step (dt) not set in the config file!");
-  if (!is_Z_set)
+  }
+  if (!is_Z_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Z not set in the config file!");
-  if (!is_smcmax_set)
+  }
+  if (!is_smcmax_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("smcmax not set in the config file!");
-  if (!is_bexp_set)
+  }
+  if (!is_bexp_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("bexp (Clapp-Hornberger's parameter) not set in the config file!");
-  if (!is_quartz_set)
+  }
+  if (!is_quartz_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("quartz (soil parameter) not set in the config file!");
-  if (!is_psisat_set)
-    throw std::runtime_error("psisat not set in the config file!");
-  if (!is_ST_set)
+  }
+  if (!is_satpsi_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
+    throw std::runtime_error("satpsi not set in the config file!");
+  }
+  if (!is_ST_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Soil temperature not set in the config file!");
-  if (!is_SMCT_set && !this->is_SMC_BMI_set)
+  }
+  if (!is_SMCT_set && !this->is_SMC_BMI_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Total soil moisture content not set in the config file!");
-  if (!is_SMCL_set && !this->is_SMC_BMI_set)
+  }
+  if (!is_SMCL_set && !this->is_SMC_BMI_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Liquid soil moisture content not set in the config file!");
-  if (!is_IFS_set)
+  }
+  if (!is_IFS_set) {
+    std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
+  }
 
   // check if the size of the input data is consistent
   assert (n_st == this->nz);
@@ -684,7 +708,7 @@ PhaseChange() {
   for (int i=0; i<n_z;i++) {
     if (ST[i] < prop.tfrez_) {
       double SMP = prop.lhf_ /(prop.grav_*ST[i]) * (prop.tfrez_ - ST[i]);     // [m] Soil Matrix potential
-      Supercool[i] = this->smcmax* pow((SMP/this->psisat), lam); //SMCMAX = porsity
+      Supercool[i] = this->smcmax* pow((SMP/this->satpsi), lam); //SMCMAX = porsity
       Supercool[i] = Supercool[i]*Dz[i]* prop.wdensity_; //[kg/m2];
     }
   }
@@ -779,7 +803,7 @@ Properties() :
   hcsoil_  (2.00E+6),
   //  tcice_   (2.2), 
   lhf_     (0.3336E06),
-  //  psisat_  (0.759),
+  //  satpsi_  (0.759),
   grav_    (9.86),
   //tcwater_  (0.57),
   //tcquartz_ (7.7), 

@@ -47,7 +47,7 @@ namespace freezethaw {
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
     double bexp;  // pore size distribution [-], beta exponent on Clapp-Hornberger (1978)
-    double psisat; // saturated capillary head (saturated moisture potential) [m]
+    double satpsi; // saturated capillary head (saturated moisture potential) [m]
     double ice_fraction_schaake;
     double ice_fraction_xinan;
     std::string ice_fraction_scheme;
@@ -89,7 +89,7 @@ namespace freezethaw {
     const double hcsoil_; // rock/soil heat capacity
     //const double tcice_;  // thermal conductiviyt of ice
     const double lhf_; // latent heat of fusion (j/kg)
-    //    const double psisat_;  //Saturated matrix potential for soil type = silt loam
+    //    const double satpsi_;  //Saturated matrix potential for soil type = silt loam
     const double grav_;
     //const double tcwater_;// TC of water
     //const double tcquartz_; // TC of Quartz
