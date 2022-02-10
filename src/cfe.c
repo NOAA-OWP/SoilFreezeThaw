@@ -244,8 +244,6 @@ extern void cfe(
     *nash_lateral_runoff_m_ptr            = nash_lateral_runoff_m;
     *Qout_m_ptr                           = Qout_m;
 
-    soil_moisture_vertical_distribution(soil_reservoir_struct, &NWM_soil_params_struct);
-
 } // END CFE STATE SPACE FUNCTIONS
   //####################################################################################################
   //####################################################################################################
@@ -794,85 +792,4 @@ extern int is_fabs_less_than_epsilon(double a,double epsilon)  // returns true i
 {
 if(fabs(a)<epsilon) return(TRUE);
 else                return(FALSE);
-}
-
-// given bulk soil moisture quantity, distribute vertically 
-extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soil_res, struct NWM_soil_parameters *soil_parms)
-{
-  
-  double lam=1.0/soil_parms->bb; // pore distribution index
-  double hb=soil_parms->satpsi * 100.; //7.82;  //[cm] //soil_res->hp;     
-  double D= soil_parms->D * 100.;
-  double z1= soil_res->z_prev_wt * 100; //previous water table location, [cm]
-  double z0=0;        /* bottom of computational domain */
-  double Vmax=D* soil_parms->smcmax;
-  double beta=1.0-lam;
-  double alpha=pow(hb,lam)/beta;
-  double tol=0.000001;
-  double phi = soil_parms->smcmax;
-  double V1 = 100*(soil_res->storage_m - soil_res->storage_change_m);  //change in soil moisture
-  
-  double Vinit=V1;
-  double V2=100*soil_res->storage_m;  /* start-up condition before adding any water */
-  
-  soil_res->smct_m = malloc(sizeof(double) * soil_res->nz);
-  
-  int count = 0;
-  
-  if(V2>=Vmax) {
-    for(int j=0;j<soil_res->nz;j++)
-      soil_res->smct_m[j] = phi;
-    return;
-  }
-   
-   double diff=1000.0;
-
-   double f, df, z2, z2new, df_dz2;
-
-   z2=z1;  /* first guess, use Newton-Raphson to find new Z2 */
-   do {
-     count++;
-    
-     if(count>15000) {
-       printf("no convergence loop count: after 15000 iterations\n");
-       exit(-9);
-     }
-     
-     f=phi*(z2-z1) + alpha * phi * (pow((D-z2),beta)-pow((D-z1),beta)) - (V2-V1);
-     
-     df_dz2=phi - alpha*phi*beta*pow((D-z2),(beta-1.0));
-     
-     z2new=z2-f/df_dz2*1.0;
-     
-     diff=z2new-z2;
-     z2=z2new;
-     
-   } while (fabs(diff)>tol);
-   
-   z1=z2;  // reset to new water table elevation value
-   soil_res->z_prev_wt = z1/100.;
-
-   /* get a high resolution curve */
-   int z_hres = 1001;
-   double *smct_m_temp = malloc(sizeof(double) * z_hres);
-   double *z_temp = malloc(sizeof(double) * z_hres);
-   double dz1 = hb;
-   double dz2 = soil_res->Z_m[soil_res->nz-1]*100.0 - z1;
-   
-   for (int i=0;i<z_hres;i++) {
-     smct_m_temp[i] = pow((hb/dz1),lam)*phi;
-     z_temp[i] = z1  + dz1;
-     dz1 += dz2/(z_hres-1);
-   }
-   
-   // mapping the updated soil moisture curve to the heat conduction discretization depth (Dz)
-   for (int i=0; i<soil_res->nz; i++) {
-     for (int j=0; j<z_hres; j++) {
-       if (z_temp[j]  >= (D - soil_res->Z_m[i]*100) ) {
-	 soil_res->smct_m[i] = smct_m_temp[j];
-	 break;
-	 }
-     }
-   }
-
 }

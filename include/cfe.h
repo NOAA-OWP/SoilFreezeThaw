@@ -85,10 +85,7 @@ double storage_threshold_secondary_m;
 double coeff_secondary;
 double exponent_secondary;
 int nz; // number of soil layers
-double *smct_m; //soil moisture content total (ice+liquid) per layer
 double ice_fraction_schaake, ice_fraction_xinan;
-double z_prev_wt; //previous (timestep) water table location
-double *Z_m; //soil vertical discretization
 };
 
 struct NWM_soil_parameters
@@ -179,7 +176,6 @@ extern void et_from_soil(struct conceptual_reservoir *soil_res, struct evapotran
 
 extern int is_fabs_less_than_epsilon(double a,double epsilon);
 
-extern void soil_moisture_vertical_distribution(struct conceptual_reservoir *soil_res, struct NWM_soil_parameters *soil_parms);
 
 extern void cfe(
         double *soil_reservoir_storage_deficit_m_ptr,

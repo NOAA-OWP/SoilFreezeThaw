@@ -15,6 +15,10 @@
 #include "../externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx"
 #include "../externalmodels/bmi_freezethaw/include/freezethaw.hxx"
 
+
+#include "../externalmodels/bmi_coupler/include/bmi_coupler.hxx"
+#include "../externalmodels/bmi_coupler/include/smc_profile.hxx"
+
 #define FrozenFraction true
 /***************************************************************
     Function to pass PET to CFE using BMI.
@@ -93,6 +97,33 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
   ftm_bmi_model.SetValue("soil__moisture_content_total", &(smct_v[0]));
+}
+
+/***************************************************************
+    Function to pass the parameters from CFE to Coupler and get SMC from the Coupler to set in Freeze-thaw model.
+***************************************************************/
+void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model,BmiCoupler coupler_bmi) {
+
+  int nz = 0;
+  int *nz_ptr = &nz;
+  ftm_bmi_model.GetValue("soil__num_cells", nz_ptr);
+
+  double storage = 0.0;
+  double storage_change = 0.0;
+  double *storage_ptr = &storage;
+  double *storage_change_ptr = &storage_change;
+
+  cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", storage_ptr);
+  cfe_bmi_model->get_value(cfe_bmi_model, "SMCT_CHANGE", storage_change_ptr);
+  //std::cout<<"SMCT: "<<storage<<" "<<storage_change<<" "<<nz<<"\n";
+  coupler_bmi.SetValue("soil__storage",storage_ptr);
+  coupler_bmi.SetValue("soil__storage_change",storage_change_ptr);
+  coupler_bmi.Update();
+
+  double *smct = new double[nz];
+    
+  coupler_bmi.GetValue("soil__moisture_content_total",&smct[0]);
+  ftm_bmi_model.SetValue("soil__moisture_content_total", &smct[0]);
 }
 
 /***************************************************************
@@ -177,6 +208,8 @@ int
   Bmi *pet_bmi_model = (Bmi *) malloc(sizeof(Bmi));
   
   BmiFreezeThaw ftm_bmi_model;
+
+  BmiCoupler coupler_bmi;
   
   /************************************************************************
       Registering the BMI model for CFE and AORC
@@ -208,6 +241,11 @@ int
   const char *cfg_file_ftm = argv[4];
   ftm_bmi_model.Initialize(cfg_file_ftm);
 
+
+  printf("Initializeing BMI Coupler model\n");
+  const char *cfg_file_coupler = argv[5];
+  coupler_bmi.Initialize(cfg_file_coupler);
+  
   /************************************************************************
     Get the information from the configuration here in Main
   ************************************************************************/
@@ -231,7 +269,7 @@ int
     4. Getting PET from PET and setting for CFE
     5. Get ice fraction from freeze-thaw model
     5. Update the CFE model.
-    6. Get soil moisture distribution (in z) from CFE
+    6. Update BMI Coupler to get updated soil storage/change for the SFT model
     7. Update the Freeze-thaw model (soil temperature/ice content update)
   ************************************************************************/
 
@@ -285,7 +323,10 @@ int
     if (cfe->verbosity > 0)
       print_cfe_flux_at_timestep(cfe);
     
-    pass_smc_from_cfe_to_ftm(cfe_bmi_model, ftm_bmi_model);
+    //pass_smc_from_cfe_to_ftm(cfe_bmi_model, ftm_bmi_model);
+
+    //coulper_bmi.Update();
+    pass_smc_from_coupler_to_ftm(cfe_bmi_model, ftm_bmi_model,coupler_bmi);
     ftm_bmi_model.Update(); // Update model 3
   }
 

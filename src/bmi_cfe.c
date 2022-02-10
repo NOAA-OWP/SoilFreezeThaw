@@ -11,9 +11,9 @@
 
 #define CFE_DEGUG 0
 
-#define INPUT_VAR_NAME_COUNT 5
+#define INPUT_VAR_NAME_COUNT 4
 #define OUTPUT_VAR_NAME_COUNT 9
-#define STATE_VAR_NAME_COUNT 92   // must match var_info array size
+#define STATE_VAR_NAME_COUNT 90   // must match var_info array size
 
 //----------------------------------------------
 // Put variable info into a struct to simplify
@@ -157,16 +157,14 @@ int j = 0;
 // Don't forget to update Get_value/Get_value_at_indices (and setter) implementation if these are adjusted
 static const char *output_var_names[OUTPUT_VAR_NAME_COUNT] = {
         "RAIN_RATE",
-        /* xinanjiang_dev
-        "SCHAAKE_OUTPUT_RUNOFF",*/
         "DIRECT_RUNOFF",
         "GIUH_RUNOFF",
         "NASH_LATERAL_RUNOFF",
         "DEEP_GW_TO_CHANNEL_FLUX",
         "Q_OUT",
 	"SMCT",
-	"SMCT_BULK",
-	"SURF_RUNOFF_SCHEME"
+	"SMCT_CHANGE",
+	"SURF_RUNOFF_SCHEME",
 };
 
 static const char *output_var_types[OUTPUT_VAR_NAME_COUNT] = {
@@ -225,7 +223,7 @@ static const char *output_var_locations[OUTPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
 	"domain",
-	"node",
+	"domain",
 	" "
 };
 
@@ -234,14 +232,12 @@ static const char *input_var_names[INPUT_VAR_NAME_COUNT] = {
         "atmosphere_water__liquid_equivalent_precipitation_rate",
         "water_potential_evaporation_flux",
 	"soil__ice_fraction_schaake",
-	"soil__ice_fraction_xinan",
-	"soil__SMCT"
+	"soil__ice_fraction_xinan"
 };
 
 static const char *input_var_types[INPUT_VAR_NAME_COUNT] = {
         "double",
         "double",
-	"double",
 	"double",
 	"double"
 };
@@ -251,13 +247,11 @@ static const char *input_var_units[INPUT_VAR_NAME_COUNT] = {
         "m s-1"   //"water_potential_evaporation_flux"
 	"m ",    // ice fraction in meters
 	"",     // ice fraction [-]
-	"m"
 };
 
 static const int input_var_item_count[INPUT_VAR_NAME_COUNT] = {
         1,
         1,
-	1,
 	1,
 	1
 };
@@ -266,7 +260,6 @@ static const char input_var_grids[INPUT_VAR_NAME_COUNT] = {
         0,
         0,
 	0,
-	0,
 	0
 };
 
@@ -274,7 +267,6 @@ static const char *input_var_locations[INPUT_VAR_NAME_COUNT] = {
         "node",
         "node",
 	"domain",
-	"node"
 	"node"
 };
 
@@ -437,7 +429,6 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_gw_storage_set = FALSE;
 
     int is_giuh_originates_string_val_set = FALSE;
-    int is_soil_z_string_val_set = FALSE;
 
     // Default value
     double refkdt = 3.0;
@@ -450,7 +441,6 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
     int is_nash_storage_string_val_set = FALSE;
     // Similarly as for Nash, track stuff for GIUH ordinates
     char* giuh_originates_string_val;
-    char* soil_z_string_val;
 
     // Additionally,
     for (i = 0; i < config_line_count; i++) {
@@ -628,14 +618,7 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
 		is_urban_decimal_fraction_set = TRUE;
 	    }
         }
-	if (strcmp(param_key, "soil.Z") == 0) {
-#if CFE_DEGUG >= 1
-	  printf("Found configured soil depth values ('%s')\n", param_value);
-#endif
-            soil_z_string_val = strdup(param_value);
-            is_soil_z_string_val_set = TRUE;
-            continue;
-        }
+
     }
     if (is_forcing_file_set == FALSE) {
 #if CFE_DEGUG >= 1
@@ -818,35 +801,6 @@ int read_init_config_cfe(const char* config_file, cfe_state_struct* model, doubl
         model->giuh_ordinates[i++] = strtod(value, NULL);
     // Finally, free the original string memory
     free(giuh_originates_string_val);
-    
-    // Soil discretization : handle soil depth discretizaiton, bailing if they were not provided when run with freeze-thaw model
-    if (is_soil_z_string_val_set == FALSE) {
-#if CFE_DEGUG >= 1
-        printf("Soil depth string/values not set!\n");
-#endif
-        return BMI_FAILURE;
-    }
-#if CFE_DEGUG >= 1
-    printf("Soil depth string value found in config ('%s')\n", is_soil_z_string_val_set);
-#endif
-    model->soil_reservoir.nz = count_delimited_values(soil_z_string_val, ",");
-#if CFE_DEGUG >= 1
-    printf("Counted number of soil depths (%d)\n", model->soil_reservoir.nz);
-#endif
-    if (model->soil_reservoir.nz < 1)
-        return BMI_FAILURE;
-    
-    model->soil_reservoir.Z_m = malloc(sizeof(double) * model->soil_reservoir.nz);
-    copy = soil_z_string_val;
-    
-    i = 0;
-    while ((value = strsep(&copy, ",")) != NULL)
-        model->soil_reservoir.Z_m[i++] = strtod(value, NULL);
-    // Finally, free the original string memory
-    free(soil_z_string_val);
-
-    // Set soil column depth; overwrite soil_params.depth here (or throwing an exception can be an option)
-    model->NWM_soil_params.D =  model->soil_reservoir.Z_m[model->soil_reservoir.nz-1];
 
     // Now handle the Nash storage array properly
     if (is_nash_storage_string_val_set == TRUE) {
@@ -1409,18 +1363,6 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = ((cfe_state_struct *)(self->data))->flux_Qout_m;
         return BMI_SUCCESS;
     }
-
-    if (strcmp (name, "SMCT") == 0) {
-      /* // delete it later, for testing only - AJ
-      void * src_ = NULL;
-      //cfe_ptr->soil_reservoir.smct_m = a;
-      //src_ = (void*)(&cfe_ptr->soil_reservoir.smct_m);
-      src_ = (void *) ((cfe_state_struct *)(self->data))->soil_reservoir.smct_m;
-      *dest = src_;//(void*)&cfe_ptr->soil_reservoir.smct_m;*/
-      
-      *dest = (void *) ((cfe_state_struct *)(self->data))->soil_reservoir.smct_m;
-      return BMI_SUCCESS;
-    }
     
     if (strcmp (name, "SURF_RUNOFF_SCHEME") == 0) {
       cfe_state_struct *cfe_ptr;
@@ -1429,10 +1371,17 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
       return BMI_SUCCESS;
     }
     
-    if (strcmp (name, "SMCT_BULK") == 0) {
+    if (strcmp (name, "SMCT") == 0) {
       cfe_state_struct *cfe_ptr;
       cfe_ptr = (cfe_state_struct *) self->data;
       *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
+      return BMI_SUCCESS;
+    }
+
+    if (strcmp (name, "SMCT_CHANGE") == 0) {
+      cfe_state_struct *cfe_ptr;
+      cfe_ptr = (cfe_state_struct *) self->data;
+      *dest = (void*)&cfe_ptr->soil_reservoir.storage_change_m;
       return BMI_SUCCESS;
     }
 	
@@ -1463,12 +1412,6 @@ static int Get_value_ptr (Bmi *self, const char *name, void **dest)
         *dest = (void*)&cfe_ptr->soil_reservoir.ice_fraction_xinan;
         return BMI_SUCCESS;
     }
-    if (strcmp (name, "soil__SMCT_BULK") == 0) {
-        cfe_state_struct *cfe_ptr;
-        cfe_ptr = (cfe_state_struct *) self->data;
-        *dest = (void*)&cfe_ptr->soil_reservoir.storage_m;
-        return BMI_SUCCESS;
-    }
     return BMI_FAILURE;
 }
 
@@ -1494,15 +1437,8 @@ static int Get_value_at_indices (Bmi *self, const char *name, void *dest, int *i
     // For now, all variables are non-array scalar values, with only 1 item of type double
     
     // Thus, there is only ever one value to return (len must be 1) and it must always be from index 0; the SMC distribution needs a vector to be returned so modifying AJ
-    if (strcmp(name,"SMCT") == 0) {
-      void *ptr = NULL;
-      status = Get_value_ptr(self, name, &ptr);
-      len = ((cfe_state_struct *)(self->data))->soil_reservoir.nz;
-      memcpy(dest, ptr, var_item_size * len);
-      if (status ==  BMI_SUCCESS)
-        return  BMI_SUCCESS;
-    }
-    else if (len > 1 || inds[0] != 0) 
+
+    if (len > 1 || inds[0] != 0) 
         return BMI_FAILURE;
     
     void* ptr;
@@ -1901,7 +1837,6 @@ static int Get_state_var_ptrs (Bmi *self, void *ptr_list[])
     ptr_list[88] = &(state->direct_runoff_params_struct.x_Xinanjiang_shape_parameter );
     ptr_list[89] = &(state->direct_runoff_params_struct.urban_decimal_fraction );
     //-------------------------------------------------------------
-    ptr_list[90] =  &(state->soil_reservoir.smct_m);
     return BMI_SUCCESS;
 }
 
@@ -2551,7 +2486,7 @@ extern void init_soil_reservoir(cfe_state_struct* cfe_ptr, double alpha_fc, doub
     // making them the same, but they don't have 2B
     cfe_ptr->soil_reservoir.storage_threshold_secondary_m = cfe_ptr->soil_reservoir.storage_threshold_primary_m;
     cfe_ptr->soil_reservoir.storage_m = init_reservoir_storage(is_storage_ratios, storage, max_storage);
-    cfe_ptr->soil_reservoir.z_prev_wt = cfe_ptr->NWM_soil_params.D - 1.9; //initial water table location 1.9 m deep
+
 }
 
 extern double init_reservoir_storage(int is_ratio, double amount, double max_amount) {

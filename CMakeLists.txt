@@ -20,15 +20,11 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # add the executable
 
-## cfe + aorc + ftm
-#add_executable(cfeft ./src/main_pass_forcings.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c)
-
-#add_library(cfelib ./externalmodels/bmi_freezethaw/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethaw/src/freezethaw.cxx ./externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethaw/include/freezethaw.hxx)
-
 ## cfe + aorc + pet + ftm 
 add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c ./forcing_code/src/pet.c ./forcing_code/src/bmi_pet.c)
 
-add_library(cfelib ./externalmodels/bmi_freezethaw/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethaw/src/freezethaw.cxx ./externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethaw/include/freezethaw.hxx)
+add_library(cfelib ./externalmodels/bmi_freezethaw/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethaw/src/freezethaw.cxx ./externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethaw/include/freezethaw.hxx ./externalmodels/bmi_coupler/src/bmi_coupler.cxx ./externalmodels/bmi_coupler/src/smc_profile.cxx ./externalmodels/bmi_coupler/include/bmi_coupler.hxx ./externalmodels/bmi_coupler/include/smc_profile.hxx)
+
 add_library(freezethaw SHARED ./externalmodels/bmi_freezethaw/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethaw/src/freezethaw.cxx ./externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethaw/include/freezethaw.hxx)
 add_library(cfebmi SHARED src/bmi_cfe.c src/cfe.c)
 
@@ -38,3 +34,12 @@ target_link_libraries(cfeft PRIVATE m)
 
 ##cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=Debug ../
 ##cmake --build .
+
+
+
+## cfe + aorc + ftm
+#add_executable(cfeft ./src/main_pass_forcings.cxx ./src/cfe.c ./src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c)
+
+#add_library(cfelib ./externalmodels/bmi_freezethaw/src/bmi_freezethaw.cxx ./externalmodels/bmi_freezethaw/src/freezethaw.cxx ./externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx ./externalmodels/bmi_freezethaw/include/freezethaw.hxx)
+
+
