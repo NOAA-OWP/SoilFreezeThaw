@@ -1,5 +1,5 @@
-#ifndef FSC_INCLUDED
-#define FSC_INCLUDED
+#ifndef SMCP_C_INCLUDED
+#define SMCP_C_INCLUDED
 
 #include <cstring>
 #include <stdlib.h>
@@ -12,8 +12,8 @@
 #include "../include/smc_profile.hxx"
 #define OK (1)
 
-const double smc_profile::SMCProfile::grav = 9.86;
-const double smc_profile::SMCProfile::wden = 1000.;
+//const double smc_profile::SMCProfile::grav = 9.86;
+//const double smc_profile::SMCProfile::wden = 1000.;
 
 smc_profile::SMCProfile::
 SMCProfile()
@@ -27,6 +27,8 @@ SMCProfile()
   this->origin[1] = 0.;
   this->D =0.0;
   this->config_file = "";
+  this->smp_option= "";
+  this->nz=0;
 }
 
 smc_profile::SMCProfile::
@@ -42,9 +44,10 @@ SMCProfile(std::string config_file)
   this->origin[0] = 0.;
   this->origin[1] = 0.;
   this->InitializeArrays();
+  
   SetLayerThickness(); // get soil layer thickness
+  this->smp_option= "";
 }
-
 
 void smc_profile::SMCProfile::
 InitializeArrays(void)
@@ -53,10 +56,10 @@ InitializeArrays(void)
   this->SMCT = new double[nz];
   this->storage_m = new double[1];
   this->storage_change_m = new double[1];
-  //this->water_table_m = new double[1];
-  // this->water_table_prev_m = new double[1];
-  this->storage_m[0] = 0.0;
-  this->storage_change_m[0] = 0.0;
+  *this->storage_m = 0.0;
+  *this->storage_change_m = 0.0;
+  for (int i=0;i<nz;i++)
+    this->SMCT[i] = 0.0;
 }
 
 void smc_profile::SMCProfile::
@@ -70,7 +73,7 @@ InitFromConfigFile()
   bool is_bexp_set = false;
   bool is_satpsi_set = false;
   bool is_wt_set = false;
-  //bool is_SMCT_set = false; //total moisture content
+  bool is_smp_option_set = false;
     
   while (fp) {
 
@@ -83,76 +86,88 @@ InitFromConfigFile()
     if (key_sub == "Z") {
       std::string tmp_key = key.substr(loc+1,key.length());
       std::vector<double> vec = ReadVectorData(tmp_key);
-      //this->Z = new double[vec.size()];
-      this->Z.resize(vec.size());
-      for (unsigned int i=0; i < vec.size(); i++) {
+      
+      this->Z = new double[vec.size()];
+      
+      for (unsigned int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
-	//this->Zv[i] = vec[i];
-	//std::cout<<"Z_read: "<<this->Z[i]<<" "<<vec[i]<<" "<<Zv[i]<<"\n";
-      }
+      
       this->nz = vec.size();
       this->D = this->Z[this->nz-1];
       is_Z_set = true;
       continue;
     }
-    if (key_sub == "soil_params.smcmax") {
+    else if (key_sub == "soil_params.smcmax") {
       this->smcmax = std::stod(key.substr(loc+1,key.length()));
       is_smcmax_set = true;
       continue;
     }
-    if (key_sub == "soil_params.b") {
+    else if (key_sub == "soil_params.b") {
       this->bexp = std::stod(key.substr(loc+1,key.length()));
       assert (this->bexp > 0);
       is_bexp_set = true;
       continue;
     }
-    if (key_sub == "soil_params.satpsi") {  //Soil saturated matrix potential
+    else if (key_sub == "soil_params.satpsi") {  //Soil saturated matrix potential
       this->satpsi = std::stod(key.substr(loc+1,key.length()));
       is_satpsi_set = true;
       continue;
     }
 
-    if (key_sub == "soil_params.water_table") {  //Soil saturated matrix potential
-      this->water_table_m = std::stod(key.substr(loc+1,key.length()));
+    else if (key_sub == "soil_params.water_table") {
+      double wt = std::stod(key.substr(loc+1,key.length()));
+      this->water_table_m = new double[1];
+      this->water_table_m[0] = this->D - wt;
       is_wt_set = true;
       continue;
     }
-    
+
+    else if (key_sub == "smp_option") {  //Soil moisture profile option
+      this->smp_option = key.substr(loc+1,key.length());
+      is_smp_option_set = true;
+      continue;
+    }
   }
   fp.close();
-    
   
   if (!is_Z_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Z not set in the config file!");
+    std::stringstream errMsg;
+    errMsg << "Z not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
   }
   
   if (!is_smcmax_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("smcmax not set in the config file!");
+    std::stringstream errMsg;
+    errMsg << "smcmax not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
   }
   
   if (!is_bexp_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("bexp (Clapp-Hornberger's parameter) not set in the config file!");
-  }
-  if (!is_satpsi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("satpsi not set in the config file!");
+    std::stringstream errMsg;
+    errMsg << "bexp (Clapp-Hornberger's parameter) not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
   }
   
-  if (is_wt_set) {
-    this->water_table_m = this->D - this->water_table_m;
-    *this->water_table_prev_m = this->water_table_m;
+  if (!is_satpsi_set) {
+    std::stringstream errMsg;
+    errMsg << "satpsi not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
   }
-  else {
-    this->water_table_m = this->D - 1.9; //initial water table location 1.9 m deep, if not provided in the config file
-    this->water_table_prev_m = new double[1];
-    this->water_table_prev_m[0] = this->water_table_m;
+  
+  if (!is_wt_set) {
+    std::cout<<"Warning! Water table location not provided, defualt is 1.9 m deep. \n";
+    //initial water table location 1.9 m deep, if not provided in the config file
+    this->water_table_m = new double[1];
+    this->water_table_m[0] = this->D - 1.9; 
+  }
+  
+  if (!is_smp_option_set) {
+    std::stringstream errMsg;
+    errMsg << "soil moisture profile option not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
   }
 
-  //  for (int i=0; i < 4; i++)
-  //  std::cout<<"Z: "<<this->Z[i]<<"\n";
+  
   // check if the size of the input data is consistent
   assert (this->nz >0);
   
@@ -164,7 +179,7 @@ ReadVectorData(std::string key)
 {
   int pos =0;
   std::string delimiter = ",";
-  std::vector<double> value(0);
+  std::vector<double> value(0.0);
   std::string z1 = key;
 
   while (z1.find(delimiter) != std::string::npos) {
@@ -190,7 +205,7 @@ SetLayerThickness() {
   Dz[0] = Z[0];
   for (int i=0; i<n_z-1;i++) {
     Dz[i+1] = Z[i+1] - Z[i];
-  }
+    }
 }
 
 
@@ -201,18 +216,16 @@ SoilMoistureVerticalProfile()
   double lam=1.0/this->bexp; // pore distribution index
   double hb=this->satpsi * 100.; //7.82;  //[cm] //soil_res->hp;     
   double D= this->D * 100.;
-  double z1= *this->water_table_prev_m * 100; //previous water table location, [cm]
-  //double z0=0;        /* bottom of computational domain */
+  double z1= *this->water_table_m * 100; //previous water table location, [cm]
+  
   double Vmax=D* this->smcmax;
   double beta=1.0-lam;
   double alpha=pow(hb,lam)/beta;
   double tol=0.000001;
   double phi = this->smcmax;
   double V1 = 100.0 * (*this->storage_m - *this->storage_change_m);  //change in soil moisture
-  //  std::cout<<"water table: "<<*this->water_table_prev_m<<"\n";
-  //double Vinit=V1;
-  double V2= 100.0 * (*this->storage_m);  /* start-up condition before adding any water */
 
+  double V2= 100.0 * (*this->storage_m);  /* start-up condition before adding any water */
   int count = 0;
   
   if(V2>=Vmax) {
@@ -246,8 +259,8 @@ SoilMoistureVerticalProfile()
    } while (std::fabs(diff)>tol);
    
    z1=z2;  // reset to new water table elevation value
-   *this->water_table_prev_m = z1/100.;
-   //   std::cout<<"storage change: "<<*this->storage_change_m<<" "<<z1<<" "<<*this->water_table_prev_m <<"\n";
+   *this->water_table_m = z1/100.;
+
    /* get a high resolution curve */
    int z_hres = 1001;
    double *smct_temp = new double[z_hres];
@@ -270,9 +283,7 @@ SoilMoistureVerticalProfile()
        }
      }
    }
-   //std::cout<<"SMC: storage = "<< *this->storage_m <<"\n";
-   //   for (int i=0; i<this->nz; i++)
-   //std::cout<<"SMC = "<<this->SMCT[i]<<"\n ";
+   
 }
 
 

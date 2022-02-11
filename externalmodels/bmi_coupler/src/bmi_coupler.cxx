@@ -46,7 +46,7 @@ GetVarGrid(std::string name)
   if (name.compare("soil__storage") == 0 || name.compare("soil__storage_change") == 0 || name.compare("soil__water_table") == 0)
     return 0;
   else if (name.compare("soil__moisture_content_total") == 0)
-    return 0;
+    return 1;
   else
     return -1;
 }
@@ -96,7 +96,6 @@ GetVarNbytes(std::string name)
 
   itemsize = this->GetVarItemsize(name);
   gridsize = this->GetGridSize(this->GetVarGrid(name));
-
   return itemsize * gridsize;
 }
 
@@ -156,9 +155,9 @@ int BmiCoupler::
 GetGridSize(const int grid)
 {
   if (grid == 0)
-    return this->_model.shape[0];
-  if (grid == 1 || grid == 2) // this needs to be changed AJ..
     return 1;
+  else if (grid == 1)
+    return this->_model.shape[0];
   else
     return -1;
 }
@@ -258,6 +257,7 @@ GetValue (std::string name, void *dest)
 
   src = this->GetValuePtr(name);
   nbytes = this->GetVarNbytes(name);
+  
   memcpy (dest, src, nbytes);
 }
 
@@ -270,11 +270,9 @@ GetValuePtr (std::string name)
   else if (name.compare("soil__storage_change") == 0)
     return (void*)this->_model.storage_change_m;
   else  if (name.compare("soil__water_table") == 0)
-    return (void*)(&this->_model.water_table_m);
-  else if (name.compare("soil__moisture_content_total") == 0){
-    //std::cout<<"GetVal: "<<this->_model.SMCT[0]<<" "<<this->_model.SMCT[3]<<"\n";
+    return (void*)this->_model.water_table_m;
+  else if (name.compare("soil__moisture_content_total") == 0)
     return (void*)this->_model.SMCT;
-  }
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";

@@ -1,5 +1,5 @@
-#ifndef SMCP_INCLUDED
-#define SMCP_INCLUDED
+#ifndef SMCP_H_INCLUDED
+#define SMCP_H_INCLUDED
 
 
 #include <vector>
@@ -25,20 +25,18 @@ namespace smc_profile {
 
     double *storage_m;
     double *storage_change_m;
-    double water_table_m;
-    double *water_table_prev_m;
+    double *water_table_m;
     double *SMCT; // total soil moisture content
-
 
     double smcmax; //porosity
     double bexp;  // pore size distribution [-], beta exponent on Clapp-Hornberger (1978)
     double satpsi; // saturated capillary head (saturated moisture potential) [m]
     int nz;
     double D; //depth of the column/domain
-    //    double *Z; // depth
-    std::vector<double> Z;
+    //std::vector<double> Z;
+    double *Z;
     double *Dz; // layer thickness
-
+    std::string smp_option;
     
     SMCProfile();
     SMCProfile(std::string config_file);
@@ -46,14 +44,13 @@ namespace smc_profile {
     void SetLayerThickness();
     void InitFromConfigFile();
     
-    
     std::vector<double> ReadVectorData(std::string key);
     void ReadForcingData(std::string key);
 
     void SoilMoistureVerticalProfile();
       
-    static const double grav;
-    static const double wden;
+    //    static const double grav;
+    //    static const double wden;
     ~SMCProfile();
     
   };

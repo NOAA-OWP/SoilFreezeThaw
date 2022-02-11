@@ -21,8 +21,9 @@ int main(int argc, char *argv[])
   FILE *fp = fopen("bmi_file.out", "w");
   fprintf(fp, "Configuration file = %s\n", argv[1]);
   fprintf(fp, "Initializing... ");
+  
   model.Initialize(argv[1]);
-
+  
   fprintf(fp, "done\n");
 
   {
@@ -63,11 +64,14 @@ int main(int argc, char *argv[])
     double *storage_change_m_ptr = &storage_change_m;
     
     model.SetValue(var_name_s,storage_m_ptr);
+
+  
     model.SetValue(var_name_sc,storage_change_m_ptr);
 
+    
     var_s = (double *)model.GetValuePtr(var_name_s);
     var_sc = (double *)model.GetValuePtr(var_name_sc);
-    
+
     std::cout<<"storage: "<<*var_s<<"\n";
     std::cout<<"storage change: "<<*var_sc<<"\n";
 
@@ -81,21 +85,20 @@ int main(int argc, char *argv[])
     // Get values
     double *var_smc = new double[4];
     
-    model.GetValue("soil__moisture_content_total",&var_smc[0]);
+    model.GetValue(var_name_smc,&var_smc[0]);
 
 
     for (int i=0; i < shape[0]; i++) {
-      std::cout<<"Main: "<<var_smc[i]<<" "<<abs(var_smc[i] - SMCT[i])<<"\n";
-      assert (abs(var_smc[i] - SMCT[i]) < 1.E-6);
-      
+      std::cout<<"Main: "<<var_smc[i]<<" "<<SMCT[i]<<" "<<abs(var_smc[i] - SMCT[i])<<"\n";
+      assert (abs(var_smc[i] - SMCT[i]) < 1.E-6);     
       fprintf(fp, "%6.4e", var_smc[i]);
       fprintf(fp, "\n");
     }
-      
-      
-    }
-
+    
+  }
+  
   fprintf(fp, "Finalizing... ");
+
   model.Finalize();
   fprintf(fp, "done\n");
   fclose(fp);
