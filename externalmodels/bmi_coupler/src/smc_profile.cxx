@@ -27,7 +27,7 @@ SMCProfile()
   this->origin[1] = 0.;
   this->D =0.0;
   this->config_file = "";
-  this->smp_option= "";
+  this->smcp_option= "";
   this->nz=0;
 }
 
@@ -46,7 +46,7 @@ SMCProfile(std::string config_file)
   this->InitializeArrays();
   
   SetLayerThickness(); // get soil layer thickness
-  this->smp_option= "";
+  //  this->smcp_option= "";
 }
 
 void smc_profile::SMCProfile::
@@ -73,7 +73,7 @@ InitFromConfigFile()
   bool is_bexp_set = false;
   bool is_satpsi_set = false;
   bool is_wt_set = false;
-  bool is_smp_option_set = false;
+  bool is_smcp_option_set = false;
     
   while (fp) {
 
@@ -122,9 +122,9 @@ InitFromConfigFile()
       continue;
     }
 
-    else if (key_sub == "smp_option") {  //Soil moisture profile option
-      this->smp_option = key.substr(loc+1,key.length());
-      is_smp_option_set = true;
+    else if (key_sub == "smcp_option") {  //Soil moisture profile option
+      this->smcp_option = key.substr(loc+1,key.length());
+      is_smcp_option_set = true;
       continue;
     }
   }
@@ -161,7 +161,7 @@ InitFromConfigFile()
     this->water_table_m[0] = this->D - 1.9; 
   }
   
-  if (!is_smp_option_set) {
+  if (!is_smcp_option_set) {
     std::stringstream errMsg;
     errMsg << "soil moisture profile option not set in the config file "<< config_file << "\n";
     throw std::runtime_error(errMsg.str());
@@ -208,10 +208,27 @@ SetLayerThickness() {
     }
 }
 
-
-// given bulk soil moisture quantity, distribute vertically
 void smc_profile::SMCProfile::
-SoilMoistureVerticalProfile()
+SMPVertical()
+{
+  std::cout<<"SMP option "<<this->smcp_option<<"\n";
+  if (this->smcp_option == "conceptual" || this->smcp_option == "Conceptual") {
+    SMPFromConceptualReservoir();
+  }
+  else if (this->smcp_option == "calculated" || this->smcp_option == "Calculated") {
+    SMPFromCalculatedReservoir();
+  }
+  else {
+    std::stringstream errMsg;
+    errMsg << "Soil moisture profile OPTION provided in the config file "<< config_file << " is " << this->smcp_option<< ", which should be either \'concepttual\' or \'calculated\' " <<"\n";
+    throw std::runtime_error(errMsg.str());
+
+  }
+}
+
+// given bulk soil moisture quantity, distribute vertically using CFE conceptual storage
+void smc_profile::SMCProfile::
+SMPFromConceptualReservoir()
 {
   double lam=1.0/this->bexp; // pore distribution index
   double hb=this->satpsi * 100.; //7.82;  //[cm] //soil_res->hp;     
@@ -286,7 +303,12 @@ SoilMoistureVerticalProfile()
    
 }
 
+// given layered-based soil moisture (calculated storage such as LGAR), distribute vertically to match soil freeze thaw resolution
+void smc_profile::SMCProfile::
+SMPFromCalculatedReservoir()
+{
 
+}
 smc_profile::SMCProfile::
 ~SMCProfile()
 {}

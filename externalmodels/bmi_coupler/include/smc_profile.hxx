@@ -36,7 +36,7 @@ namespace smc_profile {
     //std::vector<double> Z;
     double *Z;
     double *Dz; // layer thickness
-    std::string smp_option;
+    std::string smcp_option;
     
     SMCProfile();
     SMCProfile(std::string config_file);
@@ -47,7 +47,11 @@ namespace smc_profile {
     std::vector<double> ReadVectorData(std::string key);
     void ReadForcingData(std::string key);
 
-    void SoilMoistureVerticalProfile();
+    void SMPVertical(); //SMP -> Soil Moisture Profile
+
+    void SMPFromConceptualReservoir();
+
+    void SMPFromCalculatedReservoir();
       
     //    static const double grav;
     //    static const double wden;

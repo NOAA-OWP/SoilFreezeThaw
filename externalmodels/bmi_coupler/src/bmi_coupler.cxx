@@ -22,14 +22,14 @@ Initialize (std::string config_file)
 void BmiCoupler::
 Update()
 {
-  this->_model.SoilMoistureVerticalProfile();
+  this->_model.SMPVertical();
 }
 
 
 void BmiCoupler::
 UpdateUntil(double t)
 {
-  this->_model.SoilMoistureVerticalProfile();
+  this->_model.SMPVertical();
 }
 
 
