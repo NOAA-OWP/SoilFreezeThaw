@@ -74,7 +74,8 @@ InitFromConfigFile()
   bool is_satpsi_set = false;
   bool is_wt_set = false;
   bool is_smcp_option_set = false;
-    
+  bool is_calc_linear_set = false;
+  
   while (fp) {
 
     std::string key;
@@ -127,6 +128,12 @@ InitFromConfigFile()
       is_smcp_option_set = true;
       continue;
     }
+
+    else if (key_sub == "calculated_linear") {  //Soil moisture profile option
+      this->calc_linear = stod(key.substr(loc+1,key.length()));
+      is_calc_linear_set = true;
+      continue;
+    }
   }
   fp.close();
   
@@ -167,6 +174,12 @@ InitFromConfigFile()
     throw std::runtime_error(errMsg.str());
   }
 
+  /*
+  if(is_smcp_option_set) {
+    if (this->calc_linear)
+    //if (this->smcp_option != "calculated_linear")
+    
+  }*/
   
   // check if the size of the input data is consistent
   assert (this->nz >0);
@@ -308,7 +321,126 @@ void smc_profile::SMCProfile::
 SMPFromCalculatedReservoir()
 {
 
+  double lam=1.0/this->bexp; // pore distribution index
+  double hb=this->satpsi; //7.82;  //[cm] //soil_res->hp;
+  double phi = this->smcmax;
+  
+  double z_layers[] = {0.25, 0.6, 1.0, 2.0};
+  double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
+  double D = 6.0; // depth of the SFT model
+  double Dl = 2.0; // depth of the layer model
+  int nlayer = 4;
+  std::vector<double> z_layers_n(1,0.0);
+  
+  for (int i=0; i <this->nz; i++)
+    z_layers_n.push_back(z_layers[i]);
+
+
+  std::vector<double> z_res; // from SFT
+  for (int i=0; i < 61; i++)
+    z_res.push_back((i+1)*0.1);
+
+  std::vector<double> smc_sft;
+  int c =0;
+  double delta =0.0;
+  
+  // piece-wise constant (vertically)
+  if (!this->calc_linear) {
+    bool layers_flag=true;
+    for (int i=0; i < 61; i++){
+
+      if (z_res[i] < z_layers[c]) {
+	smc_sft.push_back(smc_layers[c]);
+      }
+      else if (z_res[i] < Dl) {
+	double v_avg = 0.5*(smc_layers[c] + smc_layers[c+1]); // interface of layers
+	smc_sft.push_back(v_avg);
+	c++;
+      }
+      else {
+	double zz = D - z_res[i];
+	double theta = delta + std::pow((hb/zz),lam)*phi;
+      
+	if (layers_flag) { // to make sure the moisture curve below Dl start at moisture value at Dl for continuity
+	  delta = 0.0 - theta;
+	  theta = theta + delta;
+	  layers_flag=false;
+	}
+	
+	double theta1 = smc_layers[nlayer-1] +  theta; //pow((hb/z2),lam)*phi
+	double theta2 = std::min(phi, theta1);
+	if (z_res[i] > hb)
+	  smc_sft.push_back(theta2);
+	else
+	  smc_sft.push_back(phi);
+      }
+      std::cout<<"cons. "<<smc_sft[i]<<","<<" \n";
+
+    }
+  }
+  else {
+    bool layers_flag=true;
+    double t_v=0.0;
+    
+    //smc_sft.push_back(smc_layers[0]);
+    for (int i=0; i < 61; i++){
+      
+      if (z_res[i] <= z_layers[c]) {
+	
+	if (c == nlayer-1)
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c], z_res[i]);// interface of layers
+	else
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c+1], z_res[i]);
+	smc_sft.push_back(t_v);
+	
+      }
+      else if (z_res[i] < Dl) {
+	
+	c++;
+	
+	if (c == nlayer-1)
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c], z_res[i]);// interface of layers
+	else
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c+1], z_res[i]);// interface of layers
+	smc_sft.push_back(t_v);
+	
+      }
+      else {
+	
+	double zz = D - z_res[i];
+	
+	double theta = delta + std::pow((hb/zz),lam)*phi;
+	
+	if (layers_flag) { // to make sure the moisture curve below Dl start at moisture value at Dl for continuity
+	  delta = 0.0 - theta;
+	  theta = theta + delta;
+	  layers_flag = false;
+	  
+	}
+	double theta1 = smc_layers[nlayer-1] +  theta;
+	double theta2 = std::min(phi, theta1);
+	if (z_res[i] > hb)
+	  smc_sft.push_back(theta2);
+	else
+	  smc_sft.push_back(phi);
+	
+      }
+       std::cout<<"linear "<<smc_sft[i]<<","<<" \n";
+      
+      }
+      
+    }
 }
+
+double smc_profile::SMCProfile::
+LinearInterpolation(double z1, double z2, double t1, double t2, double z)
+{
+
+  double m = (t2 - t1) / (z2 - z1);
+  return t1 + m * (z - z1);
+
+}
+
 smc_profile::SMCProfile::
 ~SMCProfile()
 {}
