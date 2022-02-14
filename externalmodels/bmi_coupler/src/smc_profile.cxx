@@ -76,7 +76,7 @@ InitFromConfigFile()
   bool is_satpsi_set = false;
   bool is_wt_set = false;
   bool is_smcp_option_set = false;
-  bool is_calc_linear_set = false;
+  bool is_layered_linear_set = false; // option for linear or piece-wise constant layered profile
   
   while (fp) {
 
@@ -145,9 +145,9 @@ InitFromConfigFile()
       continue;
     }
 
-    else if (key_sub == "calculated_linear") {  //Soil moisture profile option
-      this->calc_linear = stod(key.substr(loc+1,key.length()));
-      is_calc_linear_set = true;
+    else if (key_sub == "layered_linear") {  //Soil moisture profile option
+      this->layered_linear = stod(key.substr(loc+1,key.length()));
+      is_layered_linear_set = true;
       continue;
     }
   }
@@ -250,12 +250,12 @@ SMPVertical()
   if (this->smcp_option == "conceptual" || this->smcp_option == "Conceptual") {
     SMPFromConceptualReservoir();
   }
-  else if (this->smcp_option == "calculated" || this->smcp_option == "Calculated") {
-    SMPFromCalculatedReservoir();
+  else if (this->smcp_option == "layered" || this->smcp_option == "Layered") {
+    SMPFromLayeredReservoir();
   }
   else {
     std::stringstream errMsg;
-    errMsg << "Soil moisture profile OPTION provided in the config file "<< config_file << " is " << this->smcp_option<< ", which should be either \'concepttual\' or \'calculated\' " <<"\n";
+    errMsg << "Soil moisture profile OPTION provided in the config file "<< config_file << " is " << this->smcp_option<< ", which should be either \'concepttual\' or \'layered\' " <<"\n";
     throw std::runtime_error(errMsg.str());
 
   }
@@ -338,9 +338,9 @@ SMPFromConceptualReservoir()
    
 }
 
-// given layered-based soil moisture (calculated storage such as LGAR), distribute vertically to match soil freeze thaw resolution
+// given layered-based soil moisture (layered storage such as LGAR), distribute vertically to match soil freeze thaw resolution
 void smc_profile::SMCProfile::
-SMPFromCalculatedReservoir()
+SMPFromLayeredReservoir()
 {
 
   double lam=1.0/this->bexp; // pore distribution index
@@ -368,7 +368,7 @@ SMPFromCalculatedReservoir()
   double delta =0.0;
   
   // piece-wise constant (vertically)
-  if (!this->calc_linear) {
+  if (!this->layered_linear) {
     bool layers_flag=true;
     for (int i=0; i < sft_ncells; i++){
 

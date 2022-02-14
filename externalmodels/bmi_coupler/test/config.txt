@@ -5,5 +5,5 @@ Z=0.1,0.4,1.0,2.0,3.0,4.0,5.0,6.0
 Z_layers=0.25,0.6,1.0,2.0
 soil_params.water_table=1.9
 #smcp_option=conceptual
-smcp_option=calculated
+smcp_option=layered
 calculated_linear=1

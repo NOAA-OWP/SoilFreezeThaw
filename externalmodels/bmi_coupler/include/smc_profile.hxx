@@ -41,7 +41,7 @@ namespace smc_profile {
     double *Z_layers;
     double *Dz; // layer thickness
     std::string smcp_option;
-    bool calc_linear;
+    bool layered_linear;
     
     SMCProfile();
     SMCProfile(std::string config_file);
@@ -56,7 +56,7 @@ namespace smc_profile {
 
     void SMPFromConceptualReservoir();
 
-    void SMPFromCalculatedReservoir();
+    void SMPFromLayeredReservoir();
 
     double LinearInterpolation(double z1, double z2, double t1, double t2, double z);
     //    static const double grav;
