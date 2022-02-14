@@ -47,7 +47,9 @@ GetVarGrid(std::string name)
     return 0;
   else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return 1;
-  else
+  else if (name.compare("soil__smc_profile_option_bmi") == 0)
+    return 2;
+  else 
     return -1;
 }
 
@@ -59,6 +61,8 @@ GetVarType(std::string name)
     return "double";
   else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return "double";
+  else if (name.compare("soil__smc_profile_option_bmi") == 0)
+    return "int";
   else
     return "";
 }
@@ -71,6 +75,8 @@ GetVarItemsize(std::string name)
     return sizeof(double);
   else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return sizeof(double);
+  else if (name.compare("soil__smc_profile_option_bmi") == 0)
+    return sizeof(int);
   else
     return 0;
 }
@@ -156,7 +162,7 @@ GetGridRank(const int grid)
 int BmiCoupler::
 GetGridSize(const int grid)
 {
-  if (grid == 0)
+  if (grid == 0 || grid == 2)
     return 1;
   else if (grid == 1)
     return this->_model.shape[0];
@@ -277,6 +283,8 @@ GetValuePtr (std::string name)
     return (void*)this->_model.SMCT;
   else if (name.compare("soil__moisture_content_layered") == 0)
     return (void*)this->_model.SMCL;
+  else if (name.compare("soil__smc_profile_option_bmi") == 0)
+    return (void*)this->_model.smc_profile_option_bmi;
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";

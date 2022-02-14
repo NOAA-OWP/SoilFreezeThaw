@@ -382,6 +382,8 @@ GetIceFraction()
 {
 
   double val = 0;
+  this->ice_fraction_schaake = 0.0; // set it to zero
+  this->ice_fraction_xinan = 0.0;
   
   if (this->ice_fraction_scheme == "Schaake") {
     *this->ice_fraction_scheme_bmi = 1;
@@ -391,7 +393,6 @@ GetIceFraction()
   }
   
   if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
-    
     val = this->SMCIce[0]*this->Z[0];
     for (int i =1; i < nz; i++) {
       val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
@@ -429,6 +430,14 @@ Advance()
     this->is_SMC_BMI_set = false;
   }
 
+  /*
+  if (this->is_SMC_BMI_set) {
+    for (int i=0; i<this->nz;i++) {
+      this->SMCLiq[i] = this->SMCT[i] - this->SMCIce[i];
+      //      this->SMCIce[i] = 0.0;
+    }
+  }*/
+  
   // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
   ThermalConductivity(); // initialize thermal conductivities
 

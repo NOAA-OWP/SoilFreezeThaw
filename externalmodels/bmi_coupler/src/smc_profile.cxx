@@ -27,14 +27,16 @@ SMCProfile()
   this->origin[1] = 0.;
   this->D =0.0;
   this->config_file = "";
-  this->smcp_option= "";
+  this->smc_profile= "";
   this->nz=0;
+  this->smc_profile_option_bmi= new int[1];
 }
 
 smc_profile::SMCProfile::
 SMCProfile(std::string config_file)
 {
   this->config_file = config_file;
+  this->smc_profile_option_bmi= new int[1];
   this->InitFromConfigFile();
   this->shape[0] = this->nz;
   this->shape[1] = 1;
@@ -46,7 +48,6 @@ SMCProfile(std::string config_file)
   this->InitializeArrays();
   
   SetLayerThickness(); // get soil layer thickness
-  //  this->smcp_option= "";
 }
 
 void smc_profile::SMCProfile::
@@ -75,8 +76,8 @@ InitFromConfigFile()
   bool is_bexp_set = false;
   bool is_satpsi_set = false;
   bool is_wt_set = false;
-  bool is_smcp_option_set = false;
-  bool is_layered_linear_set = false; // option for linear or piece-wise constant layered profile
+  bool is_smc_profile_set = false;
+  bool is_smc_profile_option_set = false; // option for linear or piece-wise constant layered profile
   
   while (fp) {
 
@@ -139,15 +140,15 @@ InitFromConfigFile()
       continue;
     }
 
-    else if (key_sub == "smcp_option") {  //Soil moisture profile option
-      this->smcp_option = key.substr(loc+1,key.length());
-      is_smcp_option_set = true;
+    else if (key_sub == "smc_profile") {  //Soil moisture profile option
+      this->smc_profile = key.substr(loc+1,key.length());
+      is_smc_profile_set = true;
       continue;
     }
 
-    else if (key_sub == "layered_linear") {  //Soil moisture profile option
-      this->layered_linear = stod(key.substr(loc+1,key.length()));
-      is_layered_linear_set = true;
+    else if (key_sub == "smc_profile_option") {  //Soil moisture profile option
+      this->smc_profile_option = key.substr(loc+1,key.length());
+      is_smc_profile_option_set = true;
       continue;
     }
   }
@@ -190,18 +191,19 @@ InitFromConfigFile()
     this->water_table_m[0] = this->D - 1.9; 
   }
   
-  if (!is_smcp_option_set) {
+  if (!is_smc_profile_set) {
     std::stringstream errMsg;
     errMsg << "soil moisture profile option not set in the config file "<< config_file << "\n";
     throw std::runtime_error(errMsg.str());
   }
 
-  /*
-  if(is_smcp_option_set) {
-    if (this->calc_linear)
-    //if (this->smcp_option != "calculated_linear")
-    
-  }*/
+  
+  if(is_smc_profile_set) {
+    if (this->smc_profile == "conceptual" || this->smc_profile == "Conceptual")
+      *this->smc_profile_option_bmi=1;
+    else if (this->smc_profile == "layered" || this->smc_profile == "Layered")
+      *this->smc_profile_option_bmi=2;
+  }
   
   // check if the size of the input data is consistent
   assert (this->nz >0);
@@ -246,16 +248,16 @@ SetLayerThickness() {
 void smc_profile::SMCProfile::
 SMPVertical()
 {
-  std::cout<<"SMP option "<<this->smcp_option<<"\n";
-  if (this->smcp_option == "conceptual" || this->smcp_option == "Conceptual") {
+  //std::cout<<"SMP option "<<this->smc_profile<<"\n";
+  if (this->smc_profile == "conceptual" || this->smc_profile == "Conceptual") {
     SMPFromConceptualReservoir();
   }
-  else if (this->smcp_option == "layered" || this->smcp_option == "Layered") {
+  else if (this->smc_profile == "layered" || this->smc_profile == "Layered") {
     SMPFromLayeredReservoir();
   }
   else {
     std::stringstream errMsg;
-    errMsg << "Soil moisture profile OPTION provided in the config file "<< config_file << " is " << this->smcp_option<< ", which should be either \'concepttual\' or \'layered\' " <<"\n";
+    errMsg << "Soil moisture profile OPTION provided in the config file "<< config_file << " is " << this->smc_profile<< ", which should be either \'concepttual\' or \'layered\' " <<"\n";
     throw std::runtime_error(errMsg.str());
 
   }
@@ -356,7 +358,8 @@ SMPFromLayeredReservoir()
   for (int i=0; i <this->nz_layers; i++)
     z_layers_n.push_back(Z_layers[i]);
 
-  
+  //for (int i=0; i <this->nz_layers; i++)
+  //  std::cout<<"SMCL "<<this->SMCL[i] <<"\n";
   std::vector<double> z_res; // from SFT
   int sft_ncells = 60;
   
@@ -368,7 +371,7 @@ SMPFromLayeredReservoir()
   double delta =0.0;
   
   // piece-wise constant (vertically)
-  if (!this->layered_linear) {
+  if (this->smc_profile_option == "constant" || this->smc_profile_option == "Constant") {
     bool layers_flag=true;
     for (int i=0; i < sft_ncells; i++){
 
@@ -401,7 +404,7 @@ SMPFromLayeredReservoir()
 
     }
   }
-  else {
+  else if (this->smc_profile_option == "linear" || this->smc_profile_option == "Linear") {
     // linearly interpoloted
     bool layers_flag=true;
     double t_v=0.0;
@@ -450,11 +453,26 @@ SMPFromLayeredReservoir()
 	  smc_sft.push_back(phi);
 	
       }
-       std::cout<<smc_sft[i-1]<<",";
+      //std::cout<<smc_sft[i-1]<<",";
       
       }
       
     }
+  else {
+    std::stringstream errMsg;
+    errMsg << "Soil moisture profile "<< this->smc_profile << " works with options \'constant\' and \'linear\'. Provide at least one option in the config file "<< config_file <<"\n";
+    throw std::runtime_error(errMsg.str());
+  }
+
+  // mapping the updated soil moisture curve to the heat conduction discretization depth (Dz)
+   for (int i=0; i<this->nz; i++) {
+     for (int j=0; j<sft_ncells; j++) {
+       if (z_res[j]  >= (D - this->Z[i]*100) ) {
+	 this->SMCT[i] = smc_sft[j];
+	 break;
+       }
+     }
+   }
 }
 
 double smc_profile::SMCProfile::

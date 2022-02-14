@@ -104,6 +104,8 @@ void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
 ***************************************************************/
 void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model,BmiCoupler coupler_bmi) {
 
+  enum {Constant=1, Linear=2};
+  
   int nz = 0;
   int *nz_ptr = &nz;
   ftm_bmi_model.GetValue("soil__num_cells", nz_ptr);
@@ -112,18 +114,31 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   double storage_change = 0.0;
   double *storage_ptr = &storage;
   double *storage_change_ptr = &storage_change;
-
+  int smc_option_bmi=-1;
+  int *smc_option_bmi_ptr = &smc_option_bmi;
+   
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", storage_ptr);
   cfe_bmi_model->get_value(cfe_bmi_model, "SMCT_CHANGE", storage_change_ptr);
-  //std::cout<<"SMCT: "<<storage<<" "<<storage_change<<" "<<nz<<"\n";
+  
   coupler_bmi.SetValue("soil__storage",storage_ptr);
   coupler_bmi.SetValue("soil__storage_change",storage_change_ptr);
-  coupler_bmi.Update();
+  coupler_bmi.GetValue("soil__smc_profile_option_bmi",smc_option_bmi_ptr);
 
+  
+  if (smc_option_bmi == Constant)
+    coupler_bmi.Update();
+  else if (smc_option_bmi == Linear) {
+    double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
+    //double smc_layers[] = {0.4, 0.4, 0.4, 0.43};
+    coupler_bmi.SetValue("soil__moisture_content_layered",&smc_layers[0]);
+    coupler_bmi.Update();
+  }
+    
   double *smct = new double[nz];
     
   coupler_bmi.GetValue("soil__moisture_content_total",&smct[0]);
   ftm_bmi_model.SetValue("soil__moisture_content_total", &smct[0]);
+
 }
 
 /***************************************************************

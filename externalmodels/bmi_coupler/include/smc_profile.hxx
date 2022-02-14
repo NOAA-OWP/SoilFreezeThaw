@@ -40,8 +40,9 @@ namespace smc_profile {
     double *Z;
     double *Z_layers;
     double *Dz; // layer thickness
-    std::string smcp_option;
-    bool layered_linear;
+    std::string smc_profile;
+    std::string smc_profile_option;
+    int *smc_profile_option_bmi;
     
     SMCProfile();
     SMCProfile(std::string config_file);
