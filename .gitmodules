@@ -1,0 +1,3 @@
+[submodule "cfe"]
+	path = cfe
+	url = https://github.com/NOAA-OWP/cfe
