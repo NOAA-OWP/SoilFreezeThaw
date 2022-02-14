@@ -20,7 +20,8 @@ class BmiCoupler : public bmi::Bmi {
       this->input_var_names[0] = "soil__storage";
       this->input_var_names[1] = "soil__storage_change";
       this->input_var_names[2] = "soil__water_table";
-	    
+      this->input_var_names[3] = "soil__moisture_content_layered";
+      
       this->output_var_names[0] = "soil__moisture_content_total";
     };
 
@@ -78,10 +79,10 @@ class BmiCoupler : public bmi::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     smc_profile::SMCProfile _model;
-    static const int input_var_name_count = 3;
+    static const int input_var_name_count = 4;
     static const int output_var_name_count = 1;
 
-    std::string input_var_names[3];
+    std::string input_var_names[4];
     std::string output_var_names[1];
 };
 

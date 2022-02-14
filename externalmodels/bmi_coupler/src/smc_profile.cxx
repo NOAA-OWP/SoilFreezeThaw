@@ -54,12 +54,13 @@ InitializeArrays(void)
 {
   this->Dz = new double[nz];
   this->SMCT = new double[nz];
+  this->SMCL = new double[nz];
   this->storage_m = new double[1];
   this->storage_change_m = new double[1];
   *this->storage_m = 0.0;
   *this->storage_change_m = 0.0;
-  for (int i=0;i<nz;i++)
-    this->SMCT[i] = 0.0;
+  //  for (int i=0;i<nz;i++)
+  //  this->SMCT[i] = 0.0;
 }
 
 void smc_profile::SMCProfile::
@@ -69,6 +70,7 @@ InitFromConfigFile()
   fp.open(config_file);
   
   bool is_Z_set = false;
+  bool is_Z_layers_set = false;
   bool is_smcmax_set = false;
   bool is_bexp_set = false;
   bool is_satpsi_set = false;
@@ -96,6 +98,20 @@ InitFromConfigFile()
       this->nz = vec.size();
       this->D = this->Z[this->nz-1];
       is_Z_set = true;
+      continue;
+    }
+    else if (key_sub == "Z_layers") {
+      std::string tmp_key = key.substr(loc+1,key.length());
+      std::vector<double> vec = ReadVectorData(tmp_key);
+      
+      this->Z_layers = new double[vec.size()];
+      
+      for (unsigned int i=0; i < vec.size(); i++)
+	this->Z_layers[i] = vec[i];
+      
+      this->nz_layers = vec.size();
+      this->D_layers = this->Z_layers[this->nz_layers-1];
+      is_Z_layers_set = true;
       continue;
     }
     else if (key_sub == "soil_params.smcmax") {
@@ -140,6 +156,12 @@ InitFromConfigFile()
   if (!is_Z_set) {
     std::stringstream errMsg;
     errMsg << "Z not set in the config file "<< config_file << "\n";
+    throw std::runtime_error(errMsg.str());
+  }
+
+  if (!is_Z_layers_set) {
+    std::stringstream errMsg;
+    errMsg << "Z layers not set in the config file "<< config_file << "\n";
     throw std::runtime_error(errMsg.str());
   }
   
@@ -325,19 +347,20 @@ SMPFromCalculatedReservoir()
   double hb=this->satpsi; //7.82;  //[cm] //soil_res->hp;
   double phi = this->smcmax;
   
-  double z_layers[] = {0.25, 0.6, 1.0, 2.0};
-  double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
-  double D = 6.0; // depth of the SFT model
-  double Dl = 2.0; // depth of the layer model
-  int nlayer = 4;
+  double D = this->D; //6.0; // depth of the SFT model
+  double Dl = this->D_layers; //2.0; // depth of the layer model
+  int nlayer = this->nz_layers;
+  
   std::vector<double> z_layers_n(1,0.0);
   
-  for (int i=0; i <this->nz; i++)
-    z_layers_n.push_back(z_layers[i]);
+  for (int i=0; i <this->nz_layers; i++)
+    z_layers_n.push_back(Z_layers[i]);
 
-
+  
   std::vector<double> z_res; // from SFT
-  for (int i=0; i < 61; i++)
+  int sft_ncells = 60;
+  
+  for (int i=0; i < sft_ncells; i++)
     z_res.push_back((i+1)*0.1);
 
   std::vector<double> smc_sft;
@@ -347,13 +370,13 @@ SMPFromCalculatedReservoir()
   // piece-wise constant (vertically)
   if (!this->calc_linear) {
     bool layers_flag=true;
-    for (int i=0; i < 61; i++){
+    for (int i=0; i < sft_ncells; i++){
 
-      if (z_res[i] < z_layers[c]) {
-	smc_sft.push_back(smc_layers[c]);
+      if (z_res[i] < Z_layers[c]) {
+	smc_sft.push_back(SMCL[c]);
       }
       else if (z_res[i] < Dl) {
-	double v_avg = 0.5*(smc_layers[c] + smc_layers[c+1]); // interface of layers
+	double v_avg = 0.5*(SMCL[c] + SMCL[c+1]); // interface of layers
 	smc_sft.push_back(v_avg);
 	c++;
       }
@@ -367,7 +390,7 @@ SMPFromCalculatedReservoir()
 	  layers_flag=false;
 	}
 	
-	double theta1 = smc_layers[nlayer-1] +  theta; //pow((hb/z2),lam)*phi
+	double theta1 = SMCL[nlayer-1] +  theta; //pow((hb/z2),lam)*phi
 	double theta2 = std::min(phi, theta1);
 	if (z_res[i] > hb)
 	  smc_sft.push_back(theta2);
@@ -379,18 +402,20 @@ SMPFromCalculatedReservoir()
     }
   }
   else {
+    // linearly interpoloted
     bool layers_flag=true;
     double t_v=0.0;
     
-    //smc_sft.push_back(smc_layers[0]);
-    for (int i=0; i < 61; i++){
+    smc_sft.push_back(SMCL[0]); // SFT first cell gets the top-layer soil moisture
+    
+    for (int i=1; i < sft_ncells; i++){
       
-      if (z_res[i] <= z_layers[c]) {
+      if (z_res[i] <= Z_layers[c]) {
 	
 	if (c == nlayer-1)
-	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c], z_res[i]);// interface of layers
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], SMCL[c], SMCL[c], z_res[i]);// interface of layers
 	else
-	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c+1], z_res[i]);
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], SMCL[c], SMCL[c+1], z_res[i]);
 	smc_sft.push_back(t_v);
 	
       }
@@ -399,9 +424,9 @@ SMPFromCalculatedReservoir()
 	c++;
 	
 	if (c == nlayer-1)
-	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c], z_res[i]);// interface of layers
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], SMCL[c], SMCL[c], z_res[i]);// interface of layers
 	else
-	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], smc_layers[c], smc_layers[c+1], z_res[i]);// interface of layers
+	  t_v = LinearInterpolation(z_layers_n[c], z_layers_n[c+1], SMCL[c], SMCL[c+1], z_res[i]);// interface of layers
 	smc_sft.push_back(t_v);
 	
       }
@@ -417,7 +442,7 @@ SMPFromCalculatedReservoir()
 	  layers_flag = false;
 	  
 	}
-	double theta1 = smc_layers[nlayer-1] +  theta;
+	double theta1 = SMCL[nlayer-1] +  theta;
 	double theta2 = std::min(phi, theta1);
 	if (z_res[i] > hb)
 	  smc_sft.push_back(theta2);
@@ -425,7 +450,7 @@ SMPFromCalculatedReservoir()
 	  smc_sft.push_back(phi);
 	
       }
-       std::cout<<"linear "<<smc_sft[i]<<","<<" \n";
+       std::cout<<smc_sft[i-1]<<",";
       
       }
       

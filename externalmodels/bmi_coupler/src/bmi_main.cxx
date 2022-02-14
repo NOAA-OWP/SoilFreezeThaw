@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     std::string var_name_sc = "soil__storage_change";
     std::string var_name_wt = "soil__water_table";
     std::string var_name_smc = "soil__moisture_content_total";
+    std::string var_name_smcl = "soil__moisture_content_layered";
     
     int grid, rank, *shape;
     double *var_s = NULL;
@@ -47,6 +48,7 @@ int main(int argc, char *argv[])
     fprintf(fp, "variable = %s\n", var_name_sc.c_str());
     fprintf(fp, "variable = %s\n", var_name_wt.c_str());
     fprintf(fp, "variable = %s\n", var_name_smc.c_str());
+    fprintf(fp, "variable = %s\n", var_name_smcl.c_str());
     
     grid = model.GetVarGrid(var_name_s);
 
@@ -62,12 +64,13 @@ int main(int argc, char *argv[])
     double storage_change_m = -0.000472;
     double *storage_m_ptr = &storage_m;
     double *storage_change_m_ptr = &storage_change_m;
+    double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
     
     model.SetValue(var_name_s,storage_m_ptr);
 
-  
     model.SetValue(var_name_sc,storage_change_m_ptr);
 
+    model.SetValue(var_name_smcl,&smc_layers[0]);
     
     var_s = (double *)model.GetValuePtr(var_name_s);
     var_sc = (double *)model.GetValuePtr(var_name_sc);

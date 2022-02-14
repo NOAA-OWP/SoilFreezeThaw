@@ -27,14 +27,18 @@ namespace smc_profile {
     double *storage_change_m;
     double *water_table_m;
     double *SMCT; // total soil moisture content
-
+    double *SMCL; // total layered-soil moisture content
+    
     double smcmax; //porosity
     double bexp;  // pore size distribution [-], beta exponent on Clapp-Hornberger (1978)
     double satpsi; // saturated capillary head (saturated moisture potential) [m]
     int nz;
+    int nz_layers;
     double D; //depth of the column/domain
+    double D_layers; // depth of the last layer
     //std::vector<double> Z;
     double *Z;
+    double *Z_layers;
     double *Dz; // layer thickness
     std::string smcp_option;
     bool calc_linear;

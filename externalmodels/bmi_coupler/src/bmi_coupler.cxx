@@ -45,7 +45,7 @@ GetVarGrid(std::string name)
 {
   if (name.compare("soil__storage") == 0 || name.compare("soil__storage_change") == 0 || name.compare("soil__water_table") == 0)
     return 0;
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return 1;
   else
     return -1;
@@ -57,7 +57,7 @@ GetVarType(std::string name)
 {
    if (name.compare("soil__storage") == 0 || name.compare("soil__storage_change") == 0 || name.compare("soil__water_table") == 0)
     return "double";
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return "double";
   else
     return "";
@@ -69,7 +69,7 @@ GetVarItemsize(std::string name)
 {
   if (name.compare("soil__storage") == 0 || name.compare("soil__storage_change") == 0 || name.compare("soil__water_table") == 0)
     return sizeof(double);
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return sizeof(double);
   else
     return 0;
@@ -81,7 +81,7 @@ GetVarUnits(std::string name)
 {
   if (name.compare("soil__storage") == 0 || name.compare("soil__storage_change") == 0 || name.compare("soil__water_table") == 0)
     return "m";
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("soil__moisture_content_total") == 0 || name.compare("soil__moisture_content_layered") == 0)
     return "";
   else
     return "";
@@ -109,6 +109,8 @@ GetVarLocation(std::string name)
     return "node";
   else if (name.compare("soil__moisture_content_total") == 0)
     return "domain";
+  else if (name.compare("soil__moisture_content_layered") == 0)
+    return "layers";
   else
     return "";
 }
@@ -273,6 +275,8 @@ GetValuePtr (std::string name)
     return (void*)this->_model.water_table_m;
   else if (name.compare("soil__moisture_content_total") == 0)
     return (void*)this->_model.SMCT;
+  else if (name.compare("soil__moisture_content_layered") == 0)
+    return (void*)this->_model.SMCL;
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";
