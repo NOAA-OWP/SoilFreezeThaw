@@ -4,7 +4,7 @@
 using namespace std;
 
 #include <string.h>
-#include "../../../include/bmi.hxx"
+#include "../../bmi/bmi.hxx"
 #include "smc_profile.hxx"
 
 namespace coupler {
@@ -14,7 +14,7 @@ class NotImplemented : public std::logic_error {
 };
 
 }
-class BmiCoupler : public bmi::Bmi {
+class BmiCoupler : public bmixx::Bmi {
   public:
     BmiCoupler() {
       this->input_var_names[0] = "soil__storage";

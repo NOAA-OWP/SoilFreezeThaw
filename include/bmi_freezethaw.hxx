@@ -4,7 +4,7 @@
 using namespace std;
 
 #include <string.h>
-#include "../../../include/bmi.hxx"
+#include "../bmi/bmi.hxx"
 #include "freezethaw.hxx"
 
 
@@ -14,7 +14,7 @@ class NotImplemented : public std::logic_error {
 };
 
 
-class BmiFreezeThaw : public bmi::Bmi {
+class BmiFreezeThaw : public bmixx::Bmi {
   public:
     BmiFreezeThaw() {
       this->input_var_names[0] = "soil__moisture_content_total";

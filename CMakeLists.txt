@@ -20,8 +20,10 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # add the executable
 
-## cfe + aorc + pet + ftm 
-add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./forcing_code/src/aorc.c ./forcing_code/src/bmi_aorc.c ./forcing_code/src/pet.c ./forcing_code/src/bmi_pet.c)
+## cfe + aorc + pet + ftm
+add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
+
+#add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./../cfe_owp/src/cfe.c ./../cfe_owp/src/bmi_cfe.c ./../cfe_owp/forcing_code/src/aorc.c ./../cfe_owp/forcing_code/src/bmi_aorc.c ./../cfe_owp/forcing_code/src/pet.c ./../cfe_owp/forcing_code/src/bmi_pet.c)
 
 add_library(cfelib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
 

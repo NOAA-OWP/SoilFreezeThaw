@@ -7,7 +7,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <vector>
-#include "../../../include/bmi.hxx"
+#include "../bmi/bmi.hxx"
 #include "../include/bmi_freezethaw.hxx"
 #include "../include/freezethaw.hxx"
 

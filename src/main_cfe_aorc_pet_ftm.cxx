@@ -1,23 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../include/cfe.h"
-#include "../include/bmi.h"
-#include "../include/bmi_cfe.h"
 
-#include "../forcing_code/include/pet.h"
-#include "../forcing_code/include/bmi_pet.h"
-#include "../forcing_code/include/aorc.h"
-#include "../forcing_code/include/bmi_aorc.h"
+/*
+#include "../cfe/include/cfe.h"
+#include "../cfe/include/bmi.h"
+#include "../cfe/include/bmi_cfe.h"
+
+#include "../cfe/forcing_code/include/pet.h"
+#include "../cfe/forcing_code/include/bmi_pet.h"
+#include "../cfe/forcing_code/include/aorc.h"
+#include "../cfe/forcing_code/include/bmi_aorc.h"
+*/
+#include "../../cfe_owp/include/cfe.h"
+#include "../../cfe_owp/include/bmi.h"
+#include "../../cfe_owp/include/bmi_cfe.h"
+
+#include "../../cfe_owp/forcing_code/include/pet.h"
+#include "../../cfe_owp/forcing_code/include/bmi_pet.h"
+#include "../../cfe_owp/forcing_code/include/aorc.h"
+#include "../../cfe_owp/forcing_code/include/bmi_aorc.h"
 
 
-#include "../include/bmi.hxx"
-#include "../externalmodels/bmi_freezethaw/include/bmi_freezethaw.hxx"
-#include "../externalmodels/bmi_freezethaw/include/freezethaw.hxx"
+#include "../bmi/bmi.hxx"
+#include "../include/bmi_freezethaw.hxx"
+#include "../include/freezethaw.hxx"
 
 
-#include "../externalmodels/bmi_coupler/include/bmi_coupler.hxx"
-#include "../externalmodels/bmi_coupler/include/smc_profile.hxx"
+#include "../smc_coupler/include/bmi_coupler.hxx"
+#include "../smc_coupler/include/smc_profile.hxx"
 
 #define FrozenFraction true
 /***************************************************************
@@ -54,6 +65,7 @@ void pass_forcing_from_aorc_to_cfe(Bmi *cfe_bmi_model, Bmi *aorc_bmi_model){
 /***************************************************************
     Function to pass the ice fraction from Freeze-thaw model to CFE using BMI.
 ***************************************************************/
+
 void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
   
   /********************************************************************
@@ -78,32 +90,14 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
     ftm_bmi_model.GetValue("soil__ice_fraction_xinan", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "soil__ice_fraction_xinan", ice_frac_ptr);
   }
-  
-}
-
-/***************************************************************
-    Function to pass the ice fraction from Freeze-thaw model to CFE using BMI.
-***************************************************************/
-void pass_smc_from_cfe_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
-  
-  /********************************************************************
-        TODO: Get variable names through BMI, then loop through those
-              so we don't re-write the get/set functions over and over
-  ********************************************************************/
-
-  int *nz = new int[1];
-  ftm_bmi_model.GetValue("soil__num_cells", &(nz[0]));
-  double *smct_v = new double[*nz];
-
-  cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", &smct_v[0]);
-  ftm_bmi_model.SetValue("soil__moisture_content_total", &(smct_v[0]));
+ 
 }
 
 /***************************************************************
     Function to pass the parameters from CFE to Coupler and get SMC from the Coupler to set in Freeze-thaw model.
 ***************************************************************/
 void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model,BmiCoupler coupler_bmi) {
-
+  
   enum {Constant=1, Linear=2};
   
   int nz = 0;
@@ -133,12 +127,12 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
     coupler_bmi.SetValue("soil__moisture_content_layered",&smc_layers[0]);
     coupler_bmi.Update();
   }
-    
+  
   double *smct = new double[nz];
     
   coupler_bmi.GetValue("soil__moisture_content_total",&smct[0]);
   ftm_bmi_model.SetValue("soil__moisture_content_total", &smct[0]);
-
+  
 }
 
 /***************************************************************
@@ -267,9 +261,11 @@ int
   printf("Get the information from the configuration here in Main\n");
   cfe_state_struct *cfe;
   cfe = (cfe_state_struct *) cfe_bmi_model->data;
+
   printf("forcing file for the CFE module %s\n", cfe->forcing_file);
   pet_model *pet;
   pet = (pet_model *) pet_bmi_model->data;
+
   printf("forcing file for the PET module %s\n", pet->forcing_file);
   aorc_model *aorc;
   aorc = (aorc_model *) aorc_bmi_model->data;
@@ -338,10 +334,9 @@ int
     if (cfe->verbosity > 0)
       print_cfe_flux_at_timestep(cfe);
     
-    //pass_smc_from_cfe_to_ftm(cfe_bmi_model, ftm_bmi_model);
 
-    //coulper_bmi.Update();
     pass_smc_from_coupler_to_ftm(cfe_bmi_model, ftm_bmi_model,coupler_bmi);
+
     ftm_bmi_model.Update(); // Update model 3
   }
 
