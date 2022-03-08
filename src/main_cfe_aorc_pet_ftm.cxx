@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/*
+
 #include "../cfe/include/cfe.h"
 #include "../cfe/include/bmi.h"
 #include "../cfe/include/bmi_cfe.h"
@@ -11,16 +11,6 @@
 #include "../cfe/forcing_code/include/bmi_pet.h"
 #include "../cfe/forcing_code/include/aorc.h"
 #include "../cfe/forcing_code/include/bmi_aorc.h"
-*/
-#include "../../cfe_owp/include/cfe.h"
-#include "../../cfe_owp/include/bmi.h"
-#include "../../cfe_owp/include/bmi_cfe.h"
-
-#include "../../cfe_owp/forcing_code/include/pet.h"
-#include "../../cfe_owp/forcing_code/include/bmi_pet.h"
-#include "../../cfe_owp/forcing_code/include/aorc.h"
-#include "../../cfe_owp/forcing_code/include/bmi_aorc.h"
-
 
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_freezethaw.hxx"
@@ -110,15 +100,14 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   double *storage_change_ptr = &storage_change;
   int smc_option_bmi=-1;
   int *smc_option_bmi_ptr = &smc_option_bmi;
-   
-  cfe_bmi_model->get_value(cfe_bmi_model, "SMCT", storage_ptr);
-  cfe_bmi_model->get_value(cfe_bmi_model, "SMCT_CHANGE", storage_change_ptr);
+  
+  cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE", storage_ptr);
+  cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE_CHANGE", storage_change_ptr);
   
   coupler_bmi.SetValue("soil__storage",storage_ptr);
   coupler_bmi.SetValue("soil__storage_change",storage_change_ptr);
   coupler_bmi.GetValue("soil__smc_profile_option_bmi",smc_option_bmi_ptr);
 
-  
   if (smc_option_bmi == Constant)
     coupler_bmi.Update();
   else if (smc_option_bmi == Linear) {

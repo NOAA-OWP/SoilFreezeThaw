@@ -1,5 +1,6 @@
 verbose=0
 forcing_file=./forcings/Laramie_14Jun09_to_15Apr12.csv
+#forcing_file=./forcings/cat87_01Dec2015.csv
 run_unit_tests=0
 wind_speed_measurement_height_m=2.0
 humidity_measurement_height_m=2.0
