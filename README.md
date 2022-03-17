@@ -1,9 +1,9 @@
 ## Building the code to run/test examples within the pseudo-framework (not the ngen framework!!)
 ### Steps to build soil freeze-thaw (SFT) model coupled with cfe and soil moisture profiles
 ### Setting up (cloning) external repos
-- git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw (for now: git checkout ajk/sft_only)
+- git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw (**for now: git checkout ajk/sft_only**)
 - git clone https://github.com/NOAA-OWP/cfe 
-- git checkout [ajk/cfe_icefraction](https://github.com/NOAA-OWP/cfe/tree/ajk/cfe_icefraction) (note: for the use of SFT in the pseudo-framework we currently use this special branch)
+- git checkout [cfe_soilfreezethaw](https://github.com/NOAA-OWP/cfe/tree/cfe_soilfreezethaw) (note: coupling SFT with CFE using the pseudo-framework requires this special cfe branch)
 - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_coupler
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug ../
