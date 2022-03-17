@@ -26,7 +26,7 @@ where Ke , Ksat, and Kdry are the Kersten number, dry, and saturated soil therma
 
 <img width="617" alt="eq3" src="https://user-images.githubusercontent.com/15165757/157316057-3aeffa5e-1b0e-4a29-b34a-12bda5d1e58e.png">
 
-here, θ, θ_w, and s are the total water content, the liquid water content and the maximum soil moisture content (porosity), respectively. The parameters  Cw, Cice, Cair, and Csoil are the volumetric heat capacities of water, ice, air, and soil, respectively. Table?
+here, θ, θ_w, and θ_s are the total water content, the liquid water content and the maximum soil moisture content (porosity), respectively. The parameters  Cw, Cice, Cair, and Csoil are the volumetric heat capacities of water, ice, air, and soil, respectively. Table?
 The diffusion equation (Eq. 1) is discretized using the Crank-Nicolson scheme (Ref), which is an implicit finite difference scheme and thus unconditionally stable.
 
 Freezing-point depression equation 
@@ -36,15 +36,15 @@ In unfrozen conditions, the liquid water content is equal to the total water con
 
 <img width="607" alt="eq4" src="https://user-images.githubusercontent.com/15165757/157316409-3c51afda-e64b-4f6b-bf9e-efa50466cae4.png">	
 
-where T and T0  are the soil temperature and freezing temperatures, respectively (Ref), g is the acceleration of gravity [m s-2] and Lf is the latent heat of fusion [J Kg-1]. The soil matric potential,  [m], as a function of soil moisture content is given by (ref: Clapp-Hornberger):
+where T and To  are the soil temperature and freezing temperatures, respectively (Ref), g is the acceleration of gravity [m s-2] and Lf is the latent heat of fusion [J Kg-1]. The soil matric potential, psi [m], as a function of soil moisture content is given by (ref: Clapp-Hornberger):
 
 <img width="594" alt="eq5" src="https://user-images.githubusercontent.com/15165757/157317205-a2b1e455-8714-4113-8c56-f7a2ef55533c.png">
 
-where s, s, and l are saturated soil matric potential [m], saturated soil moisture [-] (porosity), and soil liquid moisture [-], respectively. The exponent b is the Clapp-Hornberger parameter. According to the ‘freezing equals drying’ approximation (Ref), we equate Eq. (4) and Eq. (5) to obtain an expression for liquid water content:
+where Ψ_s,θ_s,and θ_l are saturated soil matric potential [m], saturated soil moisture [-] (porosity), and soil liquid moisture [-], respectively. The exponent b is the Clapp-Hornberger parameter. According to the ‘freezing equals drying’ approximation (Ref), we equate Eq. (4) and Eq. (5) to obtain an expression for liquid water content:
 
 <img width="626" alt="eq6" src="https://user-images.githubusercontent.com/15165757/157317016-3b8c0ad1-1f4b-4370-9773-c97aba0d0ee5.png">
 
 Equation (6) is called the “freezing-point depression equation” (Refs) and gives the maximum amount of liquid water (unfrozen soil moisture content) that can exist below the subfreezing temperature. The frozen soil moisture content (i, ice fraction) is given by:
-i= t- θl , where t is the total water content given by soil water retention curve: 
-t= θss-b for T>T0.
+θ_ice = θ_t- θ_l , where t is the total water content given by soil water retention curve: 
 
+<img width="385" alt="eq8" src="https://user-images.githubusercontent.com/15165757/158890563-0ff39857-c8d4-41fe-ab06-2f5548ec25a1.png">
