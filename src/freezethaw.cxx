@@ -108,38 +108,69 @@ InitFromConfigFile()
   bool is_IFS_set = false; //ice fraction scheme
     
   while (fp) {
+
+    std::string line;
+    std::string param_key, param_value, param_unit;
+
+    std::getline(fp, line);
+
+    int loc_eq = line.find("=") + 1;
+    int loc_u = line.find("[");
+    param_key = line.substr(0,line.find("="));
+
+    bool is_unit = line.find("[") != std::string::npos;
+
+    if (is_unit)
+      param_unit = line.substr(loc_u,line.find("]")+1);
+    else
+      param_unit = "";
+
+    param_value = line.substr(loc_eq,loc_u - loc_eq);
     
-    std::string key;
-    std::getline(fp, key);
-
-    int loc = key.find("=");
-    std::string key_sub = key.substr(0,key.find("="));
-
-    if (key_sub == "forcing_file") {
-      //this->forcing_file = key.substr(loc+1,key.length());
-      std::string tmp_key = key.substr(loc+1,key.length());
-      this->ReadForcingData(tmp_key);
+    //std::cout<<"VALUE: "<<param_key<<", "<<param_value<<", "<<param_unit<<"\n";
+    if (param_key == "forcing_file") {
+      //std::string tmp_key = line.substr(loc_eq,loc_u);
+      //this->ReadForcingData(tmp_key);
+      this->ReadForcingData(param_value);
       is_forcing_file_set = true;
       continue;
     }
-    if (key_sub == "SMC_BMI") {
+    if (param_key == "SMC_BMI") {
       this->is_SMC_BMI_set = true;
       continue;
     }
-    if (key_sub == "end_time_d") {
-      this->endtime = std::stod(key.substr(loc+1,key.length()));
-      this->endtime *= 86400;
+    if (param_key == "end_time") {
+      //this->endtime = std::stod(line.substr(loc_eq,loc_u));
+      this->endtime = std::stod(param_value);
+
+      if (param_unit == "[d]" || param_unit == "[day]") 
+	this->endtime *= 86400;
+      else if (param_unit == "[s]" || param_unit == "[sec]")
+	this->endtime *= 1.0;
+      else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
+	this->endtime *= 3600.0;
+
       is_endtime_set = true;
       continue;
     }
-    if (key_sub == "dt_s") {
-      this->dt = std::stod(key.substr(loc+1,key.length()));
+    if (param_key == "dt") {
+      //      this->dt = std::stod(line.substr(loc_eq,loc_u));
+      this->dt = std::stod(param_value);
+      if (param_unit == "[d]" || param_unit == "[day]")
+	this->dt *= 86400;
+      else if (param_unit == "[s]" || param_unit == "[sec]")
+	this->dt *= 1.0;
+      else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
+	this->dt *= 3600.0;
+      
       is_dt_set = true;
       continue;
     }
-    if (key_sub == "Z") {
-      std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = ReadVectorData(tmp_key);
+    if (param_key == "Z") {
+      //std::string tmp_key = line.substr(loc_eq,loc_u);
+      //std::vector<double> vec = ReadVectorData(tmp_key);
+      std::vector<double> vec = ReadVectorData(param_value);
+      
       this->Z = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
 	this->Z[i] = vec[i];
@@ -148,35 +179,37 @@ InitFromConfigFile()
       is_Z_set = true;
       continue;
     }
-    if (key_sub == "nz") {//remove it
-      //      int nz_t = std::stod(key.substr(loc+1,key.length()));
-      continue;
-    }
-    if (key_sub == "soil_params.smcmax") {
-      this->smcmax = std::stod(key.substr(loc+1,key.length()));
+    if (param_key == "soil_params.smcmax") {
+      //this->smcmax = std::stod(line.substr(loc_eq,loc_u));
+      this->smcmax = std::stod(param_value);
       is_smcmax_set = true;
       continue;
     }
-    if (key_sub == "soil_params.b") {
-      this->bexp = std::stod(key.substr(loc+1,key.length()));
+    if (param_key == "soil_params.b") {
+      //this->bexp = std::stod(line.substr(loc_eq,loc_u));
+      this->bexp = std::stod(param_value);
+      std::string bexp_unit = line.substr(loc_u+1,line.length());
       assert (this->bexp > 0);
       is_bexp_set = true;
       continue;
     }
-    if (key_sub == "soil_params.quartz") {
-      this->quartz = std::stod(key.substr(loc+1,key.length()));
+    if (param_key == "soil_params.quartz") {
+      //this->quartz = std::stod(line.substr(loc_eq,loc_u));
+      this->quartz = std::stod(param_value);
       assert (this->quartz > 0);
       is_quartz_set = true;
       continue;
     }
-    if (key_sub == "soil_params.satpsi") {  //Soil saturated matrix potential
-      this->satpsi = std::stod(key.substr(loc+1,key.length()));
+    if (param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
+      //this->satpsi = std::stod(line.substr(loc_eq,loc_u));
+      this->satpsi = std::stod(param_value);
       is_satpsi_set = true;
       continue;
     }
-    if (key_sub == "soil_temperature") {
-      std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = ReadVectorData(tmp_key);
+    if (param_key == "soil_temperature") {
+      //std::string tmp_key = line.substr(loc_eq,loc_u);
+      //std::vector<double> vec = ReadVectorData(tmp_key);
+      std::vector<double> vec = ReadVectorData(param_value);
       this->ST = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
 	this->ST[i] = vec[i];
@@ -186,9 +219,10 @@ InitFromConfigFile()
       continue;
 
     }
-    if (key_sub == "soil_total_moisture_content") {
-      std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = ReadVectorData(tmp_key);
+    if (param_key == "soil_total_moisture_content") {
+      //std::string tmp_key = line.substr(loc_eq,loc_u);
+      //std::vector<double> vec = ReadVectorData(tmp_key);
+      std::vector<double> vec = ReadVectorData(param_value);
       this->SMCT = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
 	this->SMCT[i] = vec[i];
@@ -196,9 +230,10 @@ InitFromConfigFile()
       is_SMCT_set = true;
       continue;
     }
-    if (key_sub == "soil_liquid_moisture_content") {
-      std::string tmp_key = key.substr(loc+1,key.length());
-      std::vector<double> vec = ReadVectorData(tmp_key);
+    if (param_key == "soil_liquid_moisture_content") {
+      //std::string tmp_key = line.substr(loc_eq,loc_u);
+      //std::vector<double> vec = ReadVectorData(tmp_key);
+      std::vector<double> vec = ReadVectorData(param_value);
       this->SMCLiq = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++) {
 	//	assert (this->SMCT[i] >= vec[i]);
@@ -208,14 +243,15 @@ InitFromConfigFile()
       is_SMCL_set = true;
       continue;
     }
-    if (key_sub == "ice_fraction_scheme") {
-      this->ice_fraction_scheme = key.substr(loc+1,key.length());
+    if (param_key == "ice_fraction_scheme") {
+      this->ice_fraction_scheme = param_value;
+      //std::cout<<"ice_frac : "<<param_key<<" "<<this->ice_fraction_scheme<<" "<<param_unit<<"\n";
       is_IFS_set = true;
       continue;
     }
   }
   fp.close();
- 
+  
   // simply allocate space for SMCLiq and SMCT arrays, as they will be set through CFE_BMI
   if (this->is_SMC_BMI_set && is_Z_set) {
     this->SMCT = new double[this->nz]();
