@@ -261,16 +261,16 @@ int
   printf("forcing file for the AORC module %s\n", aorc->forcing_file);
 
   /************************************************************************
-    This is the basic process for getting the four things to talk through BMI
+    This is the basic process for getting the six modules to talk through BMI
     1. Update the AORC forcing data
     2. Getting forcing from AORC and setting forcing for PET
     3. Update the PET model
-    3. Getting forcing from AORC and setting forcing for CFE
-    4. Getting PET from PET and setting for CFE
-    5. Get ice fraction from freeze-thaw model
-    5. Update the CFE model.
-    6. Update BMI Coupler to get updated soil storage/change for the SFT model
-    7. Update the Freeze-thaw model (soil temperature/ice content update)
+    4. Getting forcing from AORC and setting forcing for CFE
+    5. Getting PET from PET and setting for CFE
+    6. Get ice fraction from freeze-thaw model
+    7. Update the CFE model.
+    8. Update BMI Coupler to get updated soil storage/change for the SFT model
+    9. Update the Freeze-thaw model (soil temperature/ice content update)
   ************************************************************************/
 
   
