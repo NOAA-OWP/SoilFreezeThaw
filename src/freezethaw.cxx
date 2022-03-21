@@ -127,10 +127,7 @@ InitFromConfigFile()
 
     param_value = line.substr(loc_eq,loc_u - loc_eq);
     
-    //std::cout<<"VALUE: "<<param_key<<", "<<param_value<<", "<<param_unit<<"\n";
     if (param_key == "forcing_file") {
-      //std::string tmp_key = line.substr(loc_eq,loc_u);
-      //this->ReadForcingData(tmp_key);
       this->ReadForcingData(param_value);
       is_forcing_file_set = true;
       continue;
@@ -140,7 +137,6 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "end_time") {
-      //this->endtime = std::stod(line.substr(loc_eq,loc_u));
       this->endtime = std::stod(param_value);
 
       if (param_unit == "[d]" || param_unit == "[day]") 
@@ -154,7 +150,6 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "dt") {
-      //      this->dt = std::stod(line.substr(loc_eq,loc_u));
       this->dt = std::stod(param_value);
       if (param_unit == "[d]" || param_unit == "[day]")
 	this->dt *= 86400;
@@ -167,8 +162,6 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "Z") {
-      //std::string tmp_key = line.substr(loc_eq,loc_u);
-      //std::vector<double> vec = ReadVectorData(tmp_key);
       std::vector<double> vec = ReadVectorData(param_value);
       
       this->Z = new double[vec.size()];
@@ -180,13 +173,11 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "soil_params.smcmax") {
-      //this->smcmax = std::stod(line.substr(loc_eq,loc_u));
       this->smcmax = std::stod(param_value);
       is_smcmax_set = true;
       continue;
     }
     if (param_key == "soil_params.b") {
-      //this->bexp = std::stod(line.substr(loc_eq,loc_u));
       this->bexp = std::stod(param_value);
       std::string bexp_unit = line.substr(loc_u+1,line.length());
       assert (this->bexp > 0);
@@ -194,21 +185,17 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "soil_params.quartz") {
-      //this->quartz = std::stod(line.substr(loc_eq,loc_u));
       this->quartz = std::stod(param_value);
       assert (this->quartz > 0);
       is_quartz_set = true;
       continue;
     }
     if (param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
-      //this->satpsi = std::stod(line.substr(loc_eq,loc_u));
       this->satpsi = std::stod(param_value);
       is_satpsi_set = true;
       continue;
     }
     if (param_key == "soil_temperature") {
-      //std::string tmp_key = line.substr(loc_eq,loc_u);
-      //std::vector<double> vec = ReadVectorData(tmp_key);
       std::vector<double> vec = ReadVectorData(param_value);
       this->ST = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
@@ -220,8 +207,6 @@ InitFromConfigFile()
 
     }
     if (param_key == "soil_total_moisture_content") {
-      //std::string tmp_key = line.substr(loc_eq,loc_u);
-      //std::vector<double> vec = ReadVectorData(tmp_key);
       std::vector<double> vec = ReadVectorData(param_value);
       this->SMCT = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
@@ -231,8 +216,6 @@ InitFromConfigFile()
       continue;
     }
     if (param_key == "soil_liquid_moisture_content") {
-      //std::string tmp_key = line.substr(loc_eq,loc_u);
-      //std::vector<double> vec = ReadVectorData(tmp_key);
       std::vector<double> vec = ReadVectorData(param_value);
       this->SMCLiq = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++) {
@@ -245,11 +228,11 @@ InitFromConfigFile()
     }
     if (param_key == "ice_fraction_scheme") {
       this->ice_fraction_scheme = param_value;
-      //std::cout<<"ice_frac : "<<param_key<<" "<<this->ice_fraction_scheme<<" "<<param_unit<<"\n";
       is_IFS_set = true;
       continue;
     }
   }
+  
   fp.close();
   
   // simply allocate space for SMCLiq and SMCT arrays, as they will be set through CFE_BMI
