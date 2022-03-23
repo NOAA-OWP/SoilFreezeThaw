@@ -43,7 +43,6 @@ FreezeThaw()
 freezethaw::FreezeThaw::
 FreezeThaw(std::string config_file)
 {
-
   this->config_file = config_file;
   this->forcing_file= " ";
   this->lhf = 0.3336E06;
@@ -51,7 +50,6 @@ FreezeThaw(std::string config_file)
   this->tbot = 275.15;
   this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
   this->opt_topb = 2; // 1: constant temp, 2: from a file
-  
   this->ice_fraction_scheme_bmi = new int[1];
   this->InitFromConfigFile();
 

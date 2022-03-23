@@ -21,18 +21,18 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # add the executable
 
 ## cfe + aorc + pet + ftm
-add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
+##Aadd_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
 
-#add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./../cfe_owp/src/cfe.c ./../cfe_owp/src/bmi_cfe.c ./../cfe_owp/forcing_code/src/aorc.c ./../cfe_owp/forcing_code/src/bmi_aorc.c ./../cfe_owp/forcing_code/src/pet.c ./../cfe_owp/forcing_code/src/bmi_pet.c)
 
-add_library(cfelib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
+add_library(sftlib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
 
-add_library(freezethaw SHARED ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx)
+add_library(sftbmi SHARED ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx)
 #add_library(cfebmi SHARED src/bmi_cfe.c src/cfe.c)
 
-target_link_libraries(cfeft LINK_PUBLIC cfelib)
-target_link_libraries(cfeft PRIVATE m)
+#Atarget_link_libraries(cfeft LINK_PUBLIC cfelib)
+target_link_libraries(sftlib PRIVATE m)
 
+target_include_directories(sftbmi PRIVATE /include)
 
 ##cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=Debug ../
 ##cmake --build .

@@ -59,15 +59,20 @@ Finalize()
 int BmiFreezeThaw::
 GetVarGrid(std::string name)
 {
-  if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0)
+  /*
+    if (name.compare("temperature") == 0 || name.compare("moisture_content_total") == 0)
     return 0;
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
+    else if (name.compare("moisture_content_liquid") == 0 || name.compare("moisture_content_ice") == 0)
     return 0;
-  else if (name.compare("soil__z_depth") == 0 )
+    else
+  */
+  if (name.compare("ground_temperature") == 0 )
     return 0;
-  else if (name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0)
+  else if (name.compare("z_depth") == 0 )
+    return 0;
+  else if (name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
     return 2;
-  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
+  else if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return 1;
   else
     return -1;
@@ -77,11 +82,18 @@ GetVarGrid(std::string name)
 std::string BmiFreezeThaw::
 GetVarType(std::string name)
 {
-  if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0)
+  /*
+    if (name.compare("temperature") == 0 || name.compare("moisture_content_total") == 0)
     return "double";
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0 || name.compare("soil__z_depth") == 0)
+    else if (name.compare("moisture_content_liquid") == 0 || name.compare("moisture_content_ice") == 0)
     return "double";
-  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
+    else
+  */
+  if (name.compare("ground_temperature") == 0 )
+    return "double";
+  else if (name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0 || name.compare("z_depth") == 0)
+    return "double";
+  else if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return "int";
   else
     return "";
@@ -91,13 +103,18 @@ GetVarType(std::string name)
 int BmiFreezeThaw::
 GetVarItemsize(std::string name)
 {
-  if (name.compare("soil__temperature") == 0 || name.compare("soil__moisture_content_total") == 0)
+  /*
+    if (name.compare("temperature") == 0 || name.compare("moisture_content_total") == 0)
     return sizeof(double);
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0)
+    else if (name.compare("moisture_content_liquid") == 0 || name.compare("moisture_content_ice") == 0)
     return sizeof(double);
-  else if (name.compare("soil__ice_fraction_schaake") == 0 || name.compare("soil__ice_fraction_xinan") == 0 || name.compare("soil__z_depth") == 0 )
+    else
+  */
+  if (name.compare("ground_temperature") == 0 )
     return sizeof(double);
-  else if (name.compare("soil__num_cells") == 0 || name.compare("soil__ice_fraction_scheme_bmi") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0 || name.compare("z_depth") == 0 )
+    return sizeof(double);
+  else if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return sizeof(int);
   else
     return 0;
@@ -107,11 +124,11 @@ GetVarItemsize(std::string name)
 std::string BmiFreezeThaw::
 GetVarUnits(std::string name)
 {
-  if (name.compare("soil__temperature") == 0)
+  if (name.compare("ground_temperature") == 0)
     return "K";
-  else if (name.compare("soil__z_depth") == 0)
+  else if (name.compare("z_depth") == 0)
     return "m";
-  else if (name.compare("soil__ice_fraction_schaake") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0)
     return "m";
   else
     return "";
@@ -134,16 +151,16 @@ GetVarNbytes(std::string name)
 std::string BmiFreezeThaw::
 GetVarLocation(std::string name)
 {
-  if (name.compare("soil__temperature") == 0)
+  if (name.compare("ground_temperature") == 0)
     return "node";
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("moisture_content_total") == 0)
     return "node";
-  else if (name.compare("soil__moisture_content_liquid") == 0 || name.compare("soil__moisture_content_ice") == 0 || name.compare("soil__z_depth") == 0)
+  else if (name.compare("moisture_content_liquid") == 0 || name.compare("moisture_content_ice") == 0 || name.compare("z_depth") == 0)
     return "node";
-  else if (name.compare("soil__ice_fraction_xinan") == 0)
+  else if (name.compare("ice_fraction_xinan") == 0)
     return "node";
-  else if (name.compare("soil__ice_fraction_schaake") == 0 ||  name.compare("soil__num_cells") == 0)
-    return "domain";
+  else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0)
+    return "node";
   else
     return "";
 }
@@ -296,26 +313,32 @@ GetValue (std::string name, void *dest)
 void *BmiFreezeThaw::
 GetValuePtr (std::string name)
 {
-  if (name.compare("soil__temperature") == 0)
+  std::cout<<"GetValuePtr \n";
+  /*
+  if (name.compare("temperature") == 0)
     return (void*)this->_model.ST;
-  else if (name.compare("soil__moisture_content_total") == 0)
+  else if (name.compare("moisture_content_total") == 0)
     return (void*)this->_model.SMCT;
-  else if (name.compare("soil__moisture_content_liquid") == 0)
+  else if (name.compare("moisture_content_liquid") == 0)
     return (void*)this->_model.SMCLiq;
-  else if (name.compare("soil__moisture_content_ice") == 0)
+  else if (name.compare("moisture_content_ice") == 0)
     return (void*)this->_model.SMCIce;
-  else if (name.compare("soil__num_cells") == 0)
+  else 
+  */
+  if (name.compare("ground_temperature") == 0 )
+    return (void*)this->_model.GT_test;
+  else if (name.compare("num_cells") == 0)
     return (void*)(&this->_model.nz);
-  else if (name.compare("soil__ice_fraction_schaake") == 0) {
+  else if (name.compare("ice_fraction_schaake") == 0) {
     return (void*)(&this->_model.ice_fraction_schaake);
   }
-  else if (name.compare("soil__ice_fraction_xinan") == 0){
+  else if (name.compare("ice_fraction_xinan") == 0){
     int val = this->_model.ice_fraction_xinan;
     return (void*)(&this->_model.ice_fraction_xinan);
   }
-  else if (name.compare("soil__ice_fraction_scheme_bmi") == 0)
+  else if (name.compare("ice_fraction_scheme_bmi") == 0)
     return (void*)this->_model.ice_fraction_scheme_bmi;
-  else if (name.compare("soil__z_depth") == 0)
+  else if (name.compare("z_depth") == 0)
     return (void*)(&this->_model.Dz);
   else {
     std::stringstream errMsg;

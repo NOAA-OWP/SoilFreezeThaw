@@ -42,6 +42,7 @@ namespace freezethaw {
     double *SMCLiq; // liquid moisture content
     double *SMCIce; // ice moisture content
     double *GT; // ground/air temperature
+    double *GT_test = NULL; // ground/air temperature
     double *Time_;
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
