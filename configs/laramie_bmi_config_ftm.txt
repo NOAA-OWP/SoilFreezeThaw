@@ -1,6 +1,7 @@
+#forcing_file=./extern/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12.csv
 forcing_file=./forcings/Laramie_14Jun09_to_15Apr12.csv
 #SMC_BMI=1
-end_time=1035.91[d]
+end_time=1.[d]
 dt=1.0[h]
 soil_params.smcmax=0.439[m/m]
 soil_params.b=5.25[]

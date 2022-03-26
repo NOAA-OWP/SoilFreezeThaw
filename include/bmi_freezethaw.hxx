@@ -21,7 +21,6 @@ class BmiFreezeThaw : public bmixx::Bmi {
       //this->input_var_names[1] = "moisture_content_total";
       //this->input_var_names[2] = "moisture_content_liquid";
       //this->input_var_names[3] = "ice_fraction_scheme_bmi";
-
       
       this->output_var_names[0] = "ice_fraction_schaake";
       this->output_var_names[1] = "ice_fraction_xinan";
@@ -89,9 +88,10 @@ class BmiFreezeThaw : public bmixx::Bmi {
     std::string output_var_names[3];
 };
 
-
+#ifndef __cplusplus
 extern "C"
 {
+
     /**
     * Construct this BMI instance as a normal C++ object, to be returned to the framework.
     *
@@ -111,7 +111,8 @@ extern "C"
   {
     delete ptr;
   }
-}
 
+}
+#endif
 
 #endif

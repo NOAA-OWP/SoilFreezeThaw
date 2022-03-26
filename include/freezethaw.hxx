@@ -18,7 +18,6 @@ namespace freezethaw {
   class FreezeThaw{
   private:
     std::string config_file;
-    std::string forcing_file;
     void InitializeArrays(void);
     
   public:
@@ -33,17 +32,17 @@ namespace freezethaw {
     double Zd; //depth of the column/domain
     double lhf; // latent heat of fusion
     double tbot,ttop;
-    double *Z; // depth
-    double *Dz; // layer thickness
-    double *ST; // soil temperature
-    double *HC; //heat capacity
-    double *TC; // thermal conductivity
-    double *SMCT; // total soil moisture content
-    double *SMCLiq; // liquid moisture content
-    double *SMCIce; // ice moisture content
-    double *GT; // ground/air temperature
-    double *GT_test = NULL; // ground/air temperature
-    double *Time_;
+    double *Z = NULL; // depth
+    double *Dz = NULL; // layer thickness
+    double *ST = NULL; // soil temperature
+    double *HC = NULL; //heat capacity
+    double *TC = NULL; // thermal conductivity
+    double *SMCT = NULL; // total soil moisture content
+    double *SMCLiq = NULL; // liquid moisture content
+    double *SMCIce = NULL; // ice moisture content
+    double *GT = NULL; // ground/air temperature
+    double ground_temp; // ground/air temperature
+    double *Time_ = NULL;
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
@@ -52,10 +51,9 @@ namespace freezethaw {
     double ice_fraction_schaake;
     double ice_fraction_xinan;
     std::string ice_fraction_scheme;
-    int *ice_fraction_scheme_bmi;
+    int *ice_fraction_scheme_bmi = NULL;
     bool is_SMC_BMI_set;
     int total_nsteps; // total number of timesteps (set by the SFT model forcing data)
-
 
     double quartz;
     enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
@@ -71,11 +69,10 @@ namespace freezethaw {
     void ThermalConductivity();
     void SoilHeatCapacity();
     void SetLayerThickness();
-    void InitFromConfigFile();
+    void InitFromConfigFile(std::string config_file);
     double GetDt();
     
     std::vector<double> ReadVectorData(std::string key);
-    void ReadForcingData(std::string key);
     void GetIceFraction(); // set bulk moisture content per soil column
     ~FreezeThaw();
   };
