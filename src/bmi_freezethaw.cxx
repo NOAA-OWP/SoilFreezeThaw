@@ -60,9 +60,11 @@ int BmiFreezeThaw::
 GetVarGrid(std::string name)
 {
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
-    return 1;
+    return 0; // int
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
-    return 2;
+    return 1; //double
+  else if (name.compare("soil_moisture_profile") == 0)
+    return 2; // arrays
   else
     return -1;
 }
@@ -75,6 +77,8 @@ GetVarType(std::string name)
     return "int";
   else  if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
     return "double";
+  else if (name.compare("soil_moisture_profile") == 0)
+    return "double";
   else
     return "";
 }
@@ -86,6 +90,8 @@ GetVarItemsize(std::string name)
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return sizeof(int);
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
+    return sizeof(double);
+  else if (name.compare("soil_moisture_profile") == 0)
     return sizeof(double);
   else
     return 0;
@@ -125,6 +131,8 @@ GetVarLocation(std::string name)
   else if (name.compare("ice_fraction_xinan") == 0)
     return "node";
   else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0)
+    return "node";
+  else if (name.compare("soil_moisture_profile") == 0)
     return "node";
   else
     return "";
@@ -171,9 +179,9 @@ GetGridRank(const int grid)
 int BmiFreezeThaw::
 GetGridSize(const int grid)
 {
-  if (grid == 0) // for arrays
+  if (grid == 2) // for arrays
     return this->_model.shape[0];
-  if (grid == 1 || grid == 2) // for scalars
+  if (grid == 0 || grid == 1) // for scalars
     return 1;
   else
     return -1;
@@ -289,7 +297,9 @@ GetValuePtr (std::string name)
     return (void*)this->_model.SMCIce;
   else 
   */
-  if (name.compare("ground_temperature") == 0 )
+  if (name.compare("soil_moisture_profile") == 0)
+    return (void*)this->_model.SMCT;
+  else if (name.compare("ground_temperature") == 0 )
     return (void*)(&this->_model.ground_temp);
   else if (name.compare("num_cells") == 0)
     return (void*)(&this->_model.nz);
