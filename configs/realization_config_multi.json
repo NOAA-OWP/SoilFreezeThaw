@@ -1,0 +1,143 @@
+{
+    "global": {
+      "formulations": [
+        {
+          "name":"tshirt",
+          "params": {
+              "maxsmc": 0.439,
+              "wltsmc": 0.066,
+              "satdk": 0.00000338,
+              "satpsi": 0.355,
+              "slope": 1.0,
+              "scaled_distribution_fn_shape_parameter": 4.05,
+              "multiplier": 0.0,
+              "alpha_fc": 0.33,
+              "Klf": 0.01,
+              "Kn": 0.03,
+              "nash_n": 2,
+              "Cgw": 0.01,
+              "expon": 6.0,
+              "max_groundwater_storage_meters": 1.0,
+              "nash_storage": [
+                  0.0,
+                  0.0
+              ],
+              "soil_storage_percentage": 0.667,
+              "groundwater_storage_percentage": 0.5,
+              "timestep": 3600,
+              "giuh": {
+                  "giuh_path": "./test/data/giuh/GIUH.json",
+                  "crosswalk_path": "./data/crosswalk.json"
+              }
+            }
+          }
+        ],
+        "forcing": {
+            "file_pattern": ".*{{ID}}.*.csv",
+            "path": "./data/forcing/"
+        }
+    },
+    "time": {
+	"start_time": "2009-06-14 20:00:00",
+        "end_time": "2012-04-03 09:00:00",
+        "output_interval": 3600
+    },
+    "catchments": {
+        "cat-27": {
+            "formulations": [
+                {
+		    "name": "bmi_multi",
+                    "params": {
+			"model_type_name": "bmi_multi_cfe_sft_smp",
+			"forcing_file": "",
+			"init_config": "",
+			"allow_exceed_end_time": true,
+			"main_output_variable": "Q_OUT",
+			"modules": [
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_smp",
+				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi.dylib",
+				    "init_config": "./extern/SoilMoistureProfiles/test/config.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "soil_water_table",
+				    "variables_names_map" : {
+					"soil_storage" : "SOIL_STORAGE",
+					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
+					
+				    },
+				    "default_output_values": [
+					{
+					    "name": "SOIL_STORAGE_CHANGE",
+					    "value": 0.0
+					}
+				    ],
+				    "uses_forcing_file": false
+				}
+			    },
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_sft",
+				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi.dylib",
+				    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_ftm.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "num_cells",
+				    "variables_names_map" : {
+					"ground_temperature" : "TMP_ground_surface",
+					"soil_moisture_profile" : "soil_moisture_profile"
+				    },
+				    "output_variables" : [
+					"num_cells"
+				    ],
+				    "uses_forcing_file": false
+				}
+			    },
+			    {
+				"name": "bmi_c",
+				"params": {
+                                    "model_type_name": "bmi_c_cfe",
+                                    "library_file": "./extern/cfe/cmake_build/libcfebmi.dylib",
+                                    "forcing_file": "",
+                                    "init_config": "../extern/SoilFreezeThaw/configs/laramie_bmi_config_cfe_pass.txt",
+                                    "allow_exceed_end_time": true,
+                                    "main_output_variable": "Q_OUT",
+                                    "registration_function": "register_bmi_cfe",
+                                    "variables_names_map": {
+					"water_potential_evaporation_flux" : "potential_evapotranspiration",
+					"atmosphere_water__liquid_equivalent_precipitation_rate" : "precip_rate",
+					"atmosphere_air_water~vapor__relative_saturation" : "SPFH_2maboveground",
+					"land_surface_air__temperature" : "TMP_2maboveground",
+					"land_surface_wind__x_component_of_velocity" : "UGRD_10maboveground",
+					"land_surface_wind__y_component_of_velocity" : "VGRD_10maboveground",
+					"land_surface_radiation~incoming~longwave__energy_flux" : "DLWRF_surface",
+					"land_surface_radiation~incoming~shortwave__energy_flux" : "DSWRF_surface",
+					"land_surface_air__pressure" : "PRES_surface"
+                                    },
+				    "output_variables" : [
+					"RAIN_RATE",
+					"DIRECT_RUNOFF",
+					"GIUH_RUNOFF",
+					"NASH_LATERAL_RUNOFF",
+					"DEEP_GW_TO_CHANNEL_FLUX",
+					"Q_OUT",
+					"SOIL_STORAGE"
+				    ],
+                                    "uses_forcing_file": false
+				}
+                            }
+			],
+			"uses_forcing_file": false
+                    }
+		}
+            ],
+            "forcing": {
+		
+		"path" : "./extern/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
+		"provider": "CsvPerFeature"
+		
+            }
+        }
+    }
+}
