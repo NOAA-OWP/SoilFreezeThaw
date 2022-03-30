@@ -21,6 +21,9 @@
 #include "../smc_coupler/include/smc_profile.hxx"
 
 #define FrozenFraction true
+
+std::vector<double> ReadForcingData(std::string config_file);
+
 /***************************************************************
     Function to pass PET to CFE using BMI.
 ***************************************************************/
@@ -106,23 +109,27 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   
   coupler_bmi.SetValue("soil_storage",storage_ptr);
   coupler_bmi.SetValue("soil_storage_change",storage_change_ptr);
-  coupler_bmi.GetValue("soil_smc_profile_option_bmi",smc_option_bmi_ptr);
+  coupler_bmi.GetValue("smc_profile_option_bmi",smc_option_bmi_ptr);
 
   if (smc_option_bmi == Constant)
     coupler_bmi.Update();
   else if (smc_option_bmi == Linear) {
     double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
     //double smc_layers[] = {0.4, 0.4, 0.4, 0.43};
-    coupler_bmi.SetValue("soil__moisture_content_layered",&smc_layers[0]);
+    coupler_bmi.SetValue("soil_moisture_layered",&smc_layers[0]);
     coupler_bmi.Update();
+  }
+  else {
+    std::cout<<"Not a valid option for the SMC profile!! "<<smc_option_bmi<<"\n";
+    abort();
   }
   
   double *smct = new double[nz];
     
-  coupler_bmi.GetValue("soil__moisture_content_total",&smct[0]);
-  ftm_bmi_model.SetValue("soil__moisture_content_total", &smct[0]);
-  //std::cout<<"SMC_main: "<<smct[0]<<" "<<smct[1]<<" "<<smct[2]<<" "<<smct[3]<<"\n";
-  cfe_bmi_model->set_value(cfe_bmi_model,"soil_moisture_profile", smct);
+  coupler_bmi.GetValue("soil_moisture_profile",&smct[0]);
+  ftm_bmi_model.SetValue("soil_moisture_profile", &smct[0]);
+  // std::cout<<"SMC_main: "<<smct[0]<<" "<<smct[1]<<" "<<smct[2]<<" "<<smct[3]<<"\n";
+  //cfe_bmi_model->set_value(cfe_bmi_model,"soil_moisture_profile", smct);
 }
 
 /***************************************************************
@@ -240,7 +247,9 @@ int
   const char *cfg_file_ftm = argv[4];
   ftm_bmi_model.Initialize(cfg_file_ftm);
 
-
+  //Read ground temperature data for SFT
+  std::vector<double> ground_temp = ReadForcingData(cfg_file_ftm);
+  
   printf("Initializeing BMI Coupler model\n");
   const char *cfg_file_coupler = argv[5];
   coupler_bmi.Initialize(cfg_file_coupler);
@@ -296,6 +305,8 @@ int
     if (FrozenFraction)
       pass_icefraction_from_ftm_to_cfe(cfe_bmi_model, ftm_bmi_model);
 
+    ftm_bmi_model.SetValue("ground_temperature", &ground_temp[i]);
+    
     if (pet->aorc.air_temperature_2m_K != aorc->aorc.air_temperature_2m_K){
       printf("ERROR: Temperature values do not match from AORC and PET\n");
       printf("Temperature value from AORC is %lf\n", aorc->aorc.air_temperature_2m_K);
@@ -343,3 +354,100 @@ int
   return 0;
 }
 
+
+std::vector<double>
+ReadForcingData(std::string config_file)
+{
+  // get the forcing file from the config file
+
+  std::ifstream file;
+  file.open(config_file);
+
+  if (!file) {
+    std::stringstream errMsg;
+    errMsg << config_file << " does not exist";
+    throw std::runtime_error(errMsg.str());
+  }
+
+  std::string forcing_file;
+  bool is_forcing_file_set=false;
+  
+  while (file) {
+    std::string line;
+    std::string param_key, param_value;
+
+    std::getline(file, line);
+
+    int loc_eq = line.find("=") + 1;
+    param_key = line.substr(0, line.find("="));
+    param_value = line.substr(loc_eq,line.length());
+
+    if (param_key == "forcing_file") {
+      forcing_file = param_value;
+      is_forcing_file_set = true;
+      break;
+    }
+  }
+
+  if (!is_forcing_file_set) {
+    std::stringstream errMsg;
+    errMsg << config_file << " does not provide forcing_file";
+    throw std::runtime_error(errMsg.str());
+  }
+  
+  std::ifstream fp;
+  fp.open(forcing_file);
+  if (!fp) {
+    cout<<"file "<<forcing_file<<" doesn't exist. \n";
+    abort();
+  }
+  
+  std::vector<double> Time_v(0.0);
+  std::vector<double> GT_v(0.0);
+  std::vector<string> vars;
+  std::string line, cell;
+  
+  //read first line of strings which contains forcing variables names.
+  std::getline(fp, line);
+  std::stringstream lineStream(line);
+  int ground_temp_index=-1;
+  
+  while(std::getline(lineStream,cell, ',')) {
+    vars.push_back(cell);
+  }
+
+  for (unsigned int i=0; i<vars.size();i++) {
+    if (vars[i] ==  "TMP_ground_surface")
+      ground_temp_index = i;
+  }
+
+  if (ground_temp_index <0)
+    ground_temp_index = 6; // 6 is the air temperature column, if not coupled and ground temperatgure is not provided
+    
+  int len_v = vars.size(); // number of forcing variables + time
+
+  int count = 0;
+  while (fp) {
+    std::getline(fp, line);
+    std::stringstream lineStream(line);
+    while(std::getline(lineStream,cell, ',')) {
+      
+      if (count % len_v == 0) {
+	Time_v.push_back(stod(cell));
+	count +=1;
+	continue;
+      }
+
+      if (count % len_v == ground_temp_index) {
+	GT_v.push_back(stod(cell));
+	count +=1;
+	continue;
+      }
+      count +=1;
+    }
+
+  }
+
+  return GT_v;
+ 
+}
