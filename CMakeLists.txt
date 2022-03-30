@@ -21,7 +21,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # add the executable
 
 ## cfe + aorc + pet + ftm
-add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
+add_executable(cfeft ./src/main_cfe_aorc_pet_ftm_smc.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
 
 #add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./../cfe_owp/src/cfe.c ./../cfe_owp/src/bmi_cfe.c ./../cfe_owp/forcing_code/src/aorc.c ./../cfe_owp/forcing_code/src/bmi_aorc.c ./../cfe_owp/forcing_code/src/pet.c ./../cfe_owp/forcing_code/src/bmi_pet.c)
 
