@@ -70,14 +70,14 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
   int *sf_runoff_scheme = new int[1];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SURF_RUNOFF_SCHEME", &sf_runoff_scheme[0]);
-  ftm_bmi_model.SetValue("soil__ice_fraction_scheme_bmi", &(sf_runoff_scheme[0]));
+  ftm_bmi_model.SetValue("ice_fraction_scheme_bmi", &(sf_runoff_scheme[0]));
   
   if (*sf_runoff_scheme == Schaake) {
-    ftm_bmi_model.GetValue("soil__ice_fraction_schaake", ice_frac_ptr);
+    ftm_bmi_model.GetValue("ice_fraction_schaake", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_schaake", ice_frac_ptr);
   }
   else if (*sf_runoff_scheme == Xinanjiang) {
-    ftm_bmi_model.GetValue("soil__ice_fraction_xinan", ice_frac_ptr);
+    ftm_bmi_model.GetValue("ice_fraction_xinan", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_xinan", ice_frac_ptr);
   }
  
@@ -92,7 +92,7 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   
   int nz = 0;
   int *nz_ptr = &nz;
-  ftm_bmi_model.GetValue("soil__num_cells", nz_ptr);
+  ftm_bmi_model.GetValue("num_cells", nz_ptr);
 
   double storage = 0.0;
   double storage_change = 0.0;
@@ -104,9 +104,9 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE", storage_ptr);
   cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE_CHANGE", storage_change_ptr);
   
-  coupler_bmi.SetValue("soil__storage",storage_ptr);
-  coupler_bmi.SetValue("soil__storage_change",storage_change_ptr);
-  coupler_bmi.GetValue("soil__smc_profile_option_bmi",smc_option_bmi_ptr);
+  coupler_bmi.SetValue("soil_storage",storage_ptr);
+  coupler_bmi.SetValue("soil_storage_change",storage_change_ptr);
+  coupler_bmi.GetValue("soil_smc_profile_option_bmi",smc_option_bmi_ptr);
 
   if (smc_option_bmi == Constant)
     coupler_bmi.Update();
