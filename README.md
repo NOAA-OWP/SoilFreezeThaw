@@ -11,7 +11,7 @@
 - [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_framework.sh)
 
 ## Building the code to run/test examples in the ngen-framework 
-- Frist follow for detailed instructions [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
+- See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
 - ### Specific instructions for building SFT, CFE and SMP (integrated system)
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init
