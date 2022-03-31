@@ -7,7 +7,7 @@ using namespace std;
 #include "../bmi/bmi.hxx"
 #include "freezethaw.hxx"
 
-#define NGEN 1
+#define NGEN 0
 
 class NotImplemented : public std::logic_error {
   public:
