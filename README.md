@@ -30,7 +30,12 @@
     - **Turn on macro `NGEN` inside** extern/SoilMoistureProfiles/include/bmi_coupler.hxx 
     - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles 
     - make -C extern/SoilMoistureProfiles/cmake_build 
-
+ - ### Running coupled SFT, CFE, and SMP models
+ ```
+   - mkdir sft && cd sft
+   - cp ../extern/SoilFreezeThaw/configs/realization_config_multi.json .
+   - ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json   
+```
 # Introduction of Soil Freeze-thaw model
 
 The diffusion equation is used to simulate the transport of energy in the soil.
