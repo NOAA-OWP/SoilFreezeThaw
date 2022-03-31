@@ -23,7 +23,7 @@
   - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
   - make -j 4 -C cmake_build
   - git clone https://github.com/NOAA-OWP/SoilFreezeThaw extern/SoilFreezeThaw (-B: path to build, -S: path to source)
-    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw
+    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw -DNGEN:BOOL=ON
     - make -C extern/SoilFreezeThaw/cmake_build
   - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles xtern/SoilMoistureProfiles
     - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles 
