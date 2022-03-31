@@ -7,7 +7,7 @@ using namespace std;
 #include "../bmi/bmi.hxx"
 #include "freezethaw.hxx"
 
-#define NGEN_ON 0
+#define NGEN 1
 
 class NotImplemented : public std::logic_error {
   public:
@@ -87,7 +87,7 @@ class BmiFreezeThaw : public bmixx::Bmi {
     std::string output_var_names[3];
 };
 
-#if NGEN_ON
+#if NGEN
 extern "C"
 {
 
