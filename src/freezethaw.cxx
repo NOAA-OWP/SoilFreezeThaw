@@ -31,29 +31,25 @@ FreezeThaw()
   this->tbot = 275.15;
   this->opt_botb = 2;
   this->opt_topb = 2;
-  this->forcing_file= " ";
   this->nsteps=0;
   this->ice_fraction_scheme= " ";
   this->ice_fraction_scheme_bmi = new int[1];
   this->Zd =0.0;
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
+  this->ground_temp = 273.15;
 }
 
 freezethaw::FreezeThaw::
 FreezeThaw(std::string config_file)
 {
-
-  this->config_file = config_file;
-  this->forcing_file= " ";
   this->lhf = 0.3336E06;
   this->ttop = 260.;
   this->tbot = 275.15;
   this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
   this->opt_topb = 2; // 1: constant temp, 2: from a file
-  
   this->ice_fraction_scheme_bmi = new int[1];
-  this->InitFromConfigFile();
+  this->InitFromConfigFile(config_file);
 
   this->shape[0] = this->nz;
   this->shape[1] = 1;
@@ -67,6 +63,7 @@ FreezeThaw(std::string config_file)
   SetLayerThickness(); // get soil layer thickness
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
+  this->ground_temp = 273.15;
   //  if (this->ice_fraction_scheme != "BMI")
   //  GetIceFraction(); 
   this->time = 0.;
@@ -87,13 +84,12 @@ InitializeArrays(void)
 }
 
 void freezethaw::FreezeThaw::
-InitFromConfigFile()
+InitFromConfigFile(std::string config_file)
 { 
   std::ifstream fp;
   fp.open(config_file);
   int n_st, n_mct, n_mcl;
 
-  bool is_forcing_file_set = false;
   this->is_SMC_BMI_set = false;
   bool is_endtime_set = false;
   bool is_dt_set = false;
@@ -127,11 +123,6 @@ InitFromConfigFile()
 
     param_value = line.substr(loc_eq,loc_u - loc_eq);
     
-    if (param_key == "forcing_file") {
-      this->ReadForcingData(param_value);
-      is_forcing_file_set = true;
-      continue;
-    }
     if (param_key == "SMC_BMI") {
       this->is_SMC_BMI_set = true;
       continue;
@@ -243,11 +234,7 @@ InitFromConfigFile()
     n_mcl = this->nz;
     is_SMCT_set = true;
   }
-  
-  if (!is_forcing_file_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Forcing file not set in the config file!");
-  }
+
   if (!is_endtime_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("End time not set in the config file!");
@@ -306,94 +293,34 @@ ReadVectorData(std::string key)
 {
   int pos =0;
   std::string delimiter = ",";
-  std::vector<double> value(0);
+  std::vector<double> value(0.0);
   std::string z1 = key;
-
-  while (z1.find(delimiter) != std::string::npos) {
-    pos = z1.find(delimiter);
-    //std::ostringstream z_vv;
-    //z_vv << std::setprecision(8) << z1.substr(0, pos);
-    std::string z_v = z1.substr(0, pos);
-
-    value.push_back(stod(z_v.c_str()));
-
-    z1.erase(0, pos + delimiter.length());
-    if (z1.find(delimiter) == std::string::npos)
-      value.push_back(stod(z1));
-  }
-
-  return value;
-}
-
-void freezethaw::FreezeThaw::
-ReadForcingData(std::string forcing_file)
-{
-  std::ifstream fp;
-  fp.open(forcing_file);
-  if (!fp) {
-    cout<<"file "<<forcing_file<<" doesn't exist. \n";
-    abort();
-  }
   
-  std::vector<double> Time_v(0.0);
-  std::vector<double> GT_v(0.0);
-  std::vector<string> vars;
-  std::string line, cell;
-  
-  //read first line of strings which contains forcing variables names.
-  std::getline(fp, line);
-  std::stringstream lineStream(line);
-  int ground_temp_index=-1;
-  
-  while(std::getline(lineStream,cell, ',')) {
-    vars.push_back(cell);
-  }
-
-  for (unsigned int i=0; i<vars.size();i++) {
-    if (vars[i] ==  "TMP_ground_surface")
-      ground_temp_index = i;
-  }
-
-  if (ground_temp_index <0)
-    ground_temp_index = 6; // 6 is the air temperature column, if not coupled and ground temperatgure is not provided
-    
-  int len_v = vars.size(); // number of forcing variables + time
-
-  int count = 0;
-  while (fp) {
-    std::getline(fp, line);
-    std::stringstream lineStream(line);
-    while(std::getline(lineStream,cell, ',')) {
-      
-      if (count % len_v == 0) {
-	Time_v.push_back(stod(cell));
-	count +=1;
-	continue;
-      }
-
-      if (count % len_v == ground_temp_index) {
-	GT_v.push_back(stod(cell));
-	count +=1;
-	continue;
-      }
-      count +=1;
+  if (z1.find(delimiter) == std::string::npos) {
+    double v = stod(z1);
+    if (v == 0.0) {
+      std::stringstream errMsg;
+      errMsg << "Z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
+      throw std::runtime_error(errMsg.str());
     }
-
+    
+    value.push_back(v);
+    
   }
+  else {
+    while (z1.find(delimiter) != std::string::npos) {
+      pos = z1.find(delimiter);
+      std::string z_v = z1.substr(0, pos);
 
-  int size_v = Time_v.size();
-
-  this->Time_ = new double[size_v];
-  this->GT = new double[size_v];
-
+      value.push_back(stod(z_v.c_str()));
+      
+      z1.erase(0, pos + delimiter.length());
+      if (z1.find(delimiter) == std::string::npos)
+	value.push_back(stod(z1));
+    }
+  }
   
-  for (int i=0; i<size_v; i++) {
-    this->Time_[i] = Time_v[i];
-    this->GT[i] = GT_v[i];
-  }
-
-  // this is needed to make sure external calls (such as CFE BMI) don't exceed the length of the SFT forcing data
-  this->total_nsteps = size_v;
+  return value;
 }
 
 void freezethaw::FreezeThaw::
@@ -439,7 +366,6 @@ GetDt()
 void freezethaw::FreezeThaw::
 Advance()
 {
-  assert (this->nsteps < this->total_nsteps);
   
   if (this->is_SMC_BMI_set) {
     for (int i=0; i<this->nz;i++) {
@@ -473,10 +399,8 @@ Advance()
 
   GetIceFraction();
 
-  
   assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
   
-  this->nsteps += 1;
 }
 
 double freezethaw::FreezeThaw::
@@ -488,7 +412,7 @@ GroundHeatFlux(double surfT)
   }
   else if (opt_topb == 2) {
     assert (this->Z[0] >0);
-    double ghf = - TC[0] * (surfT  - GT[this->nsteps]) / this->Z[0];  //temperature from a file
+    double ghf = - TC[0] * (surfT  - this->ground_temp) / this->Z[0];  //temperature from a file
     return ghf; 
   }
   else
@@ -811,11 +735,7 @@ PhaseChange() {
 	       
     }
   }
-  /*
-    for i in range(domain.NSNOW): #snow
-    SNLIQ[i] = MLIQ_L[i] #these are already in mm, so no conversion
-    SNICE[i] = MICE_L[i]
-  */
+  
   for (int i=0; i<n_z;i++) { //soil
     SMCLiq[i] =  MLiq_L[i] / (prop.wdensity_ * Dz[i]); // [-]
     SMCT[i]  = (MLiq_L[i] + MIce_L[i]) / (prop.wdensity_ * Dz[i]); // [-]
@@ -844,9 +764,6 @@ Properties() :
 
 freezethaw::FreezeThaw::
 ~FreezeThaw()
-{
-  this->forcing_file=" ";
-  //this->time = 0.;
-}
+{}
 
 #endif

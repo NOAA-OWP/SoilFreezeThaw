@@ -7,6 +7,7 @@ using namespace std;
 #include "../bmi/bmi.hxx"
 #include "freezethaw.hxx"
 
+#define NGEN_ON 0
 
 class NotImplemented : public std::logic_error {
   public:
@@ -17,17 +18,13 @@ class NotImplemented : public std::logic_error {
 class BmiFreezeThaw : public bmixx::Bmi {
   public:
     BmiFreezeThaw() {
-      this->input_var_names[0] = "soil__moisture_content_total";
-      this->input_var_names[1] = "soil__moisture_content_liquid";
-      this->input_var_names[2] = "soil__ice_fraction_scheme_bmi";
+      this->input_var_names[0] = "ground_temperature";
+      //this->input_var_names[1] = "soil_moisture_profile";
       
-      this->output_var_names[0] = "soil__temperature";
-      this->output_var_names[1] = "soil__moisture_content_total";
-      this->output_var_names[2] = "soil__moisture_content_liquid";
-      this->output_var_names[3] = "soil__moisture_content_ice";
-      this->output_var_names[4] = "soil__ice_fraction_schaake";
-      this->output_var_names[5] = "soil__ice_fraction_xinan";
-      this->output_var_names[6] = "soil__num_cells";
+      this->output_var_names[0] = "ice_fraction_schaake";
+      this->output_var_names[1] = "ice_fraction_xinan";
+      this->output_var_names[2] = "num_cells";
+
     };
 
     void Initialize(std::string config_file);
@@ -83,11 +80,38 @@ class BmiFreezeThaw : public bmixx::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     freezethaw::FreezeThaw _model;
-    static const int input_var_name_count = 3;
-    static const int output_var_name_count = 7;
+    static const int input_var_name_count = 1;
+    static const int output_var_name_count = 3;
 
-    std::string input_var_names[3];
-    std::string output_var_names[7];
+    std::string input_var_names[1];
+    std::string output_var_names[3];
 };
+
+#if NGEN_ON
+extern "C"
+{
+
+    /**
+    * Construct this BMI instance as a normal C++ object, to be returned to the framework.
+    *
+    * @return A pointer to the newly allocated instance.
+    */
+  BmiFreezeThaw *bmi_model_create()
+  {
+    return new BmiFreezeThaw();
+  }
+  
+    /**
+     * @brief Destroy/free an instance created with @see bmi_model_create
+     * 
+     * @param ptr 
+     */
+  void bmi_model_destroy(BmiFreezeThaw *ptr)
+  {
+    delete ptr;
+  }
+
+}
+#endif
 
 #endif

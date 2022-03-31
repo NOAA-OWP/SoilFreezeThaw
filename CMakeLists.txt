@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_C_COMPILER $ENV{CC})
 set(CMAKE_CXX_COMPILER $ENV{CXX})
 
+set(NGEN_ON "FALSE")
 
 # set the project name
-project(cfeft)
+project(cfesft)
 
 set(CMAKE_BUILD_TYPE Debug)
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -21,18 +22,20 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # add the executable
 
 ## cfe + aorc + pet + ftm
-add_executable(cfeft ./src/main_cfe_aorc_pet_ftm_smc.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
 
-#add_executable(cfeft ./src/main_cfe_aorc_pet_ftm.cxx ./../cfe_owp/src/cfe.c ./../cfe_owp/src/bmi_cfe.c ./../cfe_owp/forcing_code/src/aorc.c ./../cfe_owp/forcing_code/src/bmi_aorc.c ./../cfe_owp/forcing_code/src/pet.c ./../cfe_owp/forcing_code/src/bmi_pet.c)
+IF(NOT ${NGEN_ON} MATCHES "TRUE")
+add_executable(cfesft ./src/main_cfe_aorc_pet_ftm_smc.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
+add_library(cfesftlib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
+target_link_libraries(cfesft LINK_PUBLIC cfesftlib)
+target_link_libraries(cfesft PRIVATE m)
+ENDIF(NOT ${NGEN_ON} MATCHES "TRUE")
 
-add_library(cfelib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
 
-add_library(freezethaw SHARED ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx)
-#add_library(cfebmi SHARED src/bmi_cfe.c src/cfe.c)
+# ngen (add shared library)
+add_library(sftbmi SHARED ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx)
 
-target_link_libraries(cfeft LINK_PUBLIC cfelib)
-target_link_libraries(cfeft PRIVATE m)
 
+target_include_directories(sftbmi PRIVATE /include)
 
 ##cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=Debug ../
 ##cmake --build .

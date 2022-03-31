@@ -1,4 +1,4 @@
-## Building the code to run/test examples within the pseudo-framework (not the ngen framework!!)
+## Building the code to run/test examples in the pseudo-framework (see instructions below for building in the ngen framework!!)
 ### Steps to build soil freeze-thaw (SFT) model coupled with cfe and soil moisture profiles
 ### Setting up (cloning) external repos
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
@@ -10,7 +10,24 @@
 - make && cd ..
 - [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_framework.sh)
 
-
+## Building the code to run/test examples in the ngen-framework 
+- See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
+- ### Specific instructions for building SFT, CFE and SMP (integrated system)
+  - git clone https://github.com/noaa-owp/ngen && cd ngen
+  - git submodule update --init
+    - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
+    - git submodule update --remote extern/cfe/cfe (inside ngen directory) 
+    - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw
+  - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi (inside ngen directory) 
+  - make -C extern/iso_c_fortran_bmi/cmake_build
+  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
+  - make -j 4 -C cmake_build
+  - git clone https://github.com/NOAA-OWP/SoilFreezeThaw extern/SoilFreezeThaw (-B: path to build, -S: path to source)
+    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw
+    - make -C extern/SoilFreezeThaw/cmake_build
+  - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles xtern/SoilMoistureProfiles
+    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles 
+    - make -C extern/SoilMoistureProfiles/cmake_build 
 
 # Introduction of Soil Freeze-thaw model
 
