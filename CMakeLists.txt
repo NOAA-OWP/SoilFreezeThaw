@@ -4,6 +4,8 @@ set(CMAKE_C_COMPILER $ENV{CC})
 set(CMAKE_CXX_COMPILER $ENV{CXX})
 
 option(NGEN "NGEN" OFF)
+option(STANDALONE "STANDALONE" OFF)
+
 IF(NGEN)
 message("ngen framework build")
 ENDIF(NGEN)
@@ -27,14 +29,20 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 ## cfe + aorc + pet + ftm
 
-IF(NOT ${NGEN})
+IF(NOT (${NGEN} AND ${STANDALONE}))
 message("Pseudo-framework build")
+
 add_executable(cfesft ./src/main_cfe_aorc_pet_ftm_smc.cxx ./cfe/src/cfe.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./cfe/forcing_code/src/pet.c ./cfe/forcing_code/src/bmi_pet.c)
-add_library(cfesftlib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/smc_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/smc_profile.hxx)
+
+add_library(cfesftlib ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx ./smc_coupler/src/bmi_coupler.cxx ./smc_coupler/src/soil_moisture_profile.cxx ./smc_coupler/include/bmi_coupler.hxx ./smc_coupler/include/soil_moisture_profile.hxx)
+
 target_link_libraries(cfesft LINK_PUBLIC cfesftlib)
 target_link_libraries(cfesft PRIVATE m)
-ENDIF(NOT ${NGEN})
+ENDIF(NOT (${NGEN} AND ${STANDALONE}))
 
+IF(${STANDALONE})
+add_executable(sft ./src/main_sft.cxx ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx)
+ENDIF(${STANDALONE})
 
 # ngen (add shared library)
 add_library(sftbmi SHARED ./src/bmi_freezethaw.cxx ./src/freezethaw.cxx ./include/bmi_freezethaw.hxx ./include/freezethaw.hxx)

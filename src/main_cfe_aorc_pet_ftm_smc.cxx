@@ -18,7 +18,7 @@
 
 
 #include "../smc_coupler/include/bmi_coupler.hxx"
-#include "../smc_coupler/include/smc_profile.hxx"
+#include "../smc_coupler/include/soil_moisture_profile.hxx"
 
 #define FrozenFraction true
 
