@@ -59,9 +59,9 @@
 				"params": {
 				    "model_type_name": "bmi_smp",
 				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi.dylib",
-				    "init_config": "./extern/SoilMoistureProfiles/test/config.txt",
+				    "init_config": "./extern/SoilMoistureProfiles/test/config_conceptual.txt",
 				    "allow_exceed_end_time": true,
-				    "main_output_variable": "soil_water_table",
+				    "main_output_variable": "soil_water_table_thickness",
 				    "variables_names_map" : {
 					"soil_storage" : "SOIL_STORAGE",
 					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
