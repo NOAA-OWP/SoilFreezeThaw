@@ -1,4 +1,14 @@
-## Building the code to run/test examples in the pseudo-framework (see instructions below for building in the ngen framework!!)
+## Building the code to run/test examples (Standalone SFT model) 
+### Example description: 
+Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with existing `golden test` ice_fraction using Schaake scheme. If test is successfull, the user should be able to see `Test passed = Yes` 
+- git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
+- mkdir build && cd build
+- cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug -DSTANDALONE=ON ../
+- make && cd ..
+- [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
+
+
+## Building the code to run/test examples in the pseudo-framework 
 ### Steps to build soil freeze-thaw (SFT) model coupled with cfe and soil moisture profiles
 ### Setting up (cloning) external repos
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
