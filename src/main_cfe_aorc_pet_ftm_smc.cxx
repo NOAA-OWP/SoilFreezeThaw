@@ -109,7 +109,7 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   
   coupler_bmi.SetValue("soil_storage",storage_ptr);
   coupler_bmi.SetValue("soil_storage_change",storage_change_ptr);
-  coupler_bmi.GetValue("smc_profile_option_bmi",smc_option_bmi_ptr);
+  coupler_bmi.GetValue("soil_moisture_profile_option_bmi",smc_option_bmi_ptr);
 
   if (smc_option_bmi == Constant)
     coupler_bmi.Update();
