@@ -5,7 +5,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug -DSTANDALONE=ON ../
 - make && cd ..
-- [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
+- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
 
 
 ## Building the code to run/test examples in the pseudo-framework 
