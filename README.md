@@ -28,6 +28,8 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
     - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
     - git submodule update --remote extern/cfe/cfe (inside ngen directory) 
     - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw
+  - cmake -B extern/cfe/cmake_build -S extern/cfe
+  - make -C extern/cfe/cmake_build
   - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi (inside ngen directory) 
   - make -C extern/iso_c_fortran_bmi/cmake_build
   - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
