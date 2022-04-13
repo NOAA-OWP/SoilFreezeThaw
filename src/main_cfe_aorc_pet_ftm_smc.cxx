@@ -89,13 +89,13 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
 /***************************************************************
     Function to pass the parameters from CFE to Coupler and get SMC from the Coupler to set in Freeze-thaw model.
 ***************************************************************/
-void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model,BmiCoupler coupler_bmi) {
+void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw *ftm_bmi_model,BmiCoupler *coupler_bmi) {
   
   enum {Constant=1, Linear=2};
   
   int nz = 0;
   int *nz_ptr = &nz;
-  ftm_bmi_model.GetValue("num_cells", nz_ptr);
+  ftm_bmi_model->GetValue("num_cells", nz_ptr);
 
   double storage = 0.0;
   double storage_change = 0.0;
@@ -107,17 +107,17 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE", storage_ptr);
   cfe_bmi_model->get_value(cfe_bmi_model, "SOIL_STORAGE_CHANGE", storage_change_ptr);
   
-  coupler_bmi.SetValue("soil_storage",storage_ptr);
-  coupler_bmi.SetValue("soil_storage_change",storage_change_ptr);
-  coupler_bmi.GetValue("soil_moisture_profile_option_bmi",smc_option_bmi_ptr);
+  coupler_bmi->SetValue("soil_storage",storage_ptr);
+  coupler_bmi->SetValue("soil_storage_change",storage_change_ptr);
+  coupler_bmi->GetValue("soil_moisture_profile_option_bmi",smc_option_bmi_ptr);
 
   if (smc_option_bmi == Constant)
-    coupler_bmi.Update();
+    coupler_bmi->Update();
   else if (smc_option_bmi == Linear) {
     double smc_layers[] = {0.25, 0.15, 0.1, 0.12};
     //double smc_layers[] = {0.4, 0.4, 0.4, 0.43};
-    coupler_bmi.SetValue("soil_moisture_layered",&smc_layers[0]);
-    coupler_bmi.Update();
+    coupler_bmi->SetValue("soil_moisture_layered",&smc_layers[0]);
+    coupler_bmi->Update();
   }
   else {
     std::cout<<"Not a valid option for the SMC profile!! "<<smc_option_bmi<<"\n";
@@ -126,8 +126,8 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   
   double *smct = new double[nz];
     
-  coupler_bmi.GetValue("soil_moisture_profile",&smct[0]);
-  ftm_bmi_model.SetValue("soil_moisture_profile", &smct[0]);
+  coupler_bmi->GetValue("soil_moisture_profile",&smct[0]);
+  ftm_bmi_model->SetValue("soil_moisture_profile", &smct[0]);
   // std::cout<<"SMC_main: "<<smct[0]<<" "<<smct[1]<<" "<<smct[2]<<" "<<smct[3]<<"\n";
   //cfe_bmi_model->set_value(cfe_bmi_model,"soil_moisture_profile", smct);
 }
@@ -336,7 +336,7 @@ int
       print_cfe_flux_at_timestep(cfe);
     
 
-    pass_smc_from_coupler_to_ftm(cfe_bmi_model, ftm_bmi_model,coupler_bmi);
+    pass_smc_from_coupler_to_ftm(cfe_bmi_model, &ftm_bmi_model,&coupler_bmi);
 
     ftm_bmi_model.Update(); // Update model 3
   }
