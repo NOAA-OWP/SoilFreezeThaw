@@ -7,7 +7,7 @@ using namespace std;
 #include "../bmi/bmi.hxx"
 #include "freezethaw.hxx"
 
-#define NGEN 0
+#define NGEN 1
 
 class NotImplemented : public std::logic_error {
   public:
@@ -19,7 +19,7 @@ class BmiFreezeThaw : public bmixx::Bmi {
   public:
     BmiFreezeThaw() {
       this->input_var_names[0] = "ground_temperature";
-      //this->input_var_names[1] = "soil_moisture_profile";
+      this->input_var_names[1] = "soil_moisture_profile";
       
       this->output_var_names[0] = "ice_fraction_schaake";
       this->output_var_names[1] = "ice_fraction_xinan";
@@ -80,10 +80,10 @@ class BmiFreezeThaw : public bmixx::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     freezethaw::FreezeThaw _model;
-    static const int input_var_name_count = 1;
+    static const int input_var_name_count = 2;
     static const int output_var_name_count = 3;
 
-    std::string input_var_names[1];
+    std::string input_var_names[2];
     std::string output_var_names[3];
 };
 
