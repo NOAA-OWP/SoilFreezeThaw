@@ -1,42 +1,4 @@
 {
-    "global": {
-      "formulations": [
-        {
-          "name":"tshirt",
-          "params": {
-              "maxsmc": 0.439,
-              "wltsmc": 0.066,
-              "satdk": 0.00000338,
-              "satpsi": 0.355,
-              "slope": 1.0,
-              "scaled_distribution_fn_shape_parameter": 4.05,
-              "multiplier": 0.0,
-              "alpha_fc": 0.33,
-              "Klf": 0.01,
-              "Kn": 0.03,
-              "nash_n": 2,
-              "Cgw": 0.01,
-              "expon": 6.0,
-              "max_groundwater_storage_meters": 1.0,
-              "nash_storage": [
-                  0.0,
-                  0.0
-              ],
-              "soil_storage_percentage": 0.667,
-              "groundwater_storage_percentage": 0.5,
-              "timestep": 3600,
-              "giuh": {
-                  "giuh_path": "./test/data/giuh/GIUH.json",
-                  "crosswalk_path": "./data/crosswalk.json"
-              }
-            }
-          }
-        ],
-        "forcing": {
-            "file_pattern": ".*{{ID}}.*.csv",
-            "path": "./data/forcing/"
-        }
-    },
     "time": {
 	"start_time": "2009-06-14 20:00:00",
         "end_time": "2012-04-03 09:00:00",
@@ -98,13 +60,12 @@
 				"params": {
 				    "model_type_name": "bmi_smp",
 				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi.dylib",
-				    "init_config": "./extern/SoilMoistureProfiles/test/config_conceptual.txt",
+				    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_smc_coupler.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "soil_water_table_thickness",
 				    "variables_names_map" : {
 					"soil_storage" : "SOIL_STORAGE",
 					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
-					
 				    },
 				    "default_output_values": [
 					{
@@ -124,11 +85,9 @@
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "num_cells",
 				    "variables_names_map" : {
-					"ground_temperature" : "TMP_ground_surface",
-					"soil_moisture_profile" : "soil_moisture_profile"
+					"ground_temperature" : "TMP_ground_surface"
 				    },
 				    "output_variables" : [
-					"num_cells",
 					"ice_fraction_schaake"
 				    ],
 				    "uses_forcing_file": false
