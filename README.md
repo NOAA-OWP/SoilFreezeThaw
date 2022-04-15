@@ -26,26 +26,31 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init
     - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
-    - git submodule update --remote extern/cfe/cfe (inside ngen directory) 
-    - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw
+    - git submodule update --remote extern/cfe/cfe  
+    - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw && cd ../../..
   - cmake -B extern/cfe/cmake_build -S extern/cfe
   - make -C extern/cfe/cmake_build
-  - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi (inside ngen directory) 
+  - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
   - make -C extern/iso_c_fortran_bmi/cmake_build
-  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
-  - make -j 4 -C cmake_build
-  - git clone https://github.com/NOAA-OWP/SoilFreezeThaw extern/SoilFreezeThaw (-B: path to build, -S: path to source)
-    - **Turn on macro `NGEN` inside** extern/SoilFreezeThaw/include/bmi_freezethaw.hxx    
+  - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
+  - make -C extern/evapotranspiration/cmake_build/
+  - git clone https://github.com/NOAA-OWP/SoilFreezeThaw extern/SoilFreezeThaw  
     - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw -DNGEN:BOOL=ON
     - make -C extern/SoilFreezeThaw/cmake_build
   - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
-    - **Turn on macro `NGEN` inside** extern/SoilMoistureProfiles/include/bmi_coupler.hxx 
-    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles 
+    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles -DNGEN:BOOL=ON
     - make -C extern/SoilMoistureProfiles/cmake_build 
+  - Note the following step will be removed once [PR#405](https://github.com/NOAA-OWP/ngen/pull/405) is merged
+    - gh pr list (you should see #405  Bmi array support  hellkite500:bmi-array-support)
+    - gh pr checkout 405
+  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
+  - make -j4 -C cmake_build
  - ### Running coupled SFT, CFE, and SMP models
  ```
    mkdir sft && cd sft
-   cp ../extern/SoilFreezeThaw/configs/realization_config_multi.json .
+   ln -s ../extern
+   ln -s ../data
+   cp extern/SoilFreezeThaw/configs/realization_config_multi.json .
    ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json   
 ```
 ## Introduction of Soil Freeze-thaw model
