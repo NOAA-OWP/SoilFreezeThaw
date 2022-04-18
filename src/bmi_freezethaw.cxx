@@ -10,6 +10,7 @@
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_freezethaw.hxx"
 #include "../include/freezethaw.hxx"
+#include <algorithm>
 
 void BmiFreezeThaw::
 Initialize (std::string config_file)
@@ -409,9 +410,14 @@ GetInputVarNames()
 {
   std::vector<std::string> names;
 
-  for (int i=0; i<this->input_var_name_count; i++)
-    names.push_back(this->input_var_names[i]);
-
+  std::vector<std::string>* names_m = _model.InputVarNamesModel();
+  
+  for (int i=0; i<this->input_var_name_count; i++) {
+    if (std::find(names_m->begin(), names_m->end(), this->input_var_names[i]) != names_m->end()) {
+      names.push_back(this->input_var_names[i]);
+    }
+  }
+  
   return names;
 }
 

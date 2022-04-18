@@ -102,6 +102,7 @@ InitFromConfigFile(std::string config_file)
   bool is_SMCT_set = false; //total moisture content
   bool is_SMCL_set = false; //liquid moisture content
   bool is_IFS_set = false; //ice fraction scheme
+  bool is_sft_standalone_set = false; //SFT standalone
     
   while (fp) {
 
@@ -222,6 +223,12 @@ InitFromConfigFile(std::string config_file)
       is_IFS_set = true;
       continue;
     }
+    if (param_key == "sft_standalone") {
+      bool sft_standalone = param_value;
+      if (stf_standalone == "true" || stf_standalone == "True" || stf_standalone == 1)  
+	is_sft_standalone_set = true;
+      continue;
+    }
   }
   
   fp.close();
@@ -281,10 +288,31 @@ InitFromConfigFile(std::string config_file)
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
   }
 
+  // standalone SFT does not need dynamic soil moisture profile from SMP, so adjusting the input var names
+  if(is_sft_standalone_set) {
+      input_var_names_model = new std::vector<std::string>;
+      input_var_names_model->push_back("ground_temperature");
+    }
+  else {
+    input_var_names_model = new std::vector<std::string>;
+    input_var_names_model->push_back("ground_temperature");
+    input_var_names_model->push_back("soil_moisture_profile");
+  }
+  
   // check if the size of the input data is consistent
   assert (n_st == this->nz);
   assert (n_mct == this->nz);
   assert (n_mcl == this->nz);
+}
+
+
+/*
+returns dynamically allocated 1D vector of strings that contains correct input variable names based on the model (conceptual or layered) chosen
+*/
+std::vector<std::string>* freezethaw::FreezeThaw::
+InputVarNamesModel()
+{
+  return input_var_names_model;
 }
 
 
