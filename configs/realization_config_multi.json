@@ -30,32 +30,6 @@
 				}
                             },
 			    {
-				"name": "bmi_c",
-				"params": {
-                                    "model_type_name": "bmi_c_cfe",
-                                    "library_file": "./extern/cfe/cmake_build/libcfebmi.dylib",
-                                    "forcing_file": "",
-                                    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_cfe_pass.txt",
-                                    "allow_exceed_end_time": true,
-                                    "main_output_variable": "Q_OUT",
-                                    "registration_function": "register_bmi_cfe",
-                                    "variables_names_map": {
-					"water_potential_evaporation_flux": "water_potential_evaporation_flux",
-					"atmosphere_water__liquid_equivalent_precipitation_rate" : "precip_rate"
-                                    },
-				    "output_variables" : [
-					"RAIN_RATE",
-					"DIRECT_RUNOFF",
-					"GIUH_RUNOFF",
-					"NASH_LATERAL_RUNOFF",
-					"DEEP_GW_TO_CHANNEL_FLUX",
-					"Q_OUT",
-					"SOIL_STORAGE"
-				    ],
-                                    "uses_forcing_file": false
-				}
-                            },
-			    {
 				"name": "bmi_c++",
 				"params": {
 				    "model_type_name": "bmi_smp",
@@ -92,7 +66,40 @@
 				    ],
 				    "uses_forcing_file": false
 				}
-			    }
+			    },
+			    {
+				"name": "bmi_c",
+				"params": {
+                                    "model_type_name": "bmi_c_cfe",
+                                    "library_file": "./extern/cfe/cmake_build/libcfebmi.dylib",
+                                    "forcing_file": "",
+                                    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_cfe_pass.txt",
+                                    "allow_exceed_end_time": true,
+                                    "main_output_variable": "Q_OUT",
+                                    "registration_function": "register_bmi_cfe",
+                                    "variables_names_map": {
+					"water_potential_evaporation_flux" : "potential_evapotranspiration",
+					"atmosphere_water__liquid_equivalent_precipitation_rate" : "APCP_surface",
+					"atmosphere_air_water~vapor__relative_saturation" : "SPFH_2maboveground",
+					"land_surface_air__temperature" : "TMP_2maboveground",
+					"land_surface_wind__x_component_of_velocity" : "UGRD_10maboveground",
+					"land_surface_wind__y_component_of_velocity" : "VGRD_10maboveground",
+					"land_surface_radiation~incoming~longwave__energy_flux" : "DLWRF_surface",
+					"land_surface_radiation~incoming~shortwave__energy_flux" : "DSWRF_surface",
+					"land_surface_air__pressure" : "PRES_surface"
+                                    },
+				    "output_variables" : [
+					"RAIN_RATE",
+					"DIRECT_RUNOFF",
+					"GIUH_RUNOFF",
+					"NASH_LATERAL_RUNOFF",
+					"DEEP_GW_TO_CHANNEL_FLUX",
+					"Q_OUT",
+					"SOIL_STORAGE"
+				    ],
+                                    "uses_forcing_file": false
+				}
+                            }
 			    
 			],
 			"uses_forcing_file": false
