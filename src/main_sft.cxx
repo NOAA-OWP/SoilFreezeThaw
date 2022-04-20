@@ -123,7 +123,7 @@ int main(int argc, const char *argv[])
   //RMSE
   err_frozen_frac_mm  = std::pow(err_frozen_frac_mm/nsteps,0.5);
    
-  if (err_frozen_frac_mm < 1.e-5)
+  if (err_frozen_frac_mm < 1.e-2)
     test_status &= true;
   else
     test_status &= false;
