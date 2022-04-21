@@ -15,6 +15,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - git clone https://github.com/NOAA-OWP/cfe 
 - git checkout [cfe_soilfreezethaw](https://github.com/NOAA-OWP/cfe/tree/cfe_soilfreezethaw) (note: coupling SFT with CFE using the pseudo-framework requires this special cfe branch)
 - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_coupler
+- git clone https://github.com/NOAA-OWP/evapotranspiration pet
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug ../
 - make && cd ..
