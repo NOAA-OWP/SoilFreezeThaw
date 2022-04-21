@@ -224,8 +224,7 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     if (param_key == "sft_standalone") {
-      bool sft_standalone = param_value;
-      if (stf_standalone == "true" || stf_standalone == "True" || stf_standalone == 1)  
+      if (param_value == "true" || param_value == "True" || stod(param_value) == 1)  
 	is_sft_standalone_set = true;
       continue;
     }
