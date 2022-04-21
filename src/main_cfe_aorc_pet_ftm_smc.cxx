@@ -7,8 +7,8 @@
 #include "../cfe/include/bmi.h"
 #include "../cfe/include/bmi_cfe.h"
 
-#include "../cfe/forcing_code/include/pet.h"
-#include "../cfe/forcing_code/include/bmi_pet.h"
+#include "../pet/include/pet.h"
+#include "../pet/include/bmi_pet.h"
 #include "../cfe/forcing_code/include/aorc.h"
 #include "../cfe/forcing_code/include/bmi_aorc.h"
 
