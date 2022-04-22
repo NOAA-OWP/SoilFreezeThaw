@@ -25,7 +25,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 ### Run
 - [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_framework.sh)
 
-## ngen-framework integrated models example
+## ngen-framework standalone/integrated models example
 - See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
 - ### Specific instructions for building an integrated system
 ### Build
