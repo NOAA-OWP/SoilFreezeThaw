@@ -62,7 +62,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
  #### standalone SFTM in the ngen framework
  ```
    cp extern/SoilFreezeThaw/configs/realization_config_multi.json .
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
+   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_standalone.json
 ```
 #### Run integrated models in the ngen framework
  ```
