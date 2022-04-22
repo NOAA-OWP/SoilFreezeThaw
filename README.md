@@ -1,16 +1,19 @@
-## Building the code to run/test examples (Standalone SFT model) 
+## Standalone soil-freeze thaw model (SFTM) example
 ### Example description: 
 Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with existing `golden test` ice_fraction using Schaake scheme. If test is successfull, the user should be able to see `Test passed = Yes` 
+### Build
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug -DSTANDALONE=ON ../
 - make && cd ..
+### Run
 - [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
+- It compares results with gold test result
 
 
-## Building the code to run/test examples in the pseudo-framework 
-### Steps to build soil freeze-thaw (SFT) model coupled with cfe and soil moisture profiles
-### Setting up (cloning) external repos
+## Pseudo-framework integrated models example 
+### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFTM (and more models in if needed/desired)
+### Build 
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - git clone https://github.com/NOAA-OWP/cfe 
 - git checkout [cfe_soilfreezethaw](https://github.com/NOAA-OWP/cfe/tree/cfe_soilfreezethaw) (note: coupling SFT with CFE using the pseudo-framework requires this special cfe branch)
@@ -19,11 +22,13 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug ../
 - make && cd ..
+### Run
 - [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_framework.sh)
 
-## Building the code to run/test examples in the ngen-framework 
+## ngen-framework integrated models example
 - See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
-- ### Specific instructions for building SFT, CFE and SMP (integrated system)
+- ### Specific instructions for building an integrated system
+### Build
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init
     - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
@@ -46,14 +51,29 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
     - gh pr checkout 405
   - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
   - make -j4 -C cmake_build
- - ### Running coupled SFT, CFE, and SMP models
+
+ ### Run 
+ #### Pre-process step
  ```
    mkdir sft && cd sft
    ln -s ../extern
-   ln -s ../data
+   ln -s ../data 
+  ```
+ #### standalone SFTM in the ngen framework
+ ```
    cp extern/SoilFreezeThaw/configs/realization_config_multi.json .
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json   
+   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
 ```
+#### Run integrated models in the ngen framework
+ ```
+   cp extern/SoilFreezeThaw/configs/realization_config_multi.json .
+   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
+```
+#### Post-process step
+  - For standalone run: `cd test` and run [test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) (the script compares results with a gold test output)
+  - For integrated run: Output data is stored in cat-27.csv, use your favorite tool to visualize and compare data
+
+
 ## Introduction of Soil Freeze-thaw model
 
 The diffusion equation is used to simulate the transport of energy in the soil.
