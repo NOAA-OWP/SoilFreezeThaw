@@ -40,9 +40,9 @@ namespace freezethaw {
     double *SMCT = NULL; // total soil moisture content
     double *SMCLiq = NULL; // liquid moisture content
     double *SMCIce = NULL; // ice moisture content
-    double *GT = NULL; // ground/air temperature
+    //double *GT = NULL; // ground/air temperature
     double ground_temp; // ground/air temperature
-    double *Time_ = NULL;
+    //double *Time_ = NULL;
     int opt_botb; //bottom boundary condition. 1 = zero flux, 2 = prescribed temperature
     int opt_topb; //top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
     double smcmax; //porosity
@@ -51,7 +51,7 @@ namespace freezethaw {
     double ice_fraction_schaake;
     double ice_fraction_xinan;
     std::string ice_fraction_scheme;
-    int *ice_fraction_scheme_bmi = NULL;
+    int ice_fraction_scheme_bmi;
     bool is_SMC_BMI_set;
     int total_nsteps; // total number of timesteps (set by the SFT model forcing data)
 

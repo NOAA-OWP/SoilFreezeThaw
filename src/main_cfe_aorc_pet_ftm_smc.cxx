@@ -350,7 +350,7 @@ int
   printf("Finalizing BFE and AORC models\n");
   cfe_bmi_model->finalize(cfe_bmi_model);
   aorc_bmi_model->finalize(aorc_bmi_model);
-
+  ftm_bmi_model.Finalize();
   return 0;
 }
 
