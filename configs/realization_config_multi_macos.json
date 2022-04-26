@@ -15,6 +15,16 @@
 			"init_config": "",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "Q_OUT",
+			"output_header_fields" : [
+                                        "rain_rate",
+                                        "direct_runoff",
+                                        "giuh_runoff",
+                                        "nash_lateral_runoff",
+                                        "deep_gw_to_channel_flux",
+                                        "q_out",
+                                        "soil_storage",
+			                "ice_fraction_schaake"
+                                    ],
 			"modules": [
 			    {
 				"name": "bmi_c",
@@ -95,7 +105,8 @@
 					"NASH_LATERAL_RUNOFF",
 					"DEEP_GW_TO_CHANNEL_FLUX",
 					"Q_OUT",
-					"SOIL_STORAGE"
+					"SOIL_STORAGE",
+					"ice_fraction_schaake"
 				    ],
                                     "uses_forcing_file": false
 				}
