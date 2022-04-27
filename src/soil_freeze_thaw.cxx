@@ -402,8 +402,9 @@ void freezethaw::FreezeThaw::
 Advance()
 {
 
-  // BMI only sets (total) soil moisture content, so we set the liquid/ice contents here at the initial time
-  // assuming that the ice content is zero initially otherwise this would need to be adjusted
+  /* BMI only sets (total) soil moisture content, so we set the liquid/ice contents here at the initial time
+     assuming that the ice content is zero initially otherwise this would need to be adjusted
+  */
   if (this->is_soil_moisture_bmi_set) {
     for (int i=0; i<this->ncells;i++) {
       this->soil_liquid_content[i] = this->soil_moisture_content[i];
@@ -420,26 +421,34 @@ Advance()
     }
   }*/
   
-  // Update Thermal conductivities, note the soil heat flux update happens in the PhaseChange module, so no need to update here
+  /* Update Thermal conductivities due to update in the soil moisture */
   ThermalConductivity(); // initialize thermal conductivities
 
-  // Update volumetric heat capacity
+  /* Update volumetric heat capacity */
   SoilHeatCapacity();
   
-  // call Diffusion Eq. first to get the updated soil temperatures
+  /* Solve the diffusion equation to get updated soil temperatures */
   SolveDiffusionEq();
 
-  // call phase change to get water/ice partition for the updated temperature
+  /* Now time to update ice content based on the new soil moisture and and  soil temperature profiles.
+     Call Phase Change moudle to parition soil moisture into water and ice.
+  */
   PhaseChange();
 
   this->time += this->dt;
 
   ComputeIceFraction();
 
-  assert (this->soil_temperature[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
+  /* getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse */
+  assert (this->soil_temperature[0] > 150.0); 
   
 }
 
+/*
+  Module returns updated ground heat flux used in surface boundary condition in the diffusion equation
+  Option 1 : prescribed (user-defined) constant surface/ground temperature
+  Option 2 : dynamic surface/ground temperature (user-provided or provided by a coupled model)
+*/
 double freezethaw::FreezeThaw::
 GroundHeatFlux(double surfT)
 {  
@@ -456,47 +465,15 @@ GroundHeatFlux(double surfT)
     return 0;
 }
 
-//*********************************************************************************
-// Solve, using the Thomas Algorithm (TDMA), the tri-diagonal system              *
-//     a_i X_i-1 + b_i X_i + c_i X_i+1 = d_i,     i = 0, n - 1                    *
-//                                                                                *
-// Effectively, this is the n x n matrix equation.                                *
-// a[i], b[i], c[i] are the non-zero diagonals of the matrix and d[i] is the rhs. *
-// a[0] and c[n-1] aren't used.                                                   *
-//*********************************************************************************
-bool freezethaw::FreezeThaw::
-SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double> &c, const vector<double> &d, vector<double> &X ) {
-   int n = d.size();
-   vector<double> P( n, 0 );
-   vector<double> Q( n, 0 );
-   X = P;
-   // Forward pass
-   double denominator = b[0];
-
-   P[0] = -c[0]/denominator;
-   Q[0] =  d[0]/denominator;
-
-   for (int i = 1; i < n; i++) {
-     denominator = b[i] + a[i] * P[i-1];
-
-     if ( std::abs(denominator) < 1e-20 ) return false;
-     
-     P[i] =  -c[i]/denominator;
-     Q[i] = (d[i] - a[i] * Q[i-1])/denominator;
-   }
-   
-   // Backward substiution
-   X[n-1] = Q[n-1];
-   for (int i = n - 2; i >= 0; i--)
-     X[i] = P[i] * X[i+1] + Q[i];
-   
-   return true;
-}
-  
+/*
+  See README.md for a detailed description of the model
+  Solves a 1D diffusion equation with variable thermal conductivity
+  Discretizad through an implicit Crank-Nicolson scheme
+*/
 void freezethaw::FreezeThaw::
 SolveDiffusionEq ()
 {
-    // local variables
+    // local 1D arrays 
     std::vector<double> Flux(ncells);
     std::vector<double> AI(ncells);
     std::vector<double> BI(ncells);
@@ -574,7 +551,48 @@ SolveDiffusionEq ()
     std::copy(X.begin(), X.end(), this->soil_temperature);
 }
 
+//*********************************************************************************
+// Solve, using the Thomas Algorithm (TDMA), the tri-diagonal system              *
+//     a_i X_i-1 + b_i X_i + c_i X_i+1 = d_i,     i = 0, n - 1                    *
+//                                                                                *
+// Effectively, this is the n x n matrix equation.                                *
+// a[i], b[i], c[i] are the non-zero diagonals of the matrix and d[i] is the rhs. *
+// a[0] and c[n-1] aren't used.                                                   *
+//*********************************************************************************
+bool freezethaw::FreezeThaw::
+SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double> &c, const vector<double> &d, vector<double> &X ) {
+   int n = d.size();
+   vector<double> P( n, 0 );
+   vector<double> Q( n, 0 );
+   X = P;
+   
+   // Forward pass
+   double denominator = b[0];
 
+   P[0] = -c[0]/denominator;
+   Q[0] =  d[0]/denominator;
+
+   for (int i = 1; i < n; i++) {
+     denominator = b[i] + a[i] * P[i-1];
+
+     if ( std::abs(denominator) < 1e-20 ) return false;
+     
+     P[i] =  -c[i]/denominator;
+     Q[i] = (d[i] - a[i] * Q[i-1])/denominator;
+   }
+   
+   // Backward substiution
+   X[n-1] = Q[n-1];
+   for (int i = n - 2; i >= 0; i--)
+     X[i] = P[i] * X[i+1] + Q[i];
+   
+   return true;
+}
+
+/*
+  Computes buld soil thermal conductivity
+  thermal conductivity model follows the parameterization of Peters-Lidars 
+*/
 void freezethaw::FreezeThaw::
 ThermalConductivity() {
   Properties prop;
@@ -625,11 +643,14 @@ ThermalConductivity() {
   }
 }
 
+/*
+  The effective volumetric heat capacity is calculated based on the respective fraction of each component (water, ice, air, and rock):
+*/
 void freezethaw::FreezeThaw::
 SoilHeatCapacity() {
   Properties prop;
   const int n_z = this->shape[0];
-  //def soil_heat_capacity(domain, prop,SMC, SOLIQ, HCPCT, SMCMAX):
+  
   for (int i=0; i<n_z;i++) {
     double sice = soil_moisture_content[i] - soil_liquid_content[i];
     heat_capacity[i] = soil_liquid_content[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-soil_moisture_content[i])*prop.hcair_;
@@ -647,8 +668,16 @@ SoilCellsThickness() {
   }
 }
 
+
+/*
+  See README.md for a detailed description of the model
+  The phase change module partition soil moisture into water and ice based on freezing-point depression formulation
+  The freezing-point depression equation gives the maximum amount of liquid water (unfrozen soil moisture content) that can exist below the subfreezing temperature
+  Here we have used Clap-Hornberger soil moisture function to compute the unfrozen soil moisture content
+*/
 void freezethaw::FreezeThaw::
 PhaseChange() {
+  
   Properties prop;
   const int n_z = this->shape[0];
   double *Supercool = new double[n_z]; //supercooled water in soil
