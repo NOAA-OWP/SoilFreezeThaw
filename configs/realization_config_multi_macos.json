@@ -44,7 +44,7 @@
 				"params": {
 				    "model_type_name": "bmi_smp",
 				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi.dylib",
-				    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_smc_coupler.txt",
+				    "init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_smp.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "soil_water_table_thickness",
 				    "variables_names_map" : {
