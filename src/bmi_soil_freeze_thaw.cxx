@@ -16,13 +16,13 @@ void BmiFreezeThaw::
 Initialize (std::string config_file)
 {
   if (config_file.compare("") != 0 )
-    this->_model = freezethaw::FreezeThaw(config_file);
+    this->_model = new freezethaw::FreezeThaw(config_file);
 }
 
 void BmiFreezeThaw::
 Update()
 {
-  this->_model.Advance();
+  this->_model->Advance();
 }
 
 
@@ -43,9 +43,9 @@ UpdateUntil(double t)
       this->Update();
 
     frac = n_steps - int(n_steps);
-    this->_model.dt = frac * dt;
-    this->_model.Advance();
-    this->_model.dt = dt;
+    this->_model->dt = frac * dt;
+    this->_model->Advance();
+    this->_model->dt = dt;
   }
 }
 
@@ -53,9 +53,9 @@ UpdateUntil(double t)
 void BmiFreezeThaw::
 Finalize()
 {
-  this->_model.~FreezeThaw();
+  if (this->_model)
+    this->_model->~FreezeThaw();
 }
-
 
 int BmiFreezeThaw::
 GetVarGrid(std::string name)
@@ -144,7 +144,7 @@ void BmiFreezeThaw::
 GetGridShape(const int grid, int *shape)
 {
   if (grid == 0) {
-    shape[0] = this->_model.shape[0];
+    shape[0] = this->_model->shape[0];
   }
 }
 
@@ -153,7 +153,7 @@ void BmiFreezeThaw::
 GetGridSpacing (const int grid, double * spacing)
 {
   if (grid == 0) {
-    spacing[0] = this->_model.spacing[0];
+    spacing[0] = this->_model->spacing[0];
   }
 }
 
@@ -162,7 +162,7 @@ void BmiFreezeThaw::
 GetGridOrigin (const int grid, double *origin)
 {
   if (grid == 0) {
-    origin[0] = this->_model.origin[0];
+    origin[0] = this->_model->origin[0];
   }
 }
 
@@ -181,7 +181,7 @@ int BmiFreezeThaw::
 GetGridSize(const int grid)
 {
   if (grid == 2) // for arrays
-    return this->_model.shape[0];
+    return this->_model->shape[0];
   if (grid == 0 || grid == 1) // for scalars
     return 1;
   else
@@ -224,7 +224,7 @@ int BmiFreezeThaw::
 GetGridNodeCount(const int grid)
 {
   if (grid == 0)
-    return this->_model.shape[0];
+    return this->_model->shape[0];
   else
     return -1;
 }
@@ -289,30 +289,30 @@ GetValuePtr (std::string name)
 {
   /*
   if (name.compare("temperature") == 0)
-    return (void*)this->_model.ST;
+    return (void*)this->_model->ST;
   else if (name.compare("moisture_content_total") == 0)
-    return (void*)this->_model.SMCT;
+    return (void*)this->_model->SMCT;
   else if (name.compare("moisture_content_liquid") == 0)
-    return (void*)this->_model.SMCLiq;
+    return (void*)this->_model->SMCLiq;
   else if (name.compare("moisture_content_ice") == 0)
-    return (void*)this->_model.SMCIce;
+    return (void*)this->_model->SMCIce;
   else 
   */
   if (name.compare("soil_moisture_profile") == 0)
-    return (void*)this->_model.soil_moisture_content;
+    return (void*)this->_model->soil_moisture_content;
   else if (name.compare("ground_temperature") == 0 )
-    return (void*)(&this->_model.ground_temp);
+    return (void*)(&this->_model->ground_temp);
   else if (name.compare("num_cells") == 0)
-    return (void*)(&this->_model.ncells);
+    return (void*)(&this->_model->ncells);
   else if (name.compare("ice_fraction_schaake") == 0) {
-    return (void*)(&this->_model.ice_fraction_schaake);
+    return (void*)(&this->_model->ice_fraction_schaake);
   }
   else if (name.compare("ice_fraction_xinan") == 0){
-    int val = this->_model.ice_fraction_xinan;
-    return (void*)(&this->_model.ice_fraction_xinan);
+    int val = this->_model->ice_fraction_xinan;
+    return (void*)(&this->_model->ice_fraction_xinan);
   }
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
-    return (void*)this->_model.ice_fraction_scheme_bmi;
+    return (void*)(&this->_model->ice_fraction_scheme_bmi);
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";
@@ -410,7 +410,7 @@ GetInputVarNames()
 {
   std::vector<std::string> names;
 
-  std::vector<std::string>* names_m = _model.InputVarNamesModel();
+  std::vector<std::string>* names_m = _model->InputVarNamesModel();
   
   for (int i=0; i<this->input_var_name_count; i++) {
     if (std::find(names_m->begin(), names_m->end(), this->input_var_names[i]) != names_m->end()) {
@@ -442,13 +442,13 @@ GetStartTime () {
 
 double BmiFreezeThaw::
 GetEndTime () {
-  return this->_model.endtime;
+  return this->_model->endtime;
 }
 
 
 double BmiFreezeThaw::
 GetCurrentTime () {
-  return this->_model.time;
+  return this->_model->time;
 }
 
 
@@ -460,7 +460,7 @@ GetTimeUnits() {
 
 double BmiFreezeThaw::
 GetTimeStep () {
-  return this->_model.dt;
+  return this->_model->dt;
 }
 
 #endif

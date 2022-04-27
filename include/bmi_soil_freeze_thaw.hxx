@@ -78,7 +78,7 @@ class BmiFreezeThaw : public bmixx::Bmi {
     void GetGridFaceNodes(const int grid, int *face_nodes);
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
-    freezethaw::FreezeThaw _model;
+    freezethaw::FreezeThaw* _model;
     static const int input_var_name_count = 2;
     static const int output_var_name_count = 3;
 

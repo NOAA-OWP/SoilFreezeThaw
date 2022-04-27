@@ -31,7 +31,6 @@ FreezeThaw()
   this->option_bottom_boundary = 2;
   this->option_top_boundary = 2;
   this->ice_fraction_scheme= " ";
-  this->ice_fraction_scheme_bmi = new int[1];
   this->soil_depth =0.0;
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
@@ -46,7 +45,6 @@ FreezeThaw(std::string config_file)
   this->bottom_temp_const = 275.15;
   this->option_bottom_boundary = 2; // 1: zero thermal flux, 2: constant Temp
   this->option_top_boundary = 2; // 1: constant temp, 2: from a file
-  this->ice_fraction_scheme_bmi = new int[1];
   this->InitFromConfigFile(config_file);
 
   this->shape[0] = this->ncells;
@@ -363,20 +361,20 @@ ComputeIceFraction()
   this->ice_fraction_xinan = 0.0;
   
   if (this->ice_fraction_scheme == "Schaake") {
-    *this->ice_fraction_scheme_bmi = 1;
+    this->ice_fraction_scheme_bmi = 1;
   }
   else if (this->ice_fraction_scheme == "Xinanjiang") {
-    *this->ice_fraction_scheme_bmi = 2;
+    this->ice_fraction_scheme_bmi = 2;
   }
   
-  if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
+  if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
     for (int i =0; i < ncells; i++) {
       val += this->soil_ice_content[i] * this->soil_dz[i];
     }
     assert (this->ice_fraction_schaake <= this->soil_depth);
     this->ice_fraction_schaake = val;
   }
- else if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
+ else if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
     double fice = std::min(1.0, this->soil_ice_content[0]/this->smcmax);
     double A = 4.0; // taken from NWM SOILWATER subroutine
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
