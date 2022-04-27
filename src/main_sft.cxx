@@ -5,8 +5,8 @@
 #include <fstream>
 
 #include "../bmi/bmi.hxx"
-#include "../include/bmi_freezethaw.hxx"
-#include "../include/freezethaw.hxx"
+#include "../include/bmi_soil_freeze_thaw.hxx"
+#include "../include/soil_freeze_thaw.hxx"
 #include <cmath>
 
 
@@ -33,7 +33,7 @@ int main(int argc, const char *argv[])
   /************************************************************************
   Creating SFT object
   ************************************************************************/
-  BmiFreezeThaw ftm_bmi_model;
+  BmiSoilFreezeThaw ftm_bmi_model;
  
   /************************************************************************
       Initializing the BMI model for Soil freeze-thaw model
@@ -50,7 +50,7 @@ int main(int argc, const char *argv[])
   /************************************************************************
     Now loop through time and call the models with the intermediate get/set
   ************************************************************************/
-  printf("looping through and calling updata\n");
+  printf("looping through and calling update \n");
 
   int nsteps = 24566; // total number of time steps 
   double *ice_fraction = new double[nsteps];
