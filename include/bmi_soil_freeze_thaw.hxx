@@ -5,7 +5,7 @@ using namespace std;
 
 #include <string.h>
 #include "../bmi/bmi.hxx"
-#include "freezethaw.hxx"
+#include "soil_freeze_thaw.hxx"
 
 
 class NotImplemented : public std::logic_error {

@@ -9,8 +9,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
-#include "../include/freezethaw.hxx"
-#define OK (1)
+#include "../include/soil_freeze_thaw.hxx"
 
 
 freezethaw::FreezeThaw::
@@ -26,15 +25,14 @@ FreezeThaw()
   this->origin[0] = 0.;
   this->origin[1] = 0.;
   this->dt = 3600;
-  this->lhf = 0.3336E06;
-  this->ttop = 260.;
-  this->tbot = 275.15;
-  this->opt_botb = 2;
-  this->opt_topb = 2;
-  this->nsteps=0;
+  this->latent_heat_fusion = 0.3336E06;
+  this->ground_temp_const = 260.;
+  this->bottom_temp_const = 275.15;
+  this->option_bottom_boundary = 2;
+  this->option_top_boundary = 2;
   this->ice_fraction_scheme= " ";
   this->ice_fraction_scheme_bmi = new int[1];
-  this->Zd =0.0;
+  this->soil_depth =0.0;
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
   this->ground_temp = 273.15;
@@ -43,15 +41,15 @@ FreezeThaw()
 freezethaw::FreezeThaw::
 FreezeThaw(std::string config_file)
 {
-  this->lhf = 0.3336E06;
-  this->ttop = 260.;
-  this->tbot = 275.15;
-  this->opt_botb = 2; // 1: zero thermal flux, 2: constant Temp
-  this->opt_topb = 2; // 1: constant temp, 2: from a file
+  this->latent_heat_fusion = 0.3336E06;
+  this->ground_temp_const = 260.;
+  this->bottom_temp_const = 275.15;
+  this->option_bottom_boundary = 2; // 1: zero thermal flux, 2: constant Temp
+  this->option_top_boundary = 2; // 1: constant temp, 2: from a file
   this->ice_fraction_scheme_bmi = new int[1];
   this->InitFromConfigFile(config_file);
 
-  this->shape[0] = this->nz;
+  this->shape[0] = this->ncells;
   this->shape[1] = 1;
   this->shape[2] = 1;
   this->spacing[0] = 1.;
@@ -60,27 +58,24 @@ FreezeThaw(std::string config_file)
   this->origin[1] = 0.;
 
   this->InitializeArrays();
-  SetLayerThickness(); // get soil layer thickness
+  SoilCellsThickness(); // get soil cells thickness
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
   this->ground_temp = 273.15;
-  //  if (this->ice_fraction_scheme != "BMI")
-  //  GetIceFraction(); 
   this->time = 0.;
-  this->nsteps = 0;
 }
 
 
 void freezethaw::FreezeThaw::
 InitializeArrays(void)
 {
-  this->TC = new double[nz];
-  this->HC = new double[nz];
-  this->Dz = new double[nz];
-  this->SMCIce = new double[nz];
+  this->thermal_conductivity = new double[ncells];
+  this->heat_capacity = new double[ncells];
+  this->soil_dz = new double[ncells];
+  this->soil_ice_content = new double[ncells];
   
-  for (int i=0;i<nz;i++)
-    this->SMCIce[i] = this->SMCT[i] - this->SMCLiq[i];
+  for (int i=0;i<ncells;i++)
+    this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
 }
 
 void freezethaw::FreezeThaw::
@@ -90,18 +85,18 @@ InitFromConfigFile(std::string config_file)
   fp.open(config_file);
   int n_st, n_mct, n_mcl;
 
-  this->is_SMC_BMI_set = false;
+  this->is_soil_moisture_bmi_set = false;
   bool is_endtime_set = false;
   bool is_dt_set = false;
-  bool is_Z_set = false;
+  bool is_soil_z_set = false;
   bool is_smcmax_set = false;
-  bool is_bexp_set = false;
+  bool is_bb_set = false;
   bool is_quartz_set = false;
   bool is_satpsi_set = false;
-  bool is_ST_set = false;
-  bool is_SMCT_set = false; //total moisture content
-  bool is_SMCL_set = false; //liquid moisture content
-  bool is_IFS_set = false; //ice fraction scheme
+  bool is_soil_temperature_set = false;
+  bool is_soil_moisture_content_set = false; //total moisture content
+  bool is_soil_liquid_content_set = false; //liquid moisture content
+  bool is_ice_fraction_scheme_set = false; //ice fraction scheme
   bool is_sft_standalone_set = false; //SFT standalone
     
   while (fp) {
@@ -124,8 +119,8 @@ InitFromConfigFile(std::string config_file)
 
     param_value = line.substr(loc_eq,loc_u - loc_eq);
     
-    if (param_key == "SMC_BMI") {
-      this->is_SMC_BMI_set = true;
+    if (param_key == "soil_moisture_bmi") {
+      this->is_soil_moisture_bmi_set = true;
       continue;
     }
     if (param_key == "end_time") {
@@ -153,15 +148,15 @@ InitFromConfigFile(std::string config_file)
       is_dt_set = true;
       continue;
     }
-    if (param_key == "Z") {
+    if (param_key == "soil_z") {
       std::vector<double> vec = ReadVectorData(param_value);
       
-      this->Z = new double[vec.size()];
+      this->soil_z = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
-	this->Z[i] = vec[i];
-      this->nz = vec.size();
-      this->Zd = this->Z[this->nz-1];
-      is_Z_set = true;
+	this->soil_z[i] = vec[i];
+      this->ncells = vec.size();
+      this->soil_depth = this->soil_z[this->ncells-1];
+      is_soil_z_set = true;
       continue;
     }
     if (param_key == "soil_params.smcmax") {
@@ -170,10 +165,10 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     if (param_key == "soil_params.b") {
-      this->bexp = std::stod(param_value);
-      std::string bexp_unit = line.substr(loc_u+1,line.length());
-      assert (this->bexp > 0);
-      is_bexp_set = true;
+      this->bb = std::stod(param_value);
+      std::string bb_unit = line.substr(loc_u+1,line.length());
+      assert (this->bb > 0);
+      is_bb_set = true;
       continue;
     }
     if (param_key == "soil_params.quartz") {
@@ -189,38 +184,38 @@ InitFromConfigFile(std::string config_file)
     }
     if (param_key == "soil_temperature") {
       std::vector<double> vec = ReadVectorData(param_value);
-      this->ST = new double[vec.size()];
+      this->soil_temperature = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
-	this->ST[i] = vec[i];
+	this->soil_temperature[i] = vec[i];
       n_st = vec.size();
       
-      is_ST_set = true;
+      is_soil_temperature_set = true;
       continue;
 
     }
-    if (param_key == "soil_total_moisture_content") {
+    if (param_key == "soil_moisture_content") {
       std::vector<double> vec = ReadVectorData(param_value);
-      this->SMCT = new double[vec.size()];
+      this->soil_moisture_content = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
-	this->SMCT[i] = vec[i];
+	this->soil_moisture_content[i] = vec[i];
       n_mct = vec.size();
-      is_SMCT_set = true;
+      is_soil_moisture_content_set = true;
       continue;
     }
-    if (param_key == "soil_liquid_moisture_content") {
+    if (param_key == "soil_liquid_content") {
       std::vector<double> vec = ReadVectorData(param_value);
-      this->SMCLiq = new double[vec.size()];
+      this->soil_liquid_content = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++) {
-	//	assert (this->SMCT[i] >= vec[i]);
-	this->SMCLiq[i] = vec[i];
+	//	assert (this->soil_moisture_content[i] >= vec[i]);
+	this->soil_liquid_content[i] = vec[i];
       }
       n_mcl = vec.size();
-      is_SMCL_set = true;
+      is_soil_liquid_content_set = true;
       continue;
     }
     if (param_key == "ice_fraction_scheme") {
       this->ice_fraction_scheme = param_value;
-      is_IFS_set = true;
+      is_ice_fraction_scheme_set = true;
       continue;
     }
     if (param_key == "sft_standalone") {
@@ -232,13 +227,13 @@ InitFromConfigFile(std::string config_file)
   
   fp.close();
   
-  // simply allocate space for SMCLiq and SMCT arrays, as they will be set through CFE_BMI
-  if (this->is_SMC_BMI_set && is_Z_set) {
-    this->SMCT = new double[this->nz]();
-    this->SMCLiq = new double[this->nz]();
-    n_mct = this->nz;
-    n_mcl = this->nz;
-    is_SMCT_set = true;
+  // simply allocate space for soil_liquid_content and soil_moisture_content arrays, as they will be set through CFE_BMI
+  if (this->is_soil_moisture_bmi_set && is_soil_z_set) {
+    this->soil_moisture_content = new double[this->ncells]();
+    this->soil_liquid_content = new double[this->ncells]();
+    n_mct = this->ncells;
+    n_mcl = this->ncells;
+    is_soil_moisture_content_set = true;
   }
 
   if (!is_endtime_set) {
@@ -250,17 +245,17 @@ InitFromConfigFile(std::string config_file)
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Time step (dt) not set in the config file!");
   }
-  if (!is_Z_set) {
+  if (!is_soil_z_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Z not set in the config file!");
+    throw std::runtime_error("soil_z not set in the config file!");
   }
   if (!is_smcmax_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("smcmax not set in the config file!");
   }
-  if (!is_bexp_set) {
+  if (!is_bb_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("bexp (Clapp-Hornberger's parameter) not set in the config file!");
+    throw std::runtime_error("bb (Clapp-Hornberger's parameter) not set in the config file!");
   }
   if (!is_quartz_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
@@ -270,19 +265,19 @@ InitFromConfigFile(std::string config_file)
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("satpsi not set in the config file!");
   }
-  if (!is_ST_set) {
+  if (!is_soil_temperature_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Soil temperature not set in the config file!");
   }
-  if (!is_SMCT_set && !this->is_SMC_BMI_set) {
+  if (!is_soil_moisture_content_set && !this->is_soil_moisture_bmi_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Total soil moisture content not set in the config file!");
   }
-  if (!is_SMCL_set && !this->is_SMC_BMI_set) {
+  if (!is_soil_liquid_content_set && !this->is_soil_moisture_bmi_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Liquid soil moisture content not set in the config file!");
   }
-  if (!is_IFS_set) {
+  if (!is_ice_fraction_scheme_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
   }
@@ -299,9 +294,9 @@ InitFromConfigFile(std::string config_file)
   }
   
   // check if the size of the input data is consistent
-  assert (n_st == this->nz);
-  assert (n_mct == this->nz);
-  assert (n_mcl == this->nz);
+  assert (n_st == this->ncells);
+  assert (n_mct == this->ncells);
+  assert (n_mcl == this->ncells);
 }
 
 
@@ -314,7 +309,10 @@ InputVarNamesModel()
   return input_var_names_model;
 }
 
-
+/*
+  Reads soil discretization, soil moisture, soil temperature from the config file
+  Note: soil moisture are not read from the config file when the model is coupled to SoilMoistureProfiles modules
+*/
 std::vector<double> freezethaw::FreezeThaw::
 ReadVectorData(std::string key)
 {
@@ -327,7 +325,7 @@ ReadVectorData(std::string key)
     double v = stod(z1);
     if (v == 0.0) {
       std::stringstream errMsg;
-      errMsg << "Z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
+      errMsg << "soil_z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
       throw std::runtime_error(errMsg.str());
     }
     
@@ -350,8 +348,14 @@ ReadVectorData(std::string key)
   return value;
 }
 
+/*
+  Computes surface runoff scheme based ice fraction
+  These scheme are consistent with the schemes in the NOAH-MP (used in the current NWM)
+  - Schaake scheme computes volume of frozen water in meters
+  - Xinanjiang uses exponential based ice fraction taking only ice from the top cell
+*/
 void freezethaw::FreezeThaw::
-GetIceFraction()
+ComputeIceFraction()
 {
 
   double val = 0;
@@ -366,15 +370,14 @@ GetIceFraction()
   }
   
   if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
-    val = this->SMCIce[0]*this->Z[0];
-    for (int i =1; i < nz; i++) {
-      val += this->SMCIce[i] * (this->Z[i] - this->Z[i-1]);
+    for (int i =0; i < ncells; i++) {
+      val += this->soil_ice_content[i] * this->soil_dz[i];
     }
-    assert (this->ice_fraction_schaake <= this->Zd);
+    assert (this->ice_fraction_schaake <= this->soil_depth);
     this->ice_fraction_schaake = val;
   }
  else if (*this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
-    double fice = std::min(1.0, this->SMCIce[0]/this->smcmax);
+    double fice = std::min(1.0, this->soil_ice_content[0]/this->smcmax);
     double A = 4.0; // taken from NWM SOILWATER subroutine
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
     this->ice_fraction_xinan = fcr;
@@ -390,23 +393,30 @@ GetDt()
   return this->dt;
 }
 
+
+/*
+  Advance the timestep of the soil freeze thaw model called by BMI Update
+  
+*/
 void freezethaw::FreezeThaw::
 Advance()
 {
-  
-  if (this->is_SMC_BMI_set) {
-    for (int i=0; i<this->nz;i++) {
-      this->SMCLiq[i] = this->SMCT[i];
-      this->SMCIce[i] = 0.0;
+
+  // BMI only sets (total) soil moisture content, so we set the liquid/ice contents here at the initial time
+  // assuming that the ice content is zero initially otherwise this would need to be adjusted
+  if (this->is_soil_moisture_bmi_set) {
+    for (int i=0; i<this->ncells;i++) {
+      this->soil_liquid_content[i] = this->soil_moisture_content[i];
+      this->soil_ice_content[i] = 0.0;
     }
-    this->is_SMC_BMI_set = false;
+    this->is_soil_moisture_bmi_set = false;
   }
 
   /*
   if (this->is_SMC_BMI_set) {
-    for (int i=0; i<this->nz;i++) {
-      this->SMCLiq[i] = this->SMCT[i] - this->SMCIce[i];
-      //      this->SMCIce[i] = 0.0;
+    for (int i=0; i<this->ncells;i++) {
+      this->soil_liquid_content[i] = this->soil_moisture_content[i] - this->soil_ice_content[i];
+      //      this->soil_ice_content[i] = 0.0;
     }
   }*/
   
@@ -424,22 +434,22 @@ Advance()
 
   this->time += this->dt;
 
-  GetIceFraction();
+  ComputeIceFraction();
 
-  assert (this->ST[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
+  assert (this->soil_temperature[0] >150.0); // getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse
   
 }
 
 double freezethaw::FreezeThaw::
 GroundHeatFlux(double surfT)
 {  
-  if (opt_topb == 1) {
-    double ghf = - TC[0] * (surfT  - ttop) / Z[0];   //temperature specified as constant
+  if (option_top_boundary == 1) {
+    double ghf = - thermal_conductivity[0] * (surfT  - this->ground_temp_const) / soil_z[0];   //temperature specified as constant
     return ghf; 
   }
-  else if (opt_topb == 2) {
-    assert (this->Z[0] >0);
-    double ghf = - TC[0] * (surfT  - this->ground_temp) / this->Z[0];  //temperature from a file
+  else if (option_top_boundary == 2) {
+    assert (this->soil_z[0] >0);
+    double ghf = - thermal_conductivity[0] * (surfT  - this->ground_temp) / this->soil_z[0];  //temperature from a file
     return ghf; 
   }
   else
@@ -486,84 +496,82 @@ SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double
 void freezethaw::FreezeThaw::
 SolveDiffusionEq ()
 {
-    const int nz = this->shape[0];
-
     // local variables
-    std::vector<double> Flux(nz);
-    std::vector<double> AI(nz);
-    std::vector<double> BI(nz);
-    std::vector<double> CI(nz);
-    std::vector<double> RHS(nz);
-    std::vector<double> Lambd(nz);
-    std::vector<double> X(nz);
+    std::vector<double> Flux(ncells);
+    std::vector<double> AI(ncells);
+    std::vector<double> BI(ncells);
+    std::vector<double> CI(ncells);
+    std::vector<double> RHS(ncells);
+    std::vector<double> Lambd(ncells);
+    std::vector<double> X(ncells);
     double botflux=0.0;
     double h1 =0.0, h2 =0.0;
     
     // compute matrix coefficient using Crank-Nicolson discretization scheme
-    for (int i=0;i<nz; i++) {
+    for (int i=0;i<ncells; i++) {
       if (i == 0) {
-	h1 = Z[i];
-	double dtdz  = (ST[i+1] - ST[i])/ h1;
-	Lambd[i] = dt/(2.0 * h1 * HC[i]);
-	double ghf = this->GroundHeatFlux(ST[i]);
-	Flux[i] = Lambd[i] * (TC[i] * dtdz + ghf);
+	h1 = soil_z[i];
+	double dtdz  = (soil_temperature[i+1] - soil_temperature[i])/ h1;
+	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
+	double ghf = this->GroundHeatFlux(soil_temperature[i]);
+	Flux[i] = Lambd[i] * (thermal_conductivity[i] * dtdz + ghf);
       }
-      else if (i < nz-1) {
-	h1 = Z[i] - Z[i-1];
-        h2 = Z[i+1] - Z[i];
-	Lambd[i] = dt/(2.0 * h2 * HC[i]);
-	double a_ = - Lambd[i] * TC[i-1] / h1;
-        double c_ = - Lambd[i] * TC[i] / h2;
+      else if (i < ncells-1) {
+	h1 = soil_z[i] - soil_z[i-1];
+        h2 = soil_z[i+1] - soil_z[i];
+	Lambd[i] = dt/(2.0 * h2 * heat_capacity[i]);
+	double a_ = - Lambd[i] * thermal_conductivity[i-1] / h1;
+        double c_ = - Lambd[i] * thermal_conductivity[i] / h2;
 	double b_ = 1 + a_ + c_;
-	Flux[i] = -a_ * ST[i-1] + b_ * ST[i] - c_ * ST[i+1];
+	Flux[i] = -a_ * soil_temperature[i-1] + b_ * soil_temperature[i] - c_ * soil_temperature[i+1];
       }
-      else if (i == nz-1) {
-	h1 = Z[i] - Z[i-1];
-	Lambd[i] = dt/(2.0 * h1 * HC[i]);
-	if (this->opt_botb == 1) 
+      else if (i == ncells-1) {
+	h1 = soil_z[i] - soil_z[i-1];
+	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
+	if (this->option_bottom_boundary == 1) 
 	  botflux = 0.;
-	else if (this->opt_botb == 2) {
-	  double dtdz1 = (ST[i] - tbot) / h1;
-	  botflux  = - TC[i] * dtdz1;
+	else if (this->option_bottom_boundary == 2) {
+	  double dtdz1 = (soil_temperature[i] - bottom_temp_const) / h1;
+	  botflux  = - thermal_conductivity[i] * dtdz1;
 	}
-	double dtdz = (ST[i] - ST[i-1] )/ h1;
-	Flux[i]  = Lambd[i] * (-TC[i]*dtdz  + botflux);
+	double dtdz = (soil_temperature[i] - soil_temperature[i-1] )/ h1;
+	Flux[i]  = Lambd[i] * (-thermal_conductivity[i]*dtdz  + botflux);
       }
     }
     
     // put coefficients in the corresponding vectors A,B,C, RHS
-    for (int i=0; i<nz;i++) {
+    for (int i=0; i<ncells;i++) {
       if (i == 0) {
 	AI[i] = 0;
-	CI[i] = - Lambd[i] *TC[i]/Z[i];
+	CI[i] = - Lambd[i] *thermal_conductivity[i]/soil_z[i];
 	BI[i] = 1 - CI[i];
       }
-      else if (i < nz-1) {
-	AI[i] = - Lambd[i] * TC[i-1]/(Z[i] - Z[i-1]);
-	CI[i] = - Lambd[i] * TC[i]/(Z[i+1] - Z[i]);
+      else if (i < ncells-1) {
+	AI[i] = - Lambd[i] * thermal_conductivity[i-1]/(soil_z[i] - soil_z[i-1]);
+	CI[i] = - Lambd[i] * thermal_conductivity[i]/(soil_z[i+1] - soil_z[i]);
 	BI[i] = 1 - AI[i] - CI[i];
       }
-      else if (i == nz-1) { 
-	AI[i] = - Lambd[i] * TC[i]/(Z[i] - Z[i-1]);
+      else if (i == ncells-1) { 
+	AI[i] = - Lambd[i] * thermal_conductivity[i]/(soil_z[i] - soil_z[i-1]);
 	CI[i] = 0;
 	BI[i] = 1 - AI[i];
       }
       RHS[i] = Flux[i];
     }
 
-    // add the previous timestep ST to the RHS at the boundaries
-    for (int i=0; i<nz;i++) {
+    // add the previous timestep soil_temperature to the RHS at the boundaries
+    for (int i=0; i<ncells;i++) {
       if (i ==0)
-	RHS[i] = ST[i] + RHS[i];
-      else if (i == nz-1)
-	RHS[i] = ST[i] + RHS[i];
+	RHS[i] = soil_temperature[i] + RHS[i];
+      else if (i == ncells-1)
+	RHS[i] = soil_temperature[i] + RHS[i];
       else
 	RHS[i] = RHS[i];
     }
 
     SolverTDMA(AI, BI, CI, RHS, X);
 
-    std::copy(X.begin(), X.end(), this->ST);
+    std::copy(X.begin(), X.end(), this->soil_temperature);
 }
 
 
@@ -572,23 +580,23 @@ ThermalConductivity() {
   Properties prop;
   const int n_z = this->shape[0];
 
-  double tcmineral = this->quartz > 0.2 ? 2.0 : 3.0; //TC of other mineral
-  double tcquartz = 7.7; // TC of Quartz
-  double tcwater  = 0.57; // TC of water
+  double tcmineral = this->quartz > 0.2 ? 2.0 : 3.0; //thermal_conductivity of other mineral
+  double tcquartz = 7.7; // thermal_conductivity of Quartz
+  double tcwater  = 0.57; // thermal_conductivity of water
   double tcice    = 2.2;  // thermal conductiviyt of ice
   
   for (int i=0; i<n_z;i++) {
-    double sat_ratio = SMCT[i]/ this->smcmax;
+    double sat_ratio = soil_moisture_content[i]/ this->smcmax;
 
-    //TC of solids Eq. (10) Peters-Lidard
+    //thermal_conductivity of solids Eq. (10) Peters-Lidard
     double tc_solid = pow(tcquartz,this->quartz) * pow(tcmineral, (1. - this->quartz));
 
     //SATURATED THERMAL CONDUCTIVITY
     
     //UNFROZEN VOLUME FOR SATURATION (POROSITY*XUNFROZ)
     double x_unfrozen= 1.0; //prevents zero division
-    if (this->SMCT[i] > 0)
-      x_unfrozen = this->SMCLiq[i] / this->SMCT[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
+    if (this->soil_moisture_content[i] > 0)
+      x_unfrozen = this->soil_liquid_content[i] / this->soil_moisture_content[i]; // (phi * Sliq) / (phi * sliq + phi * sice) = sliq/(sliq+sice) 
     
     double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
     double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(tcice, (this->smcmax - xu)) * pow(tcwater,xu);
@@ -600,7 +608,7 @@ ThermalConductivity() {
     // Kersten Number
     
     double KN;
-    if ( (SMCLiq[i] + 0.0005) < SMCT[i])
+    if ( (soil_liquid_content[i] + 0.0005) < soil_moisture_content[i])
       KN = sat_ratio; // for frozen soil
     else {
       if (sat_ratio > 0.1)
@@ -612,7 +620,7 @@ ThermalConductivity() {
     }
     
     // Thermal conductivity
-    TC[i] = KN * (tc_sat - tc_dry) + tc_dry;
+    thermal_conductivity[i] = KN * (tc_sat - tc_dry) + tc_dry;
     
   }
 }
@@ -623,19 +631,19 @@ SoilHeatCapacity() {
   const int n_z = this->shape[0];
   //def soil_heat_capacity(domain, prop,SMC, SOLIQ, HCPCT, SMCMAX):
   for (int i=0; i<n_z;i++) {
-    double sice = SMCT[i] - SMCLiq[i];
-    HC[i] = SMCLiq[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-SMCT[i])*prop.hcair_;
+    double sice = soil_moisture_content[i] - soil_liquid_content[i];
+    heat_capacity[i] = soil_liquid_content[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-soil_moisture_content[i])*prop.hcair_;
   }
 
 }
 
 void freezethaw::FreezeThaw::
-SetLayerThickness() {
+SoilCellsThickness() {
   const int n_z = this->shape[0];
 
-  Dz[0] = Z[0];
+  soil_dz[0] = soil_z[0];
   for (int i=0; i<n_z-1;i++) {
-    Dz[i+1] = Z[i+1] - Z[i];
+    soil_dz[i+1] = soil_z[i+1] - soil_z[i];
   }
 }
 
@@ -649,7 +657,7 @@ PhaseChange() {
   double *MHeat_L = new double[n_z]; //energy residual [w/m2] HM = MHeat_L
   double *MPC_L = new double[n_z]; //melting or freezing water [kg/m2] XM_L = mass of phase change
 
-  double *SMCT_c = new double[n_z];
+  double *soil_moisture_content_c = new double[n_z];
   double *MLiq_c = new double[n_z]; 
   double *MIce_c = new double[n_z];
 
@@ -664,8 +672,8 @@ PhaseChange() {
     }
     else {
       // MICE and MLIQ are in units of [kg/m2]
-      MIce_L[i] = (SMCT[i] - SMCLiq[i]) * Dz[i] * prop.wdensity_; // [kg/m2]
-      MLiq_L[i] = SMCLiq[i] * Dz[i] * prop.wdensity_;
+      MIce_L[i] = (soil_moisture_content[i] - soil_liquid_content[i]) * soil_dz[i] * prop.wdensity_; // [kg/m2]
+      MLiq_L[i] = soil_liquid_content[i] * soil_dz[i] * prop.wdensity_;
     }
   }
   //set local variables
@@ -677,18 +685,18 @@ PhaseChange() {
   //Phase change between ice and liquid water
   for (int i=0; i<n_z;i++) {
     IndexMelt[i] = 0;
-    SMCT_c[i] = MIce_L[i] + MLiq_L[i];
+    soil_moisture_content_c[i] = MIce_L[i] + MLiq_L[i];
   }
 
   /*------------------------------------------------------------------- */
   //Soil water potential
   // SUPERCOOL is the maximum liquid water that can exist below (T - TFRZ) freezing point
-  double lam = -1./(this->bexp);
+  double lam = -1./(this->bb);
   for (int i=0; i<n_z;i++) {
-    if (ST[i] < prop.tfrez_) {
-      double SMP = prop.lhf_ /(prop.grav_*ST[i]) * (prop.tfrez_ - ST[i]);     // [m] Soil Matrix potential
-      Supercool[i] = this->smcmax* pow((SMP/this->satpsi), lam); //SMCMAX = porsity
-      Supercool[i] = Supercool[i]*Dz[i]* prop.wdensity_; //[kg/m2];
+    if (soil_temperature[i] < prop.tfrez_) {
+      double smp = latent_heat_fusion /(prop.grav_*soil_temperature[i]) * (prop.tfrez_ - soil_temperature[i]);     // [m] Soil Matrix potential
+      Supercool[i] = this->smcmax* pow((smp/this->satpsi), lam); //SMCMAX = porsity
+      Supercool[i] = Supercool[i]*soil_dz[i]* prop.wdensity_; //[kg/m2];
     }
   }
 
@@ -696,9 +704,9 @@ PhaseChange() {
   /*------------------------------------------------------------------- */
   // ****** get layer freezing/melting index ************
   for (int i=0; i<n_z;i++) {
-    if (MIce_L[i] > 0 && ST[i] > prop.tfrez_) //Melting condition
+    if (MIce_L[i] > 0 && soil_temperature[i] > prop.tfrez_) //Melting condition
       IndexMelt[i] = 1;
-    else if (MLiq_L[i] > Supercool[i] && ST[i] <= prop.tfrez_)// freezing condition in NoahMP
+    else if (MLiq_L[i] > Supercool[i] && soil_temperature[i] <= prop.tfrez_)// freezing condition in NoahMP
       IndexMelt[i] = 2;
   }
 
@@ -712,8 +720,8 @@ PhaseChange() {
   
   for (int i=0; i<n_z;i++) {
     if (IndexMelt[i] > 0) {
-      MHeat_L[i] = (ST[i] - prop.tfrez_) * (HC[i] * Dz[i]) / dt;
-      ST[i] = prop.tfrez_; // Note the temperature does not go below 0 until there is mixture of water and ice
+      MHeat_L[i] = (soil_temperature[i] - prop.tfrez_) * (heat_capacity[i] * soil_dz[i]) / dt; // q = m * c * delta_T
+      soil_temperature[i] = prop.tfrez_; // Note the temperature does not go below 0 until there is mixture of water and ice
     }
 
     if (IndexMelt[i] == 1 && MHeat_L[i] <0) {
@@ -727,7 +735,7 @@ PhaseChange() {
     }
 
   // compute the amount of melting or freezing water [kg/m2]. That is, how much water needs to be melted or freezed for the given energy change: MPC = MassPhaseChange
-  MPC_L[i] = MHeat_L[i]*dt/prop.lhf_;
+  MPC_L[i] = MHeat_L[i]*dt/latent_heat_fusion;
   }
 
   
@@ -739,24 +747,24 @@ PhaseChange() {
       if (MPC_L[i] >0) //melting
 	MIce_L[i] = std::max(0., MIce_c[i]-MPC_L[i]);
       else if (MPC_L[i] <0) { //freezing
-	if (SMCT_c[i] < Supercool[i])
+	if (soil_moisture_content_c[i] < Supercool[i])
 	  MIce_L[i] = 0;
 	else {
-	  MIce_L[i] = std::min(SMCT_c[i] - Supercool[i], MIce_c[i] - MPC_L[i]);
+	  MIce_L[i] = std::min(soil_moisture_content_c[i] - Supercool[i], MIce_c[i] - MPC_L[i]);
 	  MIce_L[i] = std::max(MIce_L[i],0.0);
 	}
       }
     
       // compute heat residual
       // total energy available - energy consumed by phase change (ice_old - ice_new)
-      double HEATR = MHeat_L[i] - prop.lhf_*(MIce_c[i]-MIce_L[i])/dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
-      MLiq_L[i] = std::max(0.,SMCT_c[i] - MIce_L[i]);
+      double HEATR = MHeat_L[i] - latent_heat_fusion*(MIce_c[i]-MIce_L[i])/dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
+      MLiq_L[i] = std::max(0.,soil_moisture_content_c[i] - MIce_L[i]);
 
       // Temperature correction
 
       if (std::abs(HEATR)>0) {
-	  double f = dt/(HC[i] * Dz[i]); // [m2 K/W]
-	  ST[i] = ST[i] + f*HEATR; // [K] , this is computed from HeatMass = (T_n+1-T_n) * Heat_capacity * DZ/ DT
+	  double f = dt/(heat_capacity[i] * soil_dz[i]); // [m2 K/W]
+	  soil_temperature[i] = soil_temperature[i] + f*HEATR; // [K] , this is computed from HeatMass = (T_n+1-T_n) * Heat_capacity * DZ/ DT
 	}
 
 	       
@@ -764,9 +772,9 @@ PhaseChange() {
   }
   
   for (int i=0; i<n_z;i++) { //soil
-    SMCLiq[i] =  MLiq_L[i] / (prop.wdensity_ * Dz[i]); // [-]
-    SMCT[i]  = (MLiq_L[i] + MIce_L[i]) / (prop.wdensity_ * Dz[i]); // [-]
-    SMCIce[i] = std::max(SMCT[i] - SMCLiq[i],0.);
+    soil_liquid_content[i] =  MLiq_L[i] / (prop.wdensity_ * soil_dz[i]); // [-]
+    soil_moisture_content[i]  = (MLiq_L[i] + MIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
+    soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
 }
 
@@ -776,17 +784,9 @@ Properties() :
   hcice_   (2.094E06), 
   hcair_   (1004.64),
   hcsoil_  (2.00E+6),
-  //  tcice_   (2.2), 
-  lhf_     (0.3336E06),
-  //  satpsi_  (0.759),
   grav_    (9.86),
-  //tcwater_  (0.57),
-  //tcquartz_ (7.7), 
-  //  quartz_   (0.6), 
-  //  tcmineral_ (2.0),
   tfrez_     (273.15),
-  //  bexp_  (2.9), 
-  wdensity_ (1000)
+  wdensity_ (1000.)
 {}
 
 freezethaw::FreezeThaw::

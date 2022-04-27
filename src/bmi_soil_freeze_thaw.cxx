@@ -8,8 +8,8 @@
 #include <cstdlib>
 #include <vector>
 #include "../bmi/bmi.hxx"
-#include "../include/bmi_freezethaw.hxx"
-#include "../include/freezethaw.hxx"
+#include "../include/bmi_soil_freeze_thaw.hxx"
+#include "../include/soil_freeze_thaw.hxx"
 #include <algorithm>
 
 void BmiFreezeThaw::
@@ -299,11 +299,11 @@ GetValuePtr (std::string name)
   else 
   */
   if (name.compare("soil_moisture_profile") == 0)
-    return (void*)this->_model.SMCT;
+    return (void*)this->_model.soil_moisture_content;
   else if (name.compare("ground_temperature") == 0 )
     return (void*)(&this->_model.ground_temp);
   else if (name.compare("num_cells") == 0)
-    return (void*)(&this->_model.nz);
+    return (void*)(&this->_model.ncells);
   else if (name.compare("ice_fraction_schaake") == 0) {
     return (void*)(&this->_model.ice_fraction_schaake);
   }
