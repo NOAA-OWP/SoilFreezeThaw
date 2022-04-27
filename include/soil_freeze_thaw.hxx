@@ -54,9 +54,10 @@ using namespace std;
 
 
 class Properties;
-namespace freezethaw {
+
+namespace soilfreezethaw {
   
-  class FreezeThaw{
+  class SoilFreezeThaw {
   private:
     std::string config_file;
     void InitializeArrays(void);
@@ -90,7 +91,7 @@ namespace freezethaw {
     double quartz;
     double ice_fraction_schaake;
     double ice_fraction_xinan;
-    int    *ice_fraction_scheme_bmi = NULL;
+    int    ice_fraction_scheme_bmi;
     bool   is_soil_moisture_bmi_set;
     
     
@@ -102,11 +103,11 @@ namespace freezethaw {
      */
     std::vector<std::string>* input_var_names_model; 
     
-    FreezeThaw();
-    FreezeThaw(std::string config_file);
+    SoilFreezeThaw();
+    SoilFreezeThaw(std::string config_file);
     
     void Advance();
-    void SolveDiffusionEq();
+    void SolveDiffusionEquation();
     double GroundHeatFlux(double surfT);
 
     /* Tridiagonal matrix solver */
@@ -135,7 +136,7 @@ namespace freezethaw {
     // method retuns dynamically allocated input variable names
     std::vector<std::string>* InputVarNamesModel();
     
-    ~FreezeThaw();
+    ~SoilFreezeThaw();
   };
 
   // class to contain constant variables

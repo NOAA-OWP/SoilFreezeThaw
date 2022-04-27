@@ -33,7 +33,7 @@ int main(int argc, const char *argv[])
   /************************************************************************
   Creating SFT object
   ************************************************************************/
-  BmiFreezeThaw ftm_bmi_model;
+  BmiSoilFreezeThaw ftm_bmi_model;
  
   /************************************************************************
       Initializing the BMI model for Soil freeze-thaw model

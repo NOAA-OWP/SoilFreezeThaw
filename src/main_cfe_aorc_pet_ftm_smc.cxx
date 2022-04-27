@@ -13,8 +13,8 @@
 #include "../cfe/forcing_code/include/bmi_aorc.h"
 
 #include "../bmi/bmi.hxx"
-#include "../include/bmi_freezethaw.hxx"
-#include "../include/freezethaw.hxx"
+#include "../include/bmi_soil_freeze_thaw.hxx"
+#include "../include/soil_freeze_thaw.hxx"
 
 
 #include "../smc_coupler/include/bmi_coupler.hxx"
@@ -59,7 +59,7 @@ void pass_forcing_from_aorc_to_cfe(Bmi *cfe_bmi_model, Bmi *aorc_bmi_model){
     Function to pass the ice fraction from Freeze-thaw model to CFE using BMI.
 ***************************************************************/
 
-void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_model){
+void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw ftm_bmi_model){
   
   /********************************************************************
         TODO: Get variable names through BMI, then loop through those
@@ -89,7 +89,7 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
 /***************************************************************
     Function to pass the parameters from CFE to Coupler and get SMC from the Coupler to set in Freeze-thaw model.
 ***************************************************************/
-void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw *ftm_bmi_model,BmiCoupler *coupler_bmi) {
+void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *ftm_bmi_model,BmiCoupler *coupler_bmi) {
   
   enum {Constant=1, Linear=2};
   
@@ -213,7 +213,7 @@ int
   printf("allocating memory to store entire BMI structure for PET\n");
   Bmi *pet_bmi_model = (Bmi *) malloc(sizeof(Bmi));
   
-  BmiFreezeThaw ftm_bmi_model;
+  BmiSoilFreezeThaw ftm_bmi_model;
 
   BmiCoupler coupler_bmi;
   

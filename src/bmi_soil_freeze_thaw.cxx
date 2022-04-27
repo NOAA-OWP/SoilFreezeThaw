@@ -12,21 +12,21 @@
 #include "../include/soil_freeze_thaw.hxx"
 #include <algorithm>
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
   if (config_file.compare("") != 0 )
-    this->_model = new freezethaw::FreezeThaw(config_file);
+    this->_model = new soilfreezethaw::SoilFreezeThaw(config_file);
 }
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 Update()
 {
   this->_model->Advance();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 UpdateUntil(double t)
 {
   double time;
@@ -50,14 +50,14 @@ UpdateUntil(double t)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 Finalize()
 {
   if (this->_model)
-    this->_model->~FreezeThaw();
+    this->_model->~SoilFreezeThaw();
 }
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetVarGrid(std::string name)
 {
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
@@ -71,7 +71,7 @@ GetVarGrid(std::string name)
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetVarType(std::string name)
 {
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
@@ -85,7 +85,7 @@ GetVarType(std::string name)
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetVarItemsize(std::string name)
 {
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
@@ -99,7 +99,7 @@ GetVarItemsize(std::string name)
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetVarUnits(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
@@ -111,7 +111,7 @@ GetVarUnits(std::string name)
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetVarNbytes(std::string name)
 {
   int itemsize;
@@ -124,7 +124,7 @@ GetVarNbytes(std::string name)
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetVarLocation(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
@@ -140,7 +140,7 @@ GetVarLocation(std::string name)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridShape(const int grid, int *shape)
 {
   if (grid == 0) {
@@ -149,7 +149,7 @@ GetGridShape(const int grid, int *shape)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridSpacing (const int grid, double * spacing)
 {
   if (grid == 0) {
@@ -158,7 +158,7 @@ GetGridSpacing (const int grid, double * spacing)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridOrigin (const int grid, double *origin)
 {
   if (grid == 0) {
@@ -167,7 +167,7 @@ GetGridOrigin (const int grid, double *origin)
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
   if (grid == 0)
@@ -177,7 +177,7 @@ GetGridRank(const int grid)
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetGridSize(const int grid)
 {
   if (grid == 2) // for arrays
@@ -189,7 +189,7 @@ GetGridSize(const int grid)
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
   if (grid == 0)
@@ -199,28 +199,28 @@ GetGridType(const int grid)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridX(const int grid, double *x)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridY(const int grid, double *y)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridZ(const int grid, double *z)
 {
   throw NotImplemented();
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetGridNodeCount(const int grid)
 {
   if (grid == 0)
@@ -230,49 +230,49 @@ GetGridNodeCount(const int grid)
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetGridEdgeCount(const int grid)
 {
   throw NotImplemented();
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetGridFaceCount(const int grid)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridEdgeNodes(const int grid, int *edge_nodes)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridFaceEdges(const int grid, int *face_edges)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridFaceNodes(const int grid, int *face_nodes)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetGridNodesPerFace(const int grid, int *nodes_per_face)
 {
   throw NotImplemented();
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetValue (std::string name, void *dest)
 {
   void * src = NULL;
@@ -284,7 +284,7 @@ GetValue (std::string name, void *dest)
 }
 
 
-void *BmiFreezeThaw::
+void *BmiSoilFreezeThaw::
 GetValuePtr (std::string name)
 {
   /*
@@ -322,7 +322,7 @@ GetValuePtr (std::string name)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 GetValueAtIndices (std::string name, void *dest, int *inds, int len)
 {
   void * src = NULL;
@@ -345,7 +345,7 @@ GetValueAtIndices (std::string name, void *dest, int *inds, int len)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 SetValue (std::string name, void *src)
 {
   void * dest = NULL;
@@ -361,7 +361,7 @@ SetValue (std::string name, void *src)
 }
 
 
-void BmiFreezeThaw::
+void BmiSoilFreezeThaw::
 SetValueAtIndices (std::string name, int * inds, int len, void *src)
 {
   void * dest = NULL;
@@ -384,28 +384,28 @@ SetValueAtIndices (std::string name, int * inds, int len, void *src)
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetComponentName()
 {
   return "Soil Freeze Thaw Model";
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetInputItemCount()
 {
   return this->input_var_name_count;
 }
 
 
-int BmiFreezeThaw::
+int BmiSoilFreezeThaw::
 GetOutputItemCount()
 {
   return this->output_var_name_count;
 }
 
 
-std::vector<std::string> BmiFreezeThaw::
+std::vector<std::string> BmiSoilFreezeThaw::
 GetInputVarNames()
 {
   std::vector<std::string> names;
@@ -422,7 +422,7 @@ GetInputVarNames()
 }
 
 
-std::vector<std::string> BmiFreezeThaw::
+std::vector<std::string> BmiSoilFreezeThaw::
 GetOutputVarNames()
 {
   std::vector<std::string> names;
@@ -434,31 +434,31 @@ GetOutputVarNames()
 }
 
 
-double BmiFreezeThaw::
+double BmiSoilFreezeThaw::
 GetStartTime () {
   return 0.;
 }
 
 
-double BmiFreezeThaw::
+double BmiSoilFreezeThaw::
 GetEndTime () {
   return this->_model->endtime;
 }
 
 
-double BmiFreezeThaw::
+double BmiSoilFreezeThaw::
 GetCurrentTime () {
   return this->_model->time;
 }
 
 
-std::string BmiFreezeThaw::
+std::string BmiSoilFreezeThaw::
 GetTimeUnits() {
   return "s";
 }
 
 
-double BmiFreezeThaw::
+double BmiSoilFreezeThaw::
 GetTimeStep () {
   return this->_model->dt;
 }

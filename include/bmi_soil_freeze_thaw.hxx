@@ -14,9 +14,9 @@ class NotImplemented : public std::logic_error {
 };
 
 
-class BmiFreezeThaw : public bmixx::Bmi {
+class BmiSoilFreezeThaw : public bmixx::Bmi {
   public:
-    BmiFreezeThaw() {
+    BmiSoilFreezeThaw() {
       this->input_var_names[0] = "ground_temperature";
       this->input_var_names[1] = "soil_moisture_profile";
       
@@ -78,7 +78,7 @@ class BmiFreezeThaw : public bmixx::Bmi {
     void GetGridFaceNodes(const int grid, int *face_nodes);
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
-    freezethaw::FreezeThaw* _model;
+    soilfreezethaw::SoilFreezeThaw* _model;
     static const int input_var_name_count = 2;
     static const int output_var_name_count = 3;
 
@@ -95,9 +95,9 @@ extern "C"
     *
     * @return A pointer to the newly allocated instance.
     */
-  BmiFreezeThaw *bmi_model_create()
+  BmiSoilFreezeThaw *bmi_model_create()
   {
-    return new BmiFreezeThaw();
+    return new BmiSoilFreezeThaw();
   }
   
     /**
@@ -105,7 +105,7 @@ extern "C"
      * 
      * @param ptr 
      */
-  void bmi_model_destroy(BmiFreezeThaw *ptr)
+  void bmi_model_destroy(BmiSoilFreezeThaw *ptr)
   {
     delete ptr;
   }

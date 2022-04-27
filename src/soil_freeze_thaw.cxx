@@ -12,8 +12,8 @@
 #include "../include/soil_freeze_thaw.hxx"
 
 
-freezethaw::FreezeThaw::
-FreezeThaw()
+soilfreezethaw::SoilFreezeThaw::
+SoilFreezeThaw()
 {
   this->endtime = 10.;
   this->time = 0.;
@@ -37,8 +37,8 @@ FreezeThaw()
   this->ground_temp = 273.15;
 }
 
-freezethaw::FreezeThaw::
-FreezeThaw(std::string config_file)
+soilfreezethaw::SoilFreezeThaw::
+SoilFreezeThaw(std::string config_file)
 {
   this->latent_heat_fusion = 0.3336E06;
   this->ground_temp_const = 260.;
@@ -64,7 +64,7 @@ FreezeThaw(std::string config_file)
 }
 
 
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 InitializeArrays(void)
 {
   this->thermal_conductivity = new double[ncells];
@@ -76,7 +76,7 @@ InitializeArrays(void)
     this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
 }
 
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 InitFromConfigFile(std::string config_file)
 { 
   std::ifstream fp;
@@ -301,7 +301,7 @@ InitFromConfigFile(std::string config_file)
 /*
 returns dynamically allocated 1D vector of strings that contains correct input variable names based on the model (conceptual or layered) chosen
 */
-std::vector<std::string>* freezethaw::FreezeThaw::
+std::vector<std::string>* soilfreezethaw::SoilFreezeThaw::
 InputVarNamesModel()
 {
   return input_var_names_model;
@@ -311,7 +311,7 @@ InputVarNamesModel()
   Reads soil discretization, soil moisture, soil temperature from the config file
   Note: soil moisture are not read from the config file when the model is coupled to SoilMoistureProfiles modules
 */
-std::vector<double> freezethaw::FreezeThaw::
+std::vector<double> soilfreezethaw::SoilFreezeThaw::
 ReadVectorData(std::string key)
 {
   int pos =0;
@@ -352,7 +352,7 @@ ReadVectorData(std::string key)
   - Schaake scheme computes volume of frozen water in meters
   - Xinanjiang uses exponential based ice fraction taking only ice from the top cell
 */
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 ComputeIceFraction()
 {
 
@@ -385,7 +385,7 @@ ComputeIceFraction()
     }
 }
   
-double freezethaw::FreezeThaw::
+double soilfreezethaw::SoilFreezeThaw::
 GetDt()
 {
   return this->dt;
@@ -396,7 +396,7 @@ GetDt()
   Advance the timestep of the soil freeze thaw model called by BMI Update
   
 */
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 Advance()
 {
 
@@ -426,7 +426,7 @@ Advance()
   SoilHeatCapacity();
   
   /* Solve the diffusion equation to get updated soil temperatures */
-  SolveDiffusionEq();
+  SolveDiffusionEquation();
 
   /* Now time to update ice content based on the new soil moisture and and  soil temperature profiles.
      Call Phase Change moudle to parition soil moisture into water and ice.
@@ -447,7 +447,7 @@ Advance()
   Option 1 : prescribed (user-defined) constant surface/ground temperature
   Option 2 : dynamic surface/ground temperature (user-provided or provided by a coupled model)
 */
-double freezethaw::FreezeThaw::
+double soilfreezethaw::SoilFreezeThaw::
 GroundHeatFlux(double surfT)
 {  
   if (option_top_boundary == 1) {
@@ -468,8 +468,8 @@ GroundHeatFlux(double surfT)
   Solves a 1D diffusion equation with variable thermal conductivity
   Discretizad through an implicit Crank-Nicolson scheme
 */
-void freezethaw::FreezeThaw::
-SolveDiffusionEq ()
+void soilfreezethaw::SoilFreezeThaw::
+SolveDiffusionEquation()
 {
     // local 1D arrays 
     std::vector<double> Flux(ncells);
@@ -557,7 +557,7 @@ SolveDiffusionEq ()
 // a[i], b[i], c[i] are the non-zero diagonals of the matrix and d[i] is the rhs. *
 // a[0] and c[n-1] aren't used.                                                   *
 //*********************************************************************************
-bool freezethaw::FreezeThaw::
+bool soilfreezethaw::SoilFreezeThaw::
 SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double> &c, const vector<double> &d, vector<double> &X ) {
    int n = d.size();
    vector<double> P( n, 0 );
@@ -591,7 +591,7 @@ SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double
   Computes buld soil thermal conductivity
   thermal conductivity model follows the parameterization of Peters-Lidars 
 */
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 ThermalConductivity() {
   Properties prop;
   const int n_z = this->shape[0];
@@ -644,7 +644,7 @@ ThermalConductivity() {
 /*
   The effective volumetric heat capacity is calculated based on the respective fraction of each component (water, ice, air, and rock):
 */
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 SoilHeatCapacity() {
   Properties prop;
   const int n_z = this->shape[0];
@@ -656,7 +656,7 @@ SoilHeatCapacity() {
 
 }
 
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 SoilCellsThickness() {
   const int n_z = this->shape[0];
 
@@ -673,7 +673,7 @@ SoilCellsThickness() {
   The freezing-point depression equation gives the maximum amount of liquid water (unfrozen soil moisture content) that can exist below the subfreezing temperature
   Here we have used Clap-Hornberger soil moisture function to compute the unfrozen soil moisture content
 */
-void freezethaw::FreezeThaw::
+void soilfreezethaw::SoilFreezeThaw::
 PhaseChange() {
   
   Properties prop;
@@ -805,7 +805,10 @@ PhaseChange() {
   }
 }
 
-freezethaw::Properties::
+/*
+  class containing some of the static variables used by several modules
+*/
+soilfreezethaw::Properties::
 Properties() :
   hcwater_ (4.188E06),
   hcice_   (2.094E06), 
@@ -816,8 +819,8 @@ Properties() :
   wdensity_ (1000.)
 {}
 
-freezethaw::FreezeThaw::
-~FreezeThaw()
+soilfreezethaw::SoilFreezeThaw::
+~SoilFreezeThaw()
 {}
 
 #endif
