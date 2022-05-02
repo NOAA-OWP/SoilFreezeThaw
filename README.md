@@ -74,6 +74,19 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - For integrated run: Output data is stored in cat-27.csv, use your favorite tool to visualize and compare data
 
 
+## Parameters in the config file
+* `forcing_file` provides ground temperatures used as a surface boundary condition. Won't be needed when coupled to models (e.g., noah-om) that can provide ground temperature data
+* `smcmax` (porosity; maximum moisture content), `b`, `satpsi` (saturated matric potential) are needed for the soil moisture characteristic function
+* `quartz` quartz content is the soil for the use in soil thermal conductivity function of Peters-Lidard
+* `soil_z` is the vertical resolution of the soil column (computational domain)
+* `soil_temperature` is the initial soil temperature for the discretized column
+* `soil_moisture_content` is the initial soil total (liquid + ice) moisture content for the discretized column
+* `soil_liquid_content` is the initial soil liquid moisture content for the discretized column
+* `ice_fraction_scheme` is associated with the runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang
+* `bottom_boundary_temp` sets the temperature conditions at the bottom boundary of the domain/column, if not specified zero-geothermal boundary condition is used
+* `sft_standalone` options: true or false. True for soil freeze-thaw model standalone run.
+* `soil_moisture_bmi` options: true or false. If true soil_moisture profile is set by the SoilMoisutreProfile module throught its BMI.
+
 ## Introduction of Soil Freeze-thaw model
 
 The diffusion equation is used to simulate the transport of energy in the soil.
