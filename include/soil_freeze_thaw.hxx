@@ -12,31 +12,31 @@
   The model is also coupled to soil moisture profile module to provide dynamic vertical distribution of soil moisture
 
   @param soil_depth [m] : depth of the computational domain 
-  @param latent_heat_fusion        [J/kg] : latent heat of fusion
-  @param ground_temp_const         [K]    : constant ground temperature (an option for the surface boundary condition)
-  @param end_time                  [s]    : end time of the simulation, input options [second, hour, day]
-  @param dt                        [s]    : timestep, input options [second, hour, day]
-  @param ncells                    [-]    : number of cells in the discretized soil column
-  @param bottom_temp_const         [K]    : temperature at the bottom boundary of the domain
-  @param soil_z                    [m]    : soil discretization, depth from the surface
-  @param soil_dz                   [m]    : soil discretization thickness, thickness of cells
-  @param soil_temperature          [K]    : soil temperature profile
-  @param heat_capacity             [J/(m3 k)] : volumetric heat capacity (specific heat capacity * density)
-  @param thermal_conductivity      [W/(mK)]   : soil bulk thermal conductivity
-  @param soil_moisture_content     [-]    : total (ice+water) soil moisture conten
-  @param soil_liquid_content       [-]    : portion of liquid in the total soil moisture content
-  @param soil_ice_content          [-]    : portion of ice in the total soil moisture content
-  @param option_bottom_boundry     [-]    : option for bottom boundary condition. 1 = zero geothermal flux, 2 = prescribed temperature
-  @param option_top_boundary       [-]    : top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
-  @param smcmax                    [-]    : maximum soil moisture content (porosity)
-  @param bb                        [-]    : pore size distribution, beta exponent in Clapp-Hornberger (1978) function
-  @param satpsi                    [m]    : saturated capillary head (saturated moisture potential, capillary fringe thickness)
-  @param ice_fraction_schaake      [-]    : ice fraction based on Schaake runoff scheme (computes volume of frozen water)
-  @param ice_fraction_xinan        [-]    : ice fraction based on Xinanjiang runoff scheme (based on ice content in the top cell)
-  @param ice_fraction_scheme       [-]    : option set from the config file for the runoff scheme (Schaake=1, Xinanjiang=2)
-  @param ice_fraction_scheme_bmi   [-]    : option set through a bmi
-  @param is_soil_moisture_bmi_set  [-]    : if not standalone, soil moisture is set through SoilMoistureProfiles bmi
-  @param quartz                    [-]    : quartz content used in the thermal conductivity model
+  @param latent_heat_fusion         [J/kg] : latent heat of fusion
+  @param ground_temp_const          [K]    : constant ground temperature (an option for the surface boundary condition)
+  @param end_time                   [s]    : end time of the simulation, input options [second, hour, day]
+  @param dt                         [s]    : timestep, input options [second, hour, day]
+  @param ncells                     [-]    : number of cells in the discretized soil column
+  @param bottom_boundary_temp_const [K]    : temperature at the bottom boundary of the domain
+  @param soil_z                     [m]    : soil discretization, depth from the surface
+  @param soil_dz                    [m]    : soil discretization thickness, thickness of cells
+  @param soil_temperature           [K]    : soil temperature profile
+  @param heat_capacity              [J/(m3 k)] : volumetric heat capacity (specific heat capacity * density)
+  @param thermal_conductivity       [W/(mK)]   : soil bulk thermal conductivity
+  @param soil_moisture_content      [-]    : total (ice+water) soil moisture conten
+  @param soil_liquid_content        [-]    : portion of liquid in the total soil moisture content
+  @param soil_ice_content           [-]    : portion of ice in the total soil moisture content
+  @param option_bottom_boundry      [-]    : option for bottom boundary condition. 1 = zero geothermal flux, 2 = prescribed temperature
+  @param option_top_boundary        [-]    : top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
+  @param smcmax                     [-]    : maximum soil moisture content (porosity)
+  @param bb                         [-]    : pore size distribution, beta exponent in Clapp-Hornberger (1978) function
+  @param satpsi                     [m]    : saturated capillary head (saturated moisture potential, capillary fringe thickness)
+  @param ice_fraction_schaake       [-]    : ice fraction based on Schaake runoff scheme (computes volume of frozen water)
+  @param ice_fraction_xinan         [-]    : ice fraction based on Xinanjiang runoff scheme (based on ice content in the top cell)
+  @param ice_fraction_scheme        [-]    : option set from the config file for the runoff scheme (Schaake=1, Xinanjiang=2)
+  @param ice_fraction_scheme_bmi    [-]    : option set through a bmi
+  @param is_soil_moisture_bmi_set   [-]    : if not standalone, soil moisture is set through SoilMoistureProfiles bmi
+  @param quartz                     [-]    : quartz content used in the thermal conductivity model
 */
 
 #ifndef SFTH_INCLUDED
@@ -72,7 +72,7 @@ namespace soilfreezethaw {
     int ncells;
     double soil_depth; 
     double latent_heat_fusion;
-    double bottom_temp_const;
+    double bottom_boundary_temp_const;
     double ground_temp_const;
     double *soil_z = NULL;
     double *soil_dz = NULL;

@@ -27,7 +27,7 @@ SoilFreezeThaw()
   this->dt = 3600;
   this->latent_heat_fusion = 0.3336E06;
   this->ground_temp_const = 260.;
-  this->bottom_temp_const = 275.15;
+  this->bottom_boundary_temp_const = 275.15;
   this->option_bottom_boundary = 2;
   this->option_top_boundary = 2;
   this->ice_fraction_scheme= " ";
@@ -42,8 +42,8 @@ SoilFreezeThaw(std::string config_file)
 {
   this->latent_heat_fusion = 0.3336E06;
   this->ground_temp_const = 260.;
-  this->bottom_temp_const = 275.15;
-  this->option_bottom_boundary = 2; // 1: zero thermal flux, 2: constant Temp
+  //this->bottom_temp_const = 275.15;
+  //this->option_bottom_boundary = 2; // 1: zero thermal flux, 2: constant Temp
   this->option_top_boundary = 2; // 1: constant temp, 2: from a file
   this->InitFromConfigFile(config_file);
 
@@ -96,6 +96,7 @@ InitFromConfigFile(std::string config_file)
   bool is_soil_liquid_content_set = false; //liquid moisture content
   bool is_ice_fraction_scheme_set = false; //ice fraction scheme
   bool is_sft_standalone_set = false; //SFT standalone
+  bool is_bottom_boundary_temp_set = false; // bottom boundary temperature
     
   while (fp) {
 
@@ -221,6 +222,11 @@ InitFromConfigFile(std::string config_file)
 	is_sft_standalone_set = true;
       continue;
     }
+    if (param_key == "bottom_boundary_temp") {
+      this->bottom_boundary_temp_const = stod(param_value);
+      is_bottom_boundary_temp_set = true;
+      continue;
+    }
   }
   
   fp.close();
@@ -290,7 +296,9 @@ InitFromConfigFile(std::string config_file)
     input_var_names_model->push_back("ground_temperature");
     input_var_names_model->push_back("soil_moisture_profile");
   }
-  
+
+  this->option_bottom_boundary = is_bottom_boundary_temp_set == false ? 1 : 2; // if false zero geothermal flux is the BC
+  std::cout<<"opt "<<this->option_bottom_boundary<<"\n";
   // check if the size of the input data is consistent
   assert (n_st == this->ncells);
   assert (n_mct == this->ncells);
@@ -506,7 +514,7 @@ SolveDiffusionEquation()
 	if (this->option_bottom_boundary == 1) 
 	  botflux = 0.;
 	else if (this->option_bottom_boundary == 2) {
-	  double dtdz1 = (soil_temperature[i] - bottom_temp_const) / h1;
+	  double dtdz1 = (soil_temperature[i] - bottom_boundary_temp_const) / h1;
 	  botflux  = - thermal_conductivity[i] * dtdz1;
 	}
 	double dtdz = (soil_temperature[i] - soil_temperature[i-1] )/ h1;
