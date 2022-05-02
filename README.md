@@ -67,7 +67,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 #### Run integrated models in the ngen framework
  ```
    cp extern/SoilFreezeThaw/configs/realization_config_multi.json .
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
+   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi_<macos/linux>.json
 ```
 #### Post-process step
   - For standalone run: `cd test` and run [test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) (the script compares results with a gold test output)
