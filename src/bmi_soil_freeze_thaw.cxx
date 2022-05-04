@@ -107,7 +107,7 @@ GetVarUnits(std::string name)
   else if (name.compare("ice_fraction_schaake") == 0)
     return "m";
   else
-    return "";
+    return "none";
 }
 
 
@@ -143,7 +143,7 @@ GetVarLocation(std::string name)
 void BmiSoilFreezeThaw::
 GetGridShape(const int grid, int *shape)
 {
-  if (grid == 0) {
+  if (grid == 2) {
     shape[0] = this->_model->shape[0];
   }
 }
@@ -170,7 +170,7 @@ GetGridOrigin (const int grid, double *origin)
 int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
-  if (grid == 0)
+  if (grid == 0 || grid == 1 || grid == 2)
     return 1;
   else
     return -1;
@@ -180,10 +180,10 @@ GetGridRank(const int grid)
 int BmiSoilFreezeThaw::
 GetGridSize(const int grid)
 {
-  if (grid == 2) // for arrays
-    return this->_model->shape[0];
   if (grid == 0 || grid == 1) // for scalars
     return 1;
+  else if (grid == 2) // for arrays
+    return this->_model->shape[0];
   else
     return -1;
 }
@@ -308,7 +308,6 @@ GetValuePtr (std::string name)
     return (void*)(&this->_model->ice_fraction_schaake);
   }
   else if (name.compare("ice_fraction_xinan") == 0){
-    int val = this->_model->ice_fraction_xinan;
     return (void*)(&this->_model->ice_fraction_xinan);
   }
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
@@ -394,7 +393,12 @@ GetComponentName()
 int BmiSoilFreezeThaw::
 GetInputItemCount()
 {
-  return this->input_var_name_count;
+  std::vector<std::string>* names_m = _model->InputVarNamesModel();
+  int input_var_name_count_m = names_m->size();
+  
+  //return this->input_var_name_count;
+  assert (this->input_var_name_count >= input_var_name_count_m);
+  return input_var_name_count_m;
 }
 
 

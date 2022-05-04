@@ -1,17 +1,28 @@
+/*
+  @author Ahmad Jan (ahmad.jan@noaa.gov)
+  Includes unit test for bmi components and run model for 2 days with hourly timestep to test the computed ice fraction using schaake runoff scheme
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
-#include "../../../include/bmi.hxx"
-#include "../include/bmi_freezethaw.hxx"
-#include "../include/freezethaw.hxx"
+#include "../bmi/bmi.hxx"
+#include "../include/bmi_soil_freeze_thaw.hxx"
+#include "../include/soil_freeze_thaw.hxx"
 
 #define FAILURE 0
 #define VERBOSITY 1
 
+#define GREEN "\033[32m"
+#define RED   "\033[31m"
+#define BLUE  "\033[34m"
+#define RESET "\033[0m"
+
+
 int main(int argc, char *argv[])
 {
-  BmiFreezeThaw model,model_cyc;
+  BmiSoilFreezeThaw model,model_cyc;
 
   if (argc != 2) {
     printf("Usage: run_bmifrozensoilcxx CONFIGURATION_FILE\n\n");
@@ -26,13 +37,14 @@ int main(int argc, char *argv[])
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
   int nz = 4;
-  double endtime = 1035.91*86400.;
+  double endtime = 86400; //1035.91*86400.;
   double timestep = 3600;
   bool test_status = true;
   int num_input_vars = 2;
-  int num_output_vars = 6;
-  int nbytes_input = nz * sizeof(double);
-  double soil_MCT[] = {0.36,0.39,0.41,0.43}; // total_moisture_content
+  int num_output_vars = 3;
+  int nbytes_input[] = {sizeof(double), int(nz * sizeof(double))};
+  int nbytes_output[] = {sizeof(double), sizeof(double), sizeof(int)};
+  double soil_moisture_profile[] = {0.389,0.396,0.397,0.397}; // total_moisture_content
   double soil_MCL[] = {0.36,0.39,0.41,0.43}; //liquid_moisture_content
   double soil_T[] = {280.15,280.15,280.15,280.15}; //soil temperature
   
@@ -74,7 +86,7 @@ int main(int argc, char *argv[])
   if (VERBOSITY) {
     std::cout<<"Input variable names \n";
     for (int i=0; i<count_in; i++)
-      std::cout<<names_in[i]<<"\n";
+      std::cout<<i<<" "<<names_in[i]<<"\n";
   }
 
   std::cout<<"**************************************** \n";
@@ -88,7 +100,7 @@ int main(int argc, char *argv[])
   if (VERBOSITY) {
     std::cout<<"Output variable names "<<names_out.size()<<"\n";
     for (int i=0; i<count_out; i++)
-      std::cout<<names_out[i]<<"\n";
+      std::cout<<i<<" "<<names_out[i]<<"\n";
   }
   if (count_out == num_output_vars)
     test_status &= true;
@@ -102,7 +114,7 @@ int main(int argc, char *argv[])
   }
   
   // Test BMI: VARIABLE INFORMATION FUNCTIONS
-  std::cout<<"\n**************** TEST BMI VARIABLE INFORMATION FUNCTIONS\n*****************************************\n";
+  std::cout<<"\n**************** TEST BMI VARIABLE INFORMATION FUNCTIONS\n***************************\n";
   int grid, itemsize, nbytes;
   std::string location;
   std::string units;
@@ -122,8 +134,14 @@ int main(int argc, char *argv[])
 
     if (grid >=0)
       test_status &= true;
-    else
+    else {
       test_status &= false;
+      std::string passed = test_status == true ? "Yes" : "No";
+      std::cout<<"Test passed: "<<passed<<"\n";
+      std::stringstream errMsg;
+      errMsg << "grid < 0 \n";
+      throw std::runtime_error(errMsg.str());
+    }
 
     /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     // Test get_var_itemsize()
@@ -132,8 +150,14 @@ int main(int argc, char *argv[])
       std::cout<<"Itemsize: "<< itemsize <<"\n";
     if (itemsize >0)
       test_status &= true;
-    else
+    else {
       test_status &= false;
+      std::string passed = test_status == true ? "Yes" : "No";
+      std::cout<<"Test passed: "<<passed<<"\n";
+      std::stringstream errMsg;
+      errMsg << "itemsize < 0 \n";
+      throw std::runtime_error(errMsg.str());
+    }
 
     /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     // Test get_var_location()
@@ -167,19 +191,25 @@ int main(int argc, char *argv[])
     nbytes = model.GetVarNbytes(var_name);
     if (nbytes == 0) return FAILURE;
     if (VERBOSITY)
-      std::cout<<" nbytes: "<< nbytes<<"\n";
+      std::cout<<" nbytes: "<< nbytes <<"\n";
 
-    if (var_name == "soil__moisture_content_total") {
-      if (nbytes == nbytes_input)
+    if (var_name == "soil_moisture_profile" || var_name == "ground_temperature") {
+      if (nbytes == nbytes_input[i])
 	test_status &= true;
       else {
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
 	std::stringstream errMsg;
-	errMsg << "Number of bytes for input var"<<var_name<< " should be "<<nbytes_input<<"\n";
+	errMsg << "Number of bytes for input var"<<var_name<< " should be "<<nbytes_input[i]<<"\n";
 	throw std::runtime_error(errMsg.str());
       }
+    }
+    else {
+      std::stringstream errMsg;
+      errMsg << "Variable name"<< var_name<<" should be: soil_moisture_profile or ground_temperature \n";
+      throw std::runtime_error(errMsg.str());
+
     }
   }
 
@@ -247,54 +277,63 @@ int main(int argc, char *argv[])
     if (VERBOSITY)
       std::cout<<" nbytes: "<< nbytes<<"\n";
 
-    if (var_name == "soil__temperature") {
-      if (nbytes == nbytes_input)
+    if (var_name == "ice_fraction_schaake" || var_name == "ice_fraction_xinan" || var_name == "num_cells") {
+      if (nbytes == nbytes_output[i])
 	test_status &= true;
       else {
 	test_status &= false;
 	std::string passed = test_status == true ? "Yes" : "No";
 	std::cout<<"Test passed: "<<passed<<"\n";
 	std::stringstream errMsg;
-	errMsg << "Number of bytes for output var"<<var_name<< " should be "<<nbytes_input<<"\n";
+	errMsg << "Number of bytes for output var"<<var_name<< " should be "<<nbytes_output[i]<<"\n";
 	throw std::runtime_error(errMsg.str());
       }
+    }
+    else {
+      std::stringstream errMsg;
+      errMsg << "Variable name"<< var_name<<" should be: ice_fraction_schaake or ice_fraction_xinan or num_cell \n";
+      throw std::runtime_error(errMsg.str());
+
     }
     
   }
 
   // Test BMI: MODEL GRID FUNCTIONS
   std::cout<<"\n \n**************** TEST BMI GRID FUNCTIONS***********************\n";
-  int grid_id = 0; //TODO: impliment for multiple grids, for now we know 0
+  int grid_id[] = {0,1,2};
+  int grid_size_test[] = {1,1,nz};
   int grid_rank, grid_size;
   std::string grid_type;
 
-  if (VERBOSITY)  
-    std::cout<<" Grid id "<< grid_id<<"\n";
+  for (int i=0; i< 3; i++) {
+    if (VERBOSITY)  
+      std::cout<<"Grid id "<< grid_id[i] <<"\n";
 
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-  // Test get_grid_rank()
-  grid_rank = model.GetGridRank(grid_id);
-  if (grid_rank == FAILURE) return FAILURE;
-  if (VERBOSITY)
-    std::cout<<" rank: "<<grid_rank<<"\n";
-
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-  // Test get_grid_size
-  grid_size = model.GetGridSize(grid_id);
-  if (grid_size == nz) {
-    test_status &= true;
+    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    // Test get_grid_rank()
+    grid_rank = model.GetGridRank(grid_id[i]);
+    if (grid_rank == FAILURE) return FAILURE;
     if (VERBOSITY)
-      std::cout<<"grid size: "<<grid_size<<"\n";
-  }
-  else {
-    test_status &= false;
-    std::string passed = test_status == true ? "Yes" : "No";
-    std::cout<<"Test passed: "<<passed<<"\n";
-    std::stringstream errMsg;
-    errMsg << "Grid size of should be "<<nz<<"\n";
-    throw std::runtime_error(errMsg.str());
-  }
+      std::cout<<" rank: "<<grid_rank<<"\n";
 
+    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    // Test get_grid_size
+    grid_size = model.GetGridSize(grid_id[i]);
+    if (grid_size == grid_size_test[i]) {
+      test_status &= true;
+      if (VERBOSITY)
+	std::cout<<" grid size: "<<grid_size<<"\n";
+    }
+    else {
+      test_status &= false;
+      std::string passed = test_status == true ? "Yes" : "No";
+      std::cout<<"Test passed: "<<passed<<"\n";
+      std::stringstream errMsg;
+      errMsg << "Grid size of should be "<<nz<<"\n";
+      throw std::runtime_error(errMsg.str());
+    }
+  }
+  
   /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
   /*
   // Test get_grid_type
@@ -360,6 +399,13 @@ int main(int argc, char *argv[])
     throw std::runtime_error(errMsg.str());
   }
 
+  std::cout<<GREEN<<"\n";
+  std::string passed = test_status > 0 ? "Yes" : "No";
+  std::cout<<"\n| *************************************** \n";
+  std::cout<<"All tests passed until this point: "<<passed<<"\n";
+  std::cout<<"| *************************************** \n";
+  std::cout<<RESET<<"\n";
+  
   /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
   // Test get_current_time()
   time = model.GetCurrentTime();
@@ -402,8 +448,13 @@ int main(int argc, char *argv[])
     std::cout<<" Get value ptr: "<<*var_ptr<<"\n";
     
     /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-    if (var_name == "soil__moisture_content_total") {
-      if (var[0] == soil_MCT[0] && var[1] == soil_MCT[1] && var[2] == soil_MCT[2] && var[3] == soil_MCT[3])
+    if (var_name == "soil_moisture_profile") {
+      bool check = false;
+      for (int i1 =0; i1 < 4; i1++) {
+	assert (fabs(var[i] - soil_moisture_profile[i]) < 0.001);
+	check=true;
+      }
+      if (check)
 	test_status &= true;
       else {
 	test_status &= false;
@@ -461,10 +512,17 @@ int main(int argc, char *argv[])
 
     // Reset to initial values
     if (var_name == "soil__moisture_content_total") 
-      model.SetValue(var_name, &(soil_MCT[0]));
+      model.SetValue(var_name, &(soil_moisture_profile[0]));
     if (var_name == "soil__moisture_content_liquid") 
       model.SetValue(var_name, &(soil_MCL[0]));
   }
+
+  passed = test_status > 0 ? "Yes" : "No";
+  std::cout<<GREEN<<"\n";
+  std::cout<<"| *************************************** \n";
+  std::cout<<"All tests passed until this point: "<<passed<<"\n";
+  std::cout<<"| *************************************** \n";
+  std::cout<<RESET<<"\n";
   
   std::cout<<"************* Output variables ***************** \n";
   
@@ -475,8 +533,24 @@ int main(int argc, char *argv[])
     int len = 0;
     int *indices = NULL;
     
-    if (var_name.compare("soil__num_cells") != 0) {
-      if (var_name.compare("soil__ice_fraction") == 0 ) {
+    if (var_name.compare("num_cells") == 0) {
+      len = 1;
+      indices = new int[len];
+      indices[0] = 0;
+      
+      int *var = new int[len];
+      
+      // Test get_value() at each timestep
+      model.GetValue(var_name, &(var[0]));
+      std::cout<<" Get value: "<< var[0] <<"\n";
+      if (var[0] == nz)
+	test_status &= true;
+      else
+	test_status &= false;
+    }
+    else { 
+
+      if (var_name.compare("ice_fraction_schaake") == 0 || var_name.compare("ice_fraction_xinan") == 0) {
 	len = 1;
 	indices = new int[len];
 	indices[0] = 0;
@@ -489,44 +563,11 @@ int main(int argc, char *argv[])
       }
       
       double *var = new double[len];
-      double *dest = new double[len];
 
       /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
       // Test get_value() at initial timestep
       model.GetValue(var_name, &(var[0]));
       std::cout<<" Get value: "<< var[0] <<"\n";
-      
-      if (var_name == "soil__temperature") {
-	if (var[0] == soil_T[0] && var[1] == soil_T[1] && var[2] == soil_T[2] && var[3] == soil_T[3])
-	  test_status &= true;
-	else {
-	  test_status &= false;
-	  std::string passed = test_status == true ? "Yes" : "No";
-	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::stringstream errMsg;
-	  errMsg << "Soil temperatures should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "<<soil_T[2]<<" "<<soil_T[3]
-		 <<" but are: "<<var[0]<<" "<<var[1]<<" "<<var[2]<<" "<<var[3]<<"\n";
-	  throw std::runtime_error(errMsg.str());
-	}
-      }
-      
-      /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-      // Test get_value_at_indices()
-      model.GetValueAtIndices(var_name, dest, &indices[0], len);
-      std::cout<<" Get value at indices: " << dest[0]<<"\n";
-      
-      if (var_name == "soil__moisture_content_total") {
-	if (dest[0] == soil_MCT[0] && dest[1] == soil_MCT[1] && dest[2] == soil_MCT[2] && dest[3] == soil_MCT[3])
-	  test_status &= true;
-	else {
-	  test_status &= false;
-	  std::string passed = test_status == true ? "Yes" : "No";
-	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::stringstream errMsg;
-	  errMsg << "Soil moisture content should be: "<<soil_MCT[0]<<" "<<soil_MCT[1]<<" "<<soil_MCT[2]<<" "<<soil_MCT[3]<<" but are: "<<dest[0]<<" "<<dest[1]<<" "<<dest[2]<<" "<<dest[3]<<"\n";
-	  throw std::runtime_error(errMsg.str());
-	}
-      }
       
       /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
       // Test get_value_ptr()
@@ -542,29 +583,17 @@ int main(int argc, char *argv[])
 	for (int i1=0; i1<nz;i1++)
 	  var_new[i] = 290+1.5*(i+1);
       }
-      else if (var_name == "soil__ice_fraction")
+      else if (var_name == "ice_fraction_schaake" || var_name == "ice_fraction_xinan")
 	var_new[0] = 0.05;
       else
 	var_new[0] = 0.324;
+      
       model.SetValue(var_name, &(var_new[0]));
 	
       std::cout<<" Set value: "<<var_new[0]<<"\n";
       // get_value to see if changed
       model.GetValue(var_name, &var_new_up[0]);
       std::cout<<" Get value: "<< var_new_up[0] <<"\n";
-
-      if (var_name == "soil__temperature") {
-	if (var_new[0] == var_new_up[0] && var_new[1] == var_new_up[1] && var_new[2] == var_new_up[2] && var_new[3] == var_new_up[3])
-	  test_status &= true;
-	else {
-	  test_status &= false;
-	  std::string passed = test_status == true ? "Yes" : "No";
-	  std::cout<<"Test passed: "<<passed<<"\n";
-	  std::stringstream errMsg;
-	  errMsg << "Getter/Setters are not working properly for output variables.\n";
-	  throw std::runtime_error(errMsg.str());
-	}
-      }
 
       /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
       // Test BMI set_value_at_indices()
@@ -584,71 +613,55 @@ int main(int argc, char *argv[])
       model.GetValueAtIndices(var_name, dest_new_up,  &indices[0], len);
       std::cout<<" Get value at indices: "<<dest_new_up[0]<<"\n";
       int c = 2;
-      if (var_name == "soil__ice_fraction") // frozen fraction is just a single number
+      
+      if (var_name == "ice_fraction_schaake" || var_name == "ice_fraction_xinan") // frozen fraction is just a single number
 	c=0;
       if (dest_new[c] == dest_new_up[c])
 	test_status &= true;
       else
 	test_status &= false;
     }
-    else if (var_name.compare("soil__num_cells") == 0) {
-      len = 1;
-      indices = new int[len];
-      indices[0] = 0;
-      
-      int *var = new int[len];
-      
-      // Test get_value() at each timestep
-      model.GetValue(var_name, &(var[0]));
-      std::cout<<" Get value: "<< var[0] <<"\n";
-      if (var[0] == nz)
-	test_status &= true;
-      else
-	test_status &= false;
-    }
   }
   
-  std::string passed = test_status > 0 ? "Yes" : "No";
-  std::cout<<"Test passed at time t=0: "<<passed<<"\n";
+  passed = test_status > 0 ? "Yes" : "No";
+  std::cout<<GREEN<<"\n";
+  std::cout<<"| *************************************** \n";
+  std::cout<<"All BMI Tests passed: "<<passed<<"\n";
+  std::cout<<"| *************************************** \n";
+  std::cout<<RESET<<"\n";
 
 
-  int test_nstep=3333;
+  // Run the model for 48 timesteps, i.e., two days and compare ice_fraction with the known ice_fraction
+  
+  int test_nstep=48;
   std::cout<<"*********** Timestepping now....... (total timesteps): "<< test_nstep<<" **********\n";
 
+  double ground_temp = 273.15;
   for (int n=0;n<test_nstep;n++) {
-    std::cout<<"********* Advancing timestep: "<< (n+1) <<"\n";
-
+    //std::cout<<"********* Advancing timestep: "<< (n+1) <<"\n";
+    ground_temp -= 1.0;
+    model_cyc.SetValue("ground_temperature", &ground_temp);
     // Test BMI: CONTROL FUNCTION update()
     model_cyc.Update();    
   }
 
-  double solution[] = {272.519, 273.15,274.181,275.154};
-  double ice_fraction = 0.0374381;
-  double *var_st = new double[nz];
-  double *ice_frac = new double[1];
-  model_cyc.GetValue("soil__temperature",&var_st[0]);
-  model_cyc.GetValue("soil__ice_fraction",&ice_frac[0]);
-  double error = 0;
-  for (int i1=0; i1<nz;i1++) {
-    error += std::pow(var_st[i1] - solution[i1],2.);
-    //std::cout<<"SS: "<<var_st[i1]<<" "<<ice_frac[0]<<" "<<*ice_frac<<"\n";
-  }
-  error = std::pow(error,0.5);
-  if (error < 1.e-3)
-    test_status &= true;
-  else
-    test_status &= false;
-
-  double err_frozen_frac_mm = fabs(ice_fraction - ice_frac[0]) *1000; 
+  double ice_fraction = 0.0301892;
+  double ice_fraction_sim;
+  model_cyc.GetValue("ice_fraction_schaake",&ice_fraction_sim);
+  
+  double err_frozen_frac_mm = fabs(ice_fraction - ice_fraction_sim) *1000; 
   if (err_frozen_frac_mm < 1.e-3)
     test_status &= true;
   else
     test_status &= false;
-    
+  std::cout<<"ice "<<ice_fraction_sim<<"\n";
   passed = test_status > 0 ? "Yes" : "No";
+  std::cout<<BLUE<<"\n";
   std::cout<<"\n\n*********************************************************\n";
   std::cout<<"*************** Summary of the Unit Test ***************\n";
   std::cout<<"*********************************************************\n";
-  std::cout<<"Test passed = "<<passed<<" \nError (L2-norm) =  "<<error<<" \nFrozen fraction = "<<err_frozen_frac_mm<<"\n";
+  std::cout<<"\tTest passed = "<<passed<<" \n \tFrozen fraction error in mm = "<<err_frozen_frac_mm<<"\n";
+  std::cout<<RESET<<"\n";
+  
   return FAILURE;
 }

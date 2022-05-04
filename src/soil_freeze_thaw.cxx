@@ -298,7 +298,7 @@ InitFromConfigFile(std::string config_file)
   }
 
   this->option_bottom_boundary = is_bottom_boundary_temp_set == false ? 1 : 2; // if false zero geothermal flux is the BC
-  std::cout<<"opt "<<this->option_bottom_boundary<<"\n";
+  
   // check if the size of the input data is consistent
   assert (n_st == this->ncells);
   assert (n_mct == this->ncells);
