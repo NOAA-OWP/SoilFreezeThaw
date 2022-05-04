@@ -1,4 +1,4 @@
-# Unit test for Soil Freeze Thaw model
+# Soil Freeze Thaw BMI unit test
 Usage: run `./run_unittest.sh` (change/set $CXX to g++ compiler on your machaine)
 
 Multiple checks are performed:
