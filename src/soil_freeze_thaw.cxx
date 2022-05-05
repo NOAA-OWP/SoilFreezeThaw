@@ -92,11 +92,11 @@ InitFromConfigFile(std::string config_file)
   bool is_quartz_set = false;
   bool is_satpsi_set = false;
   bool is_soil_temperature_set = false;
-  bool is_soil_moisture_content_set = false; //total moisture content
-  bool is_soil_liquid_content_set = false; //liquid moisture content
-  bool is_ice_fraction_scheme_set = false; //ice fraction scheme
-  bool is_sft_standalone_set = false; //SFT standalone
-  bool is_bottom_boundary_temp_set = false; // bottom boundary temperature
+  bool is_soil_moisture_content_set = false; // total moisture content
+  bool is_soil_liquid_content_set = false;   // liquid moisture content
+  bool is_ice_fraction_scheme_set = false;   // ice fraction scheme
+  bool is_sft_standalone_set = false;        // SFT standalone
+  bool is_bottom_boundary_temp_set = false;  // bottom boundary temperature
     
   while (fp) {
 
@@ -359,6 +359,7 @@ ReadVectorData(std::string key)
   These scheme are consistent with the schemes in the NOAH-MP (used in the current NWM)
   - Schaake scheme computes volume of frozen water in meters
   - Xinanjiang uses exponential based ice fraction taking only ice from the top cell
+  - Note: ice fraction is not used by the freeze-thaw model, it is a bmi output to rainfall-runoff models
 */
 void soilfreezethaw::SoilFreezeThaw::
 ComputeIceFraction()
@@ -602,20 +603,21 @@ SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double
 void soilfreezethaw::SoilFreezeThaw::
 ThermalConductivity() {
   Properties prop;
-  const int n_z = this->shape[0];
+  const int nz = this->shape[0];
 
   double tcmineral = this->quartz > 0.2 ? 2.0 : 3.0; //thermal_conductivity of other mineral
   double tcquartz = 7.7;   // thermal_conductivity of Quartz [W/(mK)] 
   double tcwater  = 0.57;  // thermal_conductivity of water  [W/(mK)] 
   double tcice    = 2.2;   // thermal conductiviyt of ice    [W/(mK)] 
   
-  for (int i=0; i<n_z;i++) {
+  for (int i=0; i<nz;i++) {
+    
     double sat_ratio = soil_moisture_content[i]/ this->smcmax;
 
     //thermal_conductivity of solids Eq. (10) Peters-Lidard
     double tc_solid = pow(tcquartz,this->quartz) * pow(tcmineral, (1. - this->quartz));
 
-    //SATURATED THERMAL CONDUCTIVITY
+    /******** SATURATED THERMAL CONDUCTIVITY *********/
     
     //UNFROZEN VOLUME FOR SATURATION (POROSITY*XUNFROZ)
     double x_unfrozen= 1.0; //prevents zero division
@@ -625,7 +627,8 @@ ThermalConductivity() {
     double xu = x_unfrozen * this->smcmax; // unfrozen volume fraction
     double tc_sat = pow(tc_solid,(1. - this->smcmax)) * pow(tcice, (this->smcmax - xu)) * pow(tcwater,xu);
     
-    //DRY THERMAL CONDUCTIVITY
+    /******** DRY THERMAL CONDUCTIVITY ************/
+    
     double gammd = (1. - this->smcmax)*2700.; // dry density
     double tc_dry = (0.135* gammd+ 64.7)/ (2700. - 0.947* gammd);
     
@@ -655,9 +658,9 @@ ThermalConductivity() {
 void soilfreezethaw::SoilFreezeThaw::
 SoilHeatCapacity() {
   Properties prop;
-  const int n_z = this->shape[0];
+  const int nz = this->shape[0];
   
-  for (int i=0; i<n_z;i++) {
+  for (int i=0; i<nz;i++) {
     double sice = soil_moisture_content[i] - soil_liquid_content[i];
     heat_capacity[i] = soil_liquid_content[i]*prop.hcwater_ + sice*prop.hcice_ + (1.0-this->smcmax)*prop.hcsoil_ + (this->smcmax-soil_moisture_content[i])*prop.hcair_;
   }
@@ -666,10 +669,10 @@ SoilHeatCapacity() {
 
 void soilfreezethaw::SoilFreezeThaw::
 SoilCellsThickness() {
-  const int n_z = this->shape[0];
+  const int nz = this->shape[0];
 
   soil_dz[0] = soil_z[0];
-  for (int i=0; i<n_z-1;i++) {
+  for (int i=0; i<nz-1;i++) {
     soil_dz[i+1] = soil_z[i+1] - soil_z[i];
   }
 }
@@ -685,63 +688,56 @@ void soilfreezethaw::SoilFreezeThaw::
 PhaseChange() {
   
   Properties prop;
-  const int n_z = this->shape[0];
-  double *Supercool = new double[n_z]; // supercooled water in soil
-  double *MIce_L = new double[n_z];    // soil ice mass [kg/m2]
-  double *MLiq_L = new double[n_z];    // snow/soil liquid mass [kg/m2]
-  double *MHeat_L = new double[n_z];   // energy residual [w/m2] HM = MHeat_L
-  double *MPC_L = new double[n_z];     // melting or freezing water [kg/m2] XM_L = mass of phase change
+  const int nz = this->shape[0];
+  double *Supercool = new double[nz];    // supercooled water in soil [kg/m2]
+  double *MassIce_L = new double[nz];    // soil ice mass [kg/m2]
+  double *MassLiq_L = new double[nz];    // snow/soil liquid mass [kg/m2]
+  double *HeatEnergy_L = new double[nz];      // energy residual [w/m2] HM = HeatEnergy_L
+  double *MassPhaseChange_L = new double[nz];        // melting or freezing water [kg/m2] XM_L = mass of phase change
 
-  double *soil_moisture_content_c = new double[n_z];
-  double *MLiq_c = new double[n_z]; 
-  double *MIce_c = new double[n_z];
+  // arrays keep local copies of the data at the previous timestep
+  double *soil_moisture_content_c = new double[nz];
+  double *MassLiq_c = new double[nz]; 
+  double *MassIce_c = new double[nz];
 
-  int *IndexMelt = new int[n_z]; // tracking melting/freezing index of layers
+  int *IndexMelt = new int[nz]; // tracking melting/freezing index of layers
   
-  int nsnow = -1;
   //compute mass of liquid/ice in soil layers in mm
-  for (int i=0; i<n_z;i++) {
-    if (i < nsnow) { //snow layer
-      MIce_L[i] = 0; //SNICE[i];
-      MLiq_L[i] = 0; //SNLIQ[i];
-    }
-    else {
-      // MICE and MLIQ are in units of [kg/m2]
-      MIce_L[i] = (soil_moisture_content[i] - soil_liquid_content[i]) * soil_dz[i] * prop.wdensity_; // [kg/m2]
-      MLiq_L[i] = soil_liquid_content[i] * soil_dz[i] * prop.wdensity_;
-    }
+  for (int i=0; i<nz;i++) {
+      MassIce_L[i] = (soil_moisture_content[i] - soil_liquid_content[i]) * soil_dz[i] * prop.wdensity_; // [kg/m2]
+      MassLiq_L[i] = soil_liquid_content[i] * soil_dz[i] * prop.wdensity_;
   }
   //set local variables
   
   //create copies of the current Mice and MLiq
-  memcpy(MLiq_c, MLiq_L, sizeof (double) * n_z);
-  memcpy(MIce_c, MIce_L, sizeof (double) * n_z);
+  memcpy(MassLiq_c, MassLiq_L, sizeof (double) * nz);
+  memcpy(MassIce_c, MassIce_L, sizeof (double) * nz);
 
   //Phase change between ice and liquid water
-  for (int i=0; i<n_z;i++) {
+  for (int i=0; i<nz;i++) {
     IndexMelt[i] = 0;
-    soil_moisture_content_c[i] = MIce_L[i] + MLiq_L[i];
+    soil_moisture_content_c[i] = MassIce_L[i] + MassLiq_L[i];
   }
 
   /*------------------------------------------------------------------- */
   //Soil water potential
   // SUPERCOOL is the maximum liquid water that can exist below (T - TFRZ) freezing point
   double lam = -1./(this->bb);
-  for (int i=0; i<n_z;i++) {
+  for (int i=0; i<nz;i++) {
     if (soil_temperature[i] < prop.tfrez_) {
       double smp = latent_heat_fusion /(prop.grav_*soil_temperature[i]) * (prop.tfrez_ - soil_temperature[i]);     // [m] Soil Matrix potential
-      Supercool[i] = this->smcmax* pow((smp/this->satpsi), lam); //SMCMAX = porsity
-      Supercool[i] = Supercool[i]*soil_dz[i]* prop.wdensity_; //[kg/m2];
+      Supercool[i] = this->smcmax* pow((smp/this->satpsi), lam); // SMCMAX = porsity
+      Supercool[i] = Supercool[i]*soil_dz[i]* prop.wdensity_;    // [kg/m2]
     }
   }
 
 
   /*------------------------------------------------------------------- */
   // ****** get layer freezing/melting index ************
-  for (int i=0; i<n_z;i++) {
-    if (MIce_L[i] > 0 && soil_temperature[i] > prop.tfrez_) //Melting condition
+  for (int i=0; i<nz;i++) {
+    if (MassIce_L[i] > 0 && soil_temperature[i] > prop.tfrez_) //Melting condition
       IndexMelt[i] = 1;
-    else if (MLiq_L[i] > Supercool[i] && soil_temperature[i] <= prop.tfrez_)// freezing condition in NoahMP
+    else if (MassLiq_L[i] > Supercool[i] && soil_temperature[i] <= prop.tfrez_)// freezing condition in NoahMP
       IndexMelt[i] = 2;
   }
 
@@ -750,50 +746,50 @@ PhaseChange() {
   /*------------------------------------------------------------------- */
   // ****** get excess or deficit of energy during phase change (use Hm) ********
   //  HC = volumetic heat capacity [J/m3/K]
-  // Heat Mass = (T- Tref) * HC * DZ /Dt = K * J/(m3 * K) * m * 1/s = (J/s)*m/m3 = W/m2
-  //if HeatMass < 0 --> freezing energy otherwise melting energy
+  // Heat Energy = (T- Tref) * HC * DZ /Dt = K * J/(m3 * K) * m * 1/s = (J/s)*m/m3 = W/m2
+  //if HeatEnergy < 0 --> freezing energy otherwise melting energy
   
-  for (int i=0; i<n_z;i++) {
+  for (int i=0; i<nz;i++) {
     if (IndexMelt[i] > 0) {
-      MHeat_L[i] = (soil_temperature[i] - prop.tfrez_) * (heat_capacity[i] * soil_dz[i]) / dt; // q = m * c * delta_T
+      HeatEnergy_L[i] = (soil_temperature[i] - prop.tfrez_) * (heat_capacity[i] * soil_dz[i]) / dt; // q = m * c * delta_T
       soil_temperature[i] = prop.tfrez_; // Note the temperature does not go below 0 until there is mixture of water and ice
     }
 
-    if (IndexMelt[i] == 1 && MHeat_L[i] <0) {
-      MHeat_L[i] = 0;
+    if (IndexMelt[i] == 1 && HeatEnergy_L[i] <0) {
+      HeatEnergy_L[i] = 0;
       IndexMelt[i] = 0;
     }
     
-    if (IndexMelt[i] == 2 && MHeat_L[i] > 0) {
-      MHeat_L[i] = 0;
+    if (IndexMelt[i] == 2 && HeatEnergy_L[i] > 0) {
+      HeatEnergy_L[i] = 0;
       IndexMelt[i] = 0;
     }
 
   // compute the amount of melting or freezing water [kg/m2]. That is, how much water needs to be melted or freezed for the given energy change: MPC = MassPhaseChange
-  MPC_L[i] = MHeat_L[i]*dt/latent_heat_fusion;
+  MassPhaseChange_L[i] = HeatEnergy_L[i]*dt/latent_heat_fusion;
   }
 
   
   /*------------------------------------------------------------------- */
   // The rate of melting and freezing for snow and soil
   // mass partition between ice and water and the corresponding adjustment for the next timestep
-  for (int i=0; i<n_z;i++) {
-    if (IndexMelt[i] >0 && std::abs(MHeat_L[i]) >0) {
-      if (MPC_L[i] >0) //melting
-	MIce_L[i] = std::max(0., MIce_c[i]-MPC_L[i]);
-      else if (MPC_L[i] <0) { //freezing
+  for (int i=0; i<nz;i++) {
+    if (IndexMelt[i] >0 && std::abs(HeatEnergy_L[i]) >0) {
+      if (MassPhaseChange_L[i] >0) //melting
+	MassIce_L[i] = std::max(0., MassIce_c[i]-MassPhaseChange_L[i]);
+      else if (MassPhaseChange_L[i] <0) { //freezing
 	if (soil_moisture_content_c[i] < Supercool[i])
-	  MIce_L[i] = 0;
+	  MassIce_L[i] = 0;
 	else {
-	  MIce_L[i] = std::min(soil_moisture_content_c[i] - Supercool[i], MIce_c[i] - MPC_L[i]);
-	  MIce_L[i] = std::max(MIce_L[i],0.0);
+	  MassIce_L[i] = std::min(soil_moisture_content_c[i] - Supercool[i], MassIce_c[i] - MassPhaseChange_L[i]);
+	  MassIce_L[i] = std::max(MassIce_L[i],0.0);
 	}
       }
     
       // compute heat residual
       // total energy available - energy consumed by phase change (ice_old - ice_new)
-      double HEATR = MHeat_L[i] - latent_heat_fusion*(MIce_c[i]-MIce_L[i])/dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
-      MLiq_L[i] = std::max(0.,soil_moisture_content_c[i] - MIce_L[i]);
+      double HEATR = HeatEnergy_L[i] - latent_heat_fusion*(MassIce_c[i]-MassIce_L[i])/dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
+      MassLiq_L[i] = std::max(0.,soil_moisture_content_c[i] - MassIce_L[i]);
 
       // Temperature correction
 
@@ -806,9 +802,9 @@ PhaseChange() {
     }
   }
   
-  for (int i=0; i<n_z;i++) { //soil
-    soil_liquid_content[i] =  MLiq_L[i] / (prop.wdensity_ * soil_dz[i]); // [-]
-    soil_moisture_content[i]  = (MLiq_L[i] + MIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
+  for (int i=0; i<nz;i++) { //soil
+    soil_liquid_content[i] =  MassLiq_L[i] / (prop.wdensity_ * soil_dz[i]); // [-]
+    soil_moisture_content[i]  = (MassLiq_L[i] + MassIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
     soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
 }
