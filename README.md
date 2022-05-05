@@ -79,7 +79,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 * `smcmax` (porosity; maximum moisture content)
 * `b` is the pore size distribution, beta exponent on Clapp-Hornberger
 * `satpsi` saturated capillary head (saturated moisture potential)
-* `quartz` quartz content is the soil for the use in soil thermal conductivity function of Peters-Lidard
+* `quartz` soil quartz content, used in soil thermal conductivity function of Peters-Lidard
 * `soil_z` is the vertical resolution of the soil column (computational domain)
 * `soil_temperature` is the initial soil temperature for the discretized column
 * `soil_moisture_content` is the initial soil total (liquid + ice) moisture content for the discretized column
