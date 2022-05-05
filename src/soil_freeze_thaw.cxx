@@ -458,18 +458,21 @@ Advance()
 */
 double soilfreezethaw::SoilFreezeThaw::
 GroundHeatFlux(double surfT)
-{  
+{
+  double ground_heat_flux;
   if (option_top_boundary == 1) {
-    double ghf = - thermal_conductivity[0] * (surfT  - this->ground_temp_const) / soil_z[0];   //temperature specified as constant
-    return ghf; 
+    ground_heat_flux = - thermal_conductivity[0] * (surfT  - this->ground_temp_const) / soil_z[0];   //temperature specified as constant
+    return ground_heat_flux; 
   }
   else if (option_top_boundary == 2) {
     assert (this->soil_z[0] >0);
-    double ghf = - thermal_conductivity[0] * (surfT  - this->ground_temp) / this->soil_z[0];  //temperature from a file
-    return ghf; 
+    ground_heat_flux  = - thermal_conductivity[0] * (surfT  - this->ground_temp) / this->soil_z[0];  //temperature from a file
+    return ground_heat_flux; 
   }
-  else
+  else {
+    throw std::runtime_error("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature per timestep)!");
     return 0;
+  }
 }
 
 /*
@@ -497,8 +500,10 @@ SolveDiffusionEquation()
 	h1 = soil_z[i];
 	double dtdz  = (soil_temperature[i+1] - soil_temperature[i])/ h1;
 	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
-	double ghf = this->GroundHeatFlux(soil_temperature[i]);
-	Flux[i] = Lambd[i] * (thermal_conductivity[i] * dtdz + ghf);
+	
+	double ground_heat_flux = this->GroundHeatFlux(soil_temperature[i]);
+	
+	Flux[i] = Lambd[i] * (thermal_conductivity[i] * dtdz + ground_heat_flux);
       }
       else if (i < ncells-1) {
 	h1 = soil_z[i] - soil_z[i-1];
@@ -597,7 +602,7 @@ SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double
 }
 
 /*
-  Computes buld soil thermal conductivity
+  Computes bulk soil thermal conductivity
   thermal conductivity model follows the parameterization of Peters-Lidars 
 */
 void soilfreezethaw::SoilFreezeThaw::

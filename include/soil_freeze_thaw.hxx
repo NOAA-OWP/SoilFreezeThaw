@@ -11,7 +11,7 @@
   The model is coupled to the surface through ground surface temperature
   The model is also coupled to soil moisture profile module to provide dynamic vertical distribution of soil moisture
 
-  @param soil_depth [m] : depth of the computational domain 
+  @param soil_depth [m]                    : depth of the computational domain 
   @param latent_heat_fusion         [J/kg] : latent heat of fusion
   @param ground_temp_const          [K]    : constant ground temperature (an option for the surface boundary condition)
   @param end_time                   [s]    : end time of the simulation, input options [second, hour, day]
