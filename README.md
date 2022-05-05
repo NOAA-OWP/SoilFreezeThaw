@@ -1,4 +1,4 @@
-## Standalone soil-freeze thaw model (SFTM) example
+## Standalone soil freeze-thaw (SFT) model example
 ### Example description: 
 Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with existing `golden test` ice_fraction using Schaake scheme. If test is successfull, the user should be able to see `Test passed = Yes` 
 ### Build
@@ -12,7 +12,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 
 
 ## Pseudo-framework integrated models example 
-### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFTM (and more models in if needed/desired)
+### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFT (and more models if needed/desired)
 ### Build 
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - git clone https://github.com/NOAA-OWP/cfe 
