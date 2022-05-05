@@ -605,9 +605,9 @@ ThermalConductivity() {
   const int n_z = this->shape[0];
 
   double tcmineral = this->quartz > 0.2 ? 2.0 : 3.0; //thermal_conductivity of other mineral
-  double tcquartz = 7.7; // thermal_conductivity of Quartz
-  double tcwater  = 0.57; // thermal_conductivity of water
-  double tcice    = 2.2;  // thermal conductiviyt of ice
+  double tcquartz = 7.7;   // thermal_conductivity of Quartz [W/(mK)] 
+  double tcwater  = 0.57;  // thermal_conductivity of water  [W/(mK)] 
+  double tcice    = 2.2;   // thermal conductiviyt of ice    [W/(mK)] 
   
   for (int i=0; i<n_z;i++) {
     double sat_ratio = soil_moisture_content[i]/ this->smcmax;
@@ -686,11 +686,11 @@ PhaseChange() {
   
   Properties prop;
   const int n_z = this->shape[0];
-  double *Supercool = new double[n_z]; //supercooled water in soil
-  double *MIce_L = new double[n_z]; //soil ice mass [mm]
-  double *MLiq_L = new double[n_z]; //snow/soil liquid mass [mm]
-  double *MHeat_L = new double[n_z]; //energy residual [w/m2] HM = MHeat_L
-  double *MPC_L = new double[n_z]; //melting or freezing water [kg/m2] XM_L = mass of phase change
+  double *Supercool = new double[n_z]; // supercooled water in soil
+  double *MIce_L = new double[n_z];    // soil ice mass [kg/m2]
+  double *MLiq_L = new double[n_z];    // snow/soil liquid mass [kg/m2]
+  double *MHeat_L = new double[n_z];   // energy residual [w/m2] HM = MHeat_L
+  double *MPC_L = new double[n_z];     // melting or freezing water [kg/m2] XM_L = mass of phase change
 
   double *soil_moisture_content_c = new double[n_z];
   double *MLiq_c = new double[n_z]; 
