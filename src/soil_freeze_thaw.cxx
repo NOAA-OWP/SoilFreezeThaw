@@ -437,7 +437,7 @@ Advance()
   SolveDiffusionEquation();
 
   /* Now time to update ice content based on the new soil moisture and and  soil temperature profiles.
-     Call Phase Change moudle to parition soil moisture into water and ice.
+     Call Phase Change module to partition soil moisture into water and ice.
   */
   PhaseChange();
 
@@ -514,7 +514,7 @@ SolveDiffusionEquation()
 	if (this->option_bottom_boundary == 1) 
 	  botflux = 0.;
 	else if (this->option_bottom_boundary == 2) {
-	  double dtdz1 = (soil_temperature[i] - bottom_boundary_temp_const) / h1;
+	  double dtdz1 = (soil_temperature[i] - bottom_boundary_temp_const) / h1; // dT_dz = (T_bottom - T_i)/dz, note the next term uses `-dtdz1` just to be consistent with the definition of geothermnal flux 
 	  botflux  = - thermal_conductivity[i] * dtdz1;
 	}
 	double dtdz = (soil_temperature[i] - soil_temperature[i-1] )/ h1;
