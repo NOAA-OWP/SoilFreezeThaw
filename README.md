@@ -31,20 +31,25 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 ### Build
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init
+  - #### CFE
     - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
     - git submodule update --remote extern/cfe/cfe  
     - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw && cd ../../..
-  - cmake -B extern/cfe/cmake_build -S extern/cfe
-  - make -C extern/cfe/cmake_build
-  - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
-  - make -C extern/iso_c_fortran_bmi/cmake_build
-  - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
-  - make -C extern/evapotranspiration/cmake_build/
-  - git clone https://github.com/NOAA-OWP/SoilFreezeThaw extern/SoilFreezeThaw  
-    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw -DNGEN:BOOL=ON
+    - cmake -B extern/cfe/cmake_build -S extern/cfe
+    - make -C extern/cfe/cmake_build
+  - #### fortran bmi
+    - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
+    - make -C extern/iso_c_fortran_bmi/cmake_build
+  - #### PET
+    - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
+    - make -C extern/evapotranspiration/cmake_build/
+  - #### SFT
+    - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
+    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN:BOOL=ON
     - make -C extern/SoilFreezeThaw/cmake_build
-  - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
-    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles -DNGEN:BOOL=ON
+  - #### SMP
+    - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
+    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN:BOOL=ON
     - make -C extern/SoilMoistureProfiles/cmake_build 
   - Note the following step will be removed once [PR#405](https://github.com/NOAA-OWP/ngen/pull/405) is merged
     - gh pr list (you should see #405  Bmi array support  hellkite500:bmi-array-support)
@@ -61,17 +66,17 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   ```
  #### standalone SFTM in the ngen framework
  ```
-   cp extern/SoilFreezeThaw/configs/realization_config_standalone_<macos/linux>.json . (pick the file based on your machine)
+   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_standalone_<macos/linux>.json . (pick the file based on your machine)
    ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_standalone.json
-```
+ ```
 #### Run integrated models in the ngen framework
  ```
-   cp extern/SoilFreezeThaw/configs/realization_config_multi_<macos/linux>.json . (pick the file based on your machine)
+   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_multi_<macos/linux>.json . (pick the file based on your machine)
    ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi_<macos/linux>.json
-```
+  ```
 #### Post-process step
-  - For standalone run: `cd test` and run [test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) (the script compares results with a gold test output)
-  - For integrated run: Output data is stored in cat-27.csv, use your favorite tool to visualize and compare data
+  - For standalone simulaition: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
+  - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data (or to compare with pseudo framework)
 
 
 ## Parameters in the config file
