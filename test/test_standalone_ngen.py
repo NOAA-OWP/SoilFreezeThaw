@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-golden_file="extern/SoilFreezeThaw/test/file_golden.csv"
+golden_file="extern/SoilFreezeThaw/SoilFreezeThaw/test/file_golden.csv"
 
 ngen_file="cat-27.csv"
 

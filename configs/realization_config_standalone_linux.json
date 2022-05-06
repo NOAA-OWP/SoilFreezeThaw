@@ -13,7 +13,7 @@
 		    "params": {
 			"model_type_name": "bmi_sft",
 			"library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi.so",
-			"init_config": "./extern/SoilFreezeThaw/configs/laramie_bmi_config_ftm_standalone.txt",
+			"init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/laramie_bmi_config_ftm_standalone.txt",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "num_cells",
 			"variables_names_map" : {
@@ -28,7 +28,7 @@
             ],
             "forcing": {
 		
-		"path" : "./extern/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
+		"path" : "./extern/SoilFreezeThaw/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
 		"provider": "CsvPerFeature"
 		
             }
