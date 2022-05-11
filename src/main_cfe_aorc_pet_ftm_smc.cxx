@@ -109,7 +109,7 @@ void pass_smc_from_smp_to_ftm(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *ftm_bmi_mod
   
   smp_bmi_model->SetValue("soil_storage",storage_ptr);
   smp_bmi_model->SetValue("soil_storage_change",storage_change_ptr);
-  smp_bmi_model->GetValue("soil_moisture_profile_option_bmi",smc_option_bmi_ptr);
+  smp_bmi_model->GetValue("soil_storage_model",smc_option_bmi_ptr);
 
   if (smc_option_bmi == Constant)
     smp_bmi_model->Update();
