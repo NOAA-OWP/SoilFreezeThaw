@@ -423,7 +423,7 @@ Advance()
   
   if (this->is_soil_moisture_bmi_set) {
     for (int i=0; i<this->ncells;i++) {
-      this->soil_liquid_content[i] = this->soil_moisture_content[i] - this->soil_ice_content[i];
+      this->soil_liquid_content[i] = std::max(this->soil_moisture_content[i] - this->soil_ice_content[i], 0.0);
     }
   }
   
