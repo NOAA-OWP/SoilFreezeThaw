@@ -420,13 +420,12 @@ Advance()
     this->is_soil_moisture_bmi_set = false;
   }
 
-  /*
-  if (this->is_SMC_BMI_set) {
+  
+  if (this->is_soil_moisture_bmi_set) {
     for (int i=0; i<this->ncells;i++) {
       this->soil_liquid_content[i] = this->soil_moisture_content[i] - this->soil_ice_content[i];
-      //      this->soil_ice_content[i] = 0.0;
     }
-  }*/
+  }
   
   /* Update Thermal conductivities due to update in the soil moisture */
   ThermalConductivity(); // initialize thermal conductivities
