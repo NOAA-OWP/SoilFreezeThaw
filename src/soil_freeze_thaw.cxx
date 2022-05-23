@@ -409,21 +409,13 @@ void soilfreezethaw::SoilFreezeThaw::
 Advance()
 {
 
-  /* BMI only sets (total) soil moisture content, so we set the liquid/ice contents here at the initial time
-     assuming that the ice content is zero initially otherwise this would need to be adjusted
+  /* BMI sets (total) soil moisture content only, so we update the liquid content based on the previous ice content; initially ice_content is zero; assuming we are starting somewhere in the summer/fall
   */
-  if (this->is_soil_moisture_bmi_set) {
-    for (int i=0; i<this->ncells;i++) {
-      this->soil_liquid_content[i] = this->soil_moisture_content[i];
-      this->soil_ice_content[i] = 0.0;
-    }
-    this->is_soil_moisture_bmi_set = false;
-  }
-
   
   if (this->is_soil_moisture_bmi_set) {
     for (int i=0; i<this->ncells;i++) {
       this->soil_liquid_content[i] = std::max(this->soil_moisture_content[i] - this->soil_ice_content[i], 0.0);
+      //this->soil_ice_content[i] = std::max(this->soil_ice_content[i], 0.0); // make sure ice_content is non-negative
     }
   }
   
