@@ -16,8 +16,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 ### Build 
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - git clone https://github.com/NOAA-OWP/cfe 
-- git checkout [cfe_soilfreezethaw](https://github.com/NOAA-OWP/cfe/tree/cfe_soilfreezethaw) (note: coupling SFT with CFE using the pseudo-framework requires this special cfe branch)
-- git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_coupler
+- git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_profiles
 - git clone https://github.com/NOAA-OWP/evapotranspiration pet
 - mkdir build && cd build
 - cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug ../
@@ -30,11 +29,9 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - ### Specific instructions for building an integrated system
 ### Build
   - git clone https://github.com/noaa-owp/ngen && cd ngen
-  - git submodule update --init
+  - git submodule update --init --recursive
   - #### CFE
-    - **Note:** make sure to pull latest cfe and checkout cfe_soilfreezethaw branch: 
-    - git submodule update --remote extern/cfe/cfe  
-    - cd extern/cfe/cfe && git checkout cfe_soilfreezethaw && cd ../../..
+    - git submodule update --remote extern/cfe/cfe
     - cmake -B extern/cfe/cmake_build -S extern/cfe
     - make -C extern/cfe/cmake_build
   - #### fortran bmi
@@ -50,10 +47,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - #### SMP
     - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
     - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN:BOOL=ON
-    - make -C extern/SoilMoistureProfiles/cmake_build 
-  - Note the following step will be removed once [PR#405](https://github.com/NOAA-OWP/ngen/pull/405) is merged
-    - gh pr list (you should see #405  Bmi array support  hellkite500:bmi-array-support)
-    - gh pr checkout 405
+    - make -C extern/SoilMoistureProfiles/cmake_build
   - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
   - make -j4 -C cmake_build
 
@@ -74,6 +68,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
    cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_multi_<macos/linux>.json . (pick the file based on your machine)
    ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi_<macos/linux>.json
   ```
+  Note: An example file is also provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/configs/realization_config_nom.json))  to show the coupling of noah-owp-modular with CFE+SMP+SFT.
 #### Post-process step
   - For standalone simulaition: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
   - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data (or to compare with pseudo framework)
