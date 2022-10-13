@@ -44,7 +44,7 @@ IF((NOT ${NGEN}) AND (NOT ${STANDALONE}))
 
   add_executable(cfesft ./src/main_cfe_aorc_pet_ftm_smc.cxx ./cfe/src/cfe.c ./cfe/src/giuh.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./pet/src/pet.c ./pet/src/bmi_pet.c)
 
-  add_library(cfesftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx ./smc_coupler/src/bmi_soil_moisture_profile.cxx ./smc_coupler/src/soil_moisture_profile.cxx ./smc_coupler/include/bmi_soil_moisture_profile.hxx ./smc_coupler/include/soil_moisture_profile.hxx)
+  add_library(cfesftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx ./smc_profiles/src/bmi_soil_moisture_profile.cxx ./smc_profiles/src/soil_moisture_profile.cxx ./smc_profiles/include/bmi_soil_moisture_profile.hxx ./smc_profiles/include/soil_moisture_profile.hxx)
 
   target_link_libraries(cfesft LINK_PUBLIC cfesftlib)
   target_link_libraries(cfesft PRIVATE m)

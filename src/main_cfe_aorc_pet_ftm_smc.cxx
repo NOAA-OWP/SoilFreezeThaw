@@ -17,8 +17,8 @@
 #include "../include/soil_freeze_thaw.hxx"
 
 
-#include "../smc_coupler/include/bmi_soil_moisture_profile.hxx"
-#include "../smc_coupler/include/soil_moisture_profile.hxx"
+#include "../smc_profiles/include/bmi_soil_moisture_profile.hxx"
+#include "../smc_profiles/include/soil_moisture_profile.hxx"
 
 #define FrozenFraction true
 
