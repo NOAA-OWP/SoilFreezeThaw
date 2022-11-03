@@ -1,5 +1,6 @@
 /*
   @author Ahmad Jan (ahmad.jan@noaa.gov)
+  @date   September 2021
 */
 
 /*
@@ -52,6 +53,7 @@
 
 using namespace std;
 
+extern string verbosity;
 
 class Properties;
 

@@ -12,6 +12,8 @@
 #include "../include/soil_freeze_thaw.hxx"
 #include <algorithm>
 
+string verbosity="none";
+
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
@@ -64,7 +66,7 @@ GetVarGrid(std::string name)
     return 0; // int
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
     return 1; //double
-  else if (name.compare("soil_moisture_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
   else
     return -1;
@@ -74,11 +76,11 @@ GetVarGrid(std::string name)
 std::string BmiSoilFreezeThaw::
 GetVarType(std::string name)
 {
-  if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
+  int grid_id = GetVarGrid(name);
+
+  if (grid_id == 0)
     return "int";
-  else  if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
-    return "double";
-  else if (name.compare("soil_moisture_profile") == 0)
+  else if (grid_id == 1 || grid_id == 2)
     return "double";
   else
     return "";
@@ -88,21 +90,22 @@ GetVarType(std::string name)
 int BmiSoilFreezeThaw::
 GetVarItemsize(std::string name)
 {
-  if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
+  int grid_id = GetVarGrid(name);
+
+  if (grid_id == 0)
     return sizeof(int);
-  else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
-    return sizeof(double);
-  else if (name.compare("soil_moisture_profile") == 0)
+  else if (grid_id == 1 || grid_id == 2)
     return sizeof(double);
   else
     return 0;
+  
 }
 
 
 std::string BmiSoilFreezeThaw::
 GetVarUnits(std::string name)
 {
-  if (name.compare("ground_temperature") == 0)
+  if (name.compare("ground_temperature") == 0 || name.compare("soil_temperature_profile") == 0)
     return "K";
   else if (name.compare("ice_fraction_schaake") == 0)
     return "m";
@@ -133,7 +136,7 @@ GetVarLocation(std::string name)
     return "node";
   else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0)
     return "node";
-  else if (name.compare("soil_moisture_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return "node";
   else
     return "";
@@ -230,48 +233,6 @@ GetGridNodeCount(const int grid)
 }
 
 
-int BmiSoilFreezeThaw::
-GetGridEdgeCount(const int grid)
-{
-  throw NotImplemented();
-}
-
-
-int BmiSoilFreezeThaw::
-GetGridFaceCount(const int grid)
-{
-  throw NotImplemented();
-}
-
-
-void BmiSoilFreezeThaw::
-GetGridEdgeNodes(const int grid, int *edge_nodes)
-{
-  throw NotImplemented();
-}
-
-
-void BmiSoilFreezeThaw::
-GetGridFaceEdges(const int grid, int *face_edges)
-{
-  throw NotImplemented();
-}
-
-
-void BmiSoilFreezeThaw::
-GetGridFaceNodes(const int grid, int *face_nodes)
-{
-  throw NotImplemented();
-}
-
-
-void BmiSoilFreezeThaw::
-GetGridNodesPerFace(const int grid, int *nodes_per_face)
-{
-  throw NotImplemented();
-}
-
-
 void BmiSoilFreezeThaw::
 GetValue (std::string name, void *dest)
 {
@@ -287,17 +248,8 @@ GetValue (std::string name, void *dest)
 void *BmiSoilFreezeThaw::
 GetValuePtr (std::string name)
 {
-  /*
-  if (name.compare("temperature") == 0)
-    return (void*)this->_model->ST;
-  else if (name.compare("moisture_content_total") == 0)
-    return (void*)this->_model->SMCT;
-  else if (name.compare("moisture_content_liquid") == 0)
-    return (void*)this->_model->SMCLiq;
-  else if (name.compare("moisture_content_ice") == 0)
-    return (void*)this->_model->SMCIce;
-  else 
-  */
+  if (name.compare("soil_temperature_profile") == 0)
+    return (void*)this->_model->soil_temperature;
   if (name.compare("soil_moisture_profile") == 0)
     return (void*)this->_model->soil_moisture_content;
   else if (name.compare("ground_temperature") == 0 )
@@ -465,6 +417,48 @@ GetTimeUnits() {
 double BmiSoilFreezeThaw::
 GetTimeStep () {
   return this->_model->dt;
+}
+
+
+int BmiSoilFreezeThaw::
+GetGridEdgeCount(const int grid)
+{
+  throw NotImplemented();
+}
+
+
+int BmiSoilFreezeThaw::
+GetGridFaceCount(const int grid)
+{
+  throw NotImplemented();
+}
+
+
+void BmiSoilFreezeThaw::
+GetGridEdgeNodes(const int grid, int *edge_nodes)
+{
+  throw NotImplemented();
+}
+
+
+void BmiSoilFreezeThaw::
+GetGridFaceEdges(const int grid, int *face_edges)
+{
+  throw NotImplemented();
+}
+
+
+void BmiSoilFreezeThaw::
+GetGridFaceNodes(const int grid, int *face_nodes)
+{
+  throw NotImplemented();
+}
+
+
+void BmiSoilFreezeThaw::
+GetGridNodesPerFace(const int grid, int *nodes_per_face)
+{
+  throw NotImplemented();
 }
 
 #endif

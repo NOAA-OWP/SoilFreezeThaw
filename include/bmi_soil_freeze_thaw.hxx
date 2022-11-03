@@ -23,7 +23,8 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
       this->output_var_names[0] = "ice_fraction_schaake";
       this->output_var_names[1] = "ice_fraction_xinan";
       this->output_var_names[2] = "num_cells";
-
+      this->output_var_names[3] = "soil_temperature_profile";
+      
     };
 
     void Initialize(std::string config_file);
@@ -80,10 +81,10 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
   private:
     soilfreezethaw::SoilFreezeThaw* _model;
     static const int input_var_name_count = 2;
-    static const int output_var_name_count = 3;
+    static const int output_var_name_count = 4;
 
-    std::string input_var_names[2];
-    std::string output_var_names[3];
+    std::string input_var_names[input_var_name_count];
+    std::string output_var_names[output_var_name_count];
 };
 
 #ifdef NGEN

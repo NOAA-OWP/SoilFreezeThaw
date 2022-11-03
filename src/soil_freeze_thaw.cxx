@@ -227,6 +227,10 @@ InitFromConfigFile(std::string config_file)
       is_bottom_boundary_temp_set = true;
       continue;
     }
+    if (param_key == "verbosity") {
+      verbosity = param_value;
+      continue;
+    }
   }
   
   fp.close();
@@ -238,6 +242,7 @@ InitFromConfigFile(std::string config_file)
     n_mct = this->ncells;
     n_mcl = this->ncells;
     is_soil_moisture_content_set = true;
+
   }
 
   if (!is_endtime_set) {
@@ -417,6 +422,11 @@ Advance()
       this->soil_liquid_content[i] = std::max(this->soil_moisture_content[i] - this->soil_ice_content[i], 0.0);
       //this->soil_ice_content[i] = std::max(this->soil_ice_content[i], 0.0); // make sure ice_content is non-negative
     }
+  }
+
+  if (verbosity.compare("high") == 0) {
+    for (int i=0;i<ncells;i++)
+      std::cerr<<"Soil (T, theta, theta_liq) before advancing SFT = "<<this->soil_temperature[i]<<" "<<this->soil_moisture_content[i]<<" "<<this->soil_liquid_content[i]<<"\n";
   }
   
   /* Update Thermal conductivities due to update in the soil moisture */
