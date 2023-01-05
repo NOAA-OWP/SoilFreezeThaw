@@ -38,8 +38,6 @@ int main(int argc, const char *argv[])
   /************************************************************************
       Initializing the BMI model for Soil freeze-thaw model
   ************************************************************************/
-
-  std::cout<<"Initializeing BMI SFT model\n";
   
   const char *cfg_file_ftm = argv[1];
   ftm_bmi_model.Initialize(cfg_file_ftm);
@@ -50,14 +48,18 @@ int main(int argc, const char *argv[])
   /************************************************************************
     Now loop through time and call the models with the intermediate get/set
   ************************************************************************/
-  printf("looping through and calling update \n");
 
-  int nsteps = 24566; // total number of time steps 
+  // get time steps
+  double endtime = ftm_bmi_model.GetEndTime();
+  double timestep = ftm_bmi_model.GetTimeStep ();
+  int nsteps = int(endtime/timestep); // total number of time steps
+  //  nsteps = 24566;
+  
   double *ice_fraction = new double[nsteps];
   std::vector<double> ice_fraction_golden;
   double ice_frac_v = 0;
 
-  bool golden_test=false;
+  bool golden_test = false;
   std::ofstream outfile;
  
   std::string filename = "./test/file_golden.csv";
@@ -113,36 +115,39 @@ int main(int argc, const char *argv[])
   
   /*********************** Comnpare against golden test ********************************/
 
-  bool test_status = true;
-   
-  double  err_frozen_frac_mm = 0;
-  for (int i=0; i<nsteps;i++) {
-    err_frozen_frac_mm += round(fabs(ice_fraction_golden[i] - ice_fraction[i]) *100000.)/100000.; //truncate the error at 5 decimal places
+  if (!golden_test) {
+    bool test_status = true;
+    
+    double  err_frozen_frac_mm = 0;
+    for (int i=0; i<nsteps;i++) {
+      err_frozen_frac_mm += round(fabs(ice_fraction_golden[i] - ice_fraction[i]) *100000.)/100000.; //truncate the error at 5 decimal places
+    }
+    
+    //RMSE
+    err_frozen_frac_mm  = std::pow(err_frozen_frac_mm/nsteps,0.5);
+    
+    if (err_frozen_frac_mm < 1.e-2)
+      test_status &= true;
+    else
+      test_status &= false;
+    
+    std::string passed = test_status > 0 ? "Yes" : "No";
+    
+    
+    std::cout<<"*********************************************************\n";
+    std::cout<<" Test passed = "<<passed<<" \n Frozen fraction error = "<<err_frozen_frac_mm<<"\n";
+    std::cout<<"*********************************************************\n";
   }
-
-  //RMSE
-  err_frozen_frac_mm  = std::pow(err_frozen_frac_mm/nsteps,0.5);
-   
-  if (err_frozen_frac_mm < 1.e-2)
-    test_status &= true;
-  else
-    test_status &= false;
-  
-  std::string passed = test_status > 0 ? "Yes" : "No";
-
-  
-  std::cout<<"*********************************************************\n";
-  std::cout<<" Test passed = "<<passed<<" \n Frozen fraction error = "<<err_frozen_frac_mm<<"\n";
-  std::cout<<"*********************************************************\n";
+  else {
+    std::cout<<"Golden test created... see "<<filename<<"\n";
+  }
   
   /************************************************************************
     Finalize SFT BMI model
   ************************************************************************/
-
-  std::cout<<" Finalizing SFT models. \n";
   
   ftm_bmi_model.Finalize();
-
+  
   return 0;
 }
 

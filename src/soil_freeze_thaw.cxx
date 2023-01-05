@@ -41,26 +41,27 @@ soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw(std::string config_file)
 {
   this->latent_heat_fusion = 0.3336E06;
-  this->ground_temp_const = 260.;
-  //this->bottom_temp_const = 275.15;
-  //this->option_bottom_boundary = 2; // 1: zero thermal flux, 2: constant Temp
-  this->option_top_boundary = 2; // 1: constant temp, 2: from a file
-  this->InitFromConfigFile(config_file);
+  this->ground_temp_const = 260.0;
+  
+  //this->option_bottom_boundary = 2; // 1: constant temp, 2: zero thermal flux
+  //this->option_top_boundary = 2;    // 1: constant temp, 2: from a file
 
+  this->InitFromConfigFile(config_file);
+  
   this->shape[0] = this->ncells;
   this->shape[1] = 1;
   this->shape[2] = 1;
   this->spacing[0] = 1.;
   this->spacing[1] = 1.;
-  this->origin[0] = 0.;
-  this->origin[1] = 0.;
+  this->origin[0] = 0.0;
+  this->origin[1] = 0.0;
 
   this->InitializeArrays();
   SoilCellsThickness(); // get soil cells thickness
-  this->ice_fraction_schaake =0.0;
-  this->ice_fraction_xinan =0.0;
+  this->ice_fraction_schaake = 0.0;
+  this->ice_fraction_xinan = 0.0;
   this->ground_temp = 273.15;
-  this->time = 0.;
+  this->time = 0.0;
 }
 
 
@@ -97,6 +98,7 @@ InitFromConfigFile(std::string config_file)
   bool is_ice_fraction_scheme_set = false;   // ice fraction scheme
   bool is_sft_standalone_set = false;        // SFT standalone
   bool is_bottom_boundary_temp_set = false;  // bottom boundary temperature
+  bool is_top_boundary_temp_set = false;  // bottom boundary temperature
     
   while (fp) {
 
@@ -227,6 +229,11 @@ InitFromConfigFile(std::string config_file)
       is_bottom_boundary_temp_set = true;
       continue;
     }
+    if (param_key == "top_boundary_temp") {
+      this->top_boundary_temp_const = stod(param_value);
+      is_top_boundary_temp_set = true;
+      continue;
+    }
     if (param_key == "verbosity") {
       verbosity = param_value;
       continue;
@@ -302,8 +309,10 @@ InitFromConfigFile(std::string config_file)
     input_var_names_model->push_back("soil_moisture_profile");
   }
 
-  this->option_bottom_boundary = is_bottom_boundary_temp_set == false ? 1 : 2; // if false zero geothermal flux is the BC
-  
+  this->option_bottom_boundary = is_bottom_boundary_temp_set == true ? 1 : 2; // if false zero geothermal flux is the BC
+
+  this->option_top_boundary = is_top_boundary_temp_set == true ? 1 : 2; // 1: constant temp, 2: from a file
+
   // check if the size of the input data is consistent
   assert (n_st == this->ncells);
   assert (n_mct == this->ncells);
@@ -461,19 +470,23 @@ double soilfreezethaw::SoilFreezeThaw::
 GroundHeatFlux(double surfT)
 {
   double ground_heat_flux;
+  double surface_temp = 0.0; // ground surface temnperature
+  
   if (option_top_boundary == 1) {
-    ground_heat_flux = - thermal_conductivity[0] * (surfT  - this->ground_temp_const) / soil_z[0];   //temperature specified as constant
-    return ground_heat_flux; 
+    surface_temp = this->ground_temp_const; // temperature specified as constant
   }
   else if (option_top_boundary == 2) {
-    assert (this->soil_z[0] >0);
-    ground_heat_flux  = - thermal_conductivity[0] * (surfT  - this->ground_temp) / this->soil_z[0];  //temperature from a file
-    return ground_heat_flux; 
+    surface_temp = this->ground_temp;       // temperature from a file/coupling
   }
   else {
-    throw std::runtime_error("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature per timestep)!");
+    throw std::runtime_error("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!");
     return 0;
   }
+
+  assert (this->soil_z[0] >0);
+  ground_heat_flux = - thermal_conductivity[0] * (surfT  - surface_temp) / soil_z[0];   
+
+  return ground_heat_flux;
 }
 
 /*
@@ -518,12 +531,15 @@ SolveDiffusionEquation()
       else if (i == ncells-1) {
 	h1 = soil_z[i] - soil_z[i-1];
 	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
-	if (this->option_bottom_boundary == 1) 
-	  botflux = 0.;
-	else if (this->option_bottom_boundary == 2) {
+	
+	if (this->option_bottom_boundary == 1) {
 	  double dtdz1 = (soil_temperature[i] - bottom_boundary_temp_const) / h1; // dT_dz = (T_bottom - T_i)/dz, note the next term uses `-dtdz1` just to be consistent with the definition of geothermnal flux 
 	  botflux  = - thermal_conductivity[i] * dtdz1;
 	}
+	else if (this->option_bottom_boundary == 1) {
+	  botflux = 0.;
+	}
+	
 	double dtdz = (soil_temperature[i] - soil_temperature[i-1] )/ h1;
 	Flux[i]  = Lambd[i] * (-thermal_conductivity[i]*dtdz  + botflux);
       }

@@ -19,10 +19,11 @@
   @param dt                         [s]    : timestep, input options [second, hour, day]
   @param ncells                     [-]    : number of cells in the discretized soil column
   @param bottom_boundary_temp_const [K]    : temperature at the bottom boundary of the domain
+  @param topboundary_temp_const     [K]    : temperature at the top boundary of the domain (ground temperature)
   @param soil_z                     [m]    : soil discretization, depth from the surface
   @param soil_dz                    [m]    : soil discretization thickness, thickness of cells
   @param soil_temperature           [K]    : soil temperature profile
-  @param heat_capacity              [J/(m3 k)] : volumetric heat capacity (specific heat capacity * density)
+  @param heat_capacity              [J/(m3 K)] : volumetric heat capacity (specific heat capacity * density)
   @param thermal_conductivity       [W/(mK)]   : soil bulk thermal conductivity
   @param soil_moisture_content      [-]    : total (ice+water) soil moisture conten
   @param soil_liquid_content        [-]    : portion of liquid in the total soil moisture content
@@ -75,6 +76,7 @@ namespace soilfreezethaw {
     double soil_depth; 
     double latent_heat_fusion;
     double bottom_boundary_temp_const;
+    double top_boundary_temp_const;
     double ground_temp_const;
     double *soil_z = NULL;
     double *soil_dz = NULL;
