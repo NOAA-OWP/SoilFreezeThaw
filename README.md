@@ -8,7 +8,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - make && cd ..
 ### Run
 - [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
-- It compares results with gold test result
+- It compares results with gold test results
 
 
 ## Pseudo-framework integrated models example 
@@ -31,7 +31,6 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init --recursive
   - #### CFE
-    - git submodule update --remote extern/cfe/cfe
     - cmake -B extern/cfe/cmake_build -S extern/cfe
     - make -C extern/cfe/cmake_build
   - #### fortran bmi
@@ -60,18 +59,18 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   ```
  #### standalone SFTM in the ngen framework
  ```
-   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_standalone_<macos/linux>.json . (pick the file based on your machine)
+   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_standalone.json . 
    ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_standalone.json
  ```
 #### Run integrated models in the ngen framework
  ```
-   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_multi_<macos/linux>.json . (pick the file based on your machine)
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi_<macos/linux>.json
+   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_multi.json .
+   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
   ```
   Note: An example file is also provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/configs/realization_config_nom.json))  to show the coupling of noah-owp-modular with CFE+SMP+SFT.
 #### Post-process step
-  - For standalone simulaition: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
-  - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data (or to compare with pseudo framework)
+  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
+  - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
 
 
 ## Parameters in the config file
