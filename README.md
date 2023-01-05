@@ -74,19 +74,22 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 
 
 ## Parameters in the config file
-* `forcing_file` provides ground temperatures used as a surface boundary condition. Won't be needed when coupled to models (e.g., noah-om) that can provide ground temperature data
-* `smcmax` (porosity; maximum moisture content)
-* `b` is the pore size distribution, beta exponent on Clapp-Hornberger
-* `satpsi` saturated capillary head (saturated moisture potential)
-* `quartz` soil quartz content, used in soil thermal conductivity function of Peters-Lidard
-* `soil_z` is the vertical resolution of the soil column (computational domain)
-* `soil_temperature` is the initial soil temperature for the discretized column
-* `soil_moisture_content` is the initial soil total (liquid + ice) moisture content for the discretized column
-* `soil_liquid_content` is the initial soil liquid moisture content for the discretized column
-* `ice_fraction_scheme` is associated with the runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang
-* `bottom_boundary_temp` sets the temperature conditions at the bottom boundary of the domain/column, if not specified zero-geothermal boundary condition is used
-* `sft_standalone` options: true or false. True for soil freeze-thaw model standalone run.
-* `soil_moisture_bmi` options: true or false. If true soil_moisture profile is set by the SoilMoisutreProfile module throught its BMI.
+| Variable | Datatype |  Limits  | Units | Role | Process | Description |
+| -------- | -------- | ------ | ----- | ---- | ------- | ----------- |
+| forcing_file | string | - | - | filename | - | provides ground temperature (not needed when coupled to models providing ground temperature data|
+| smcmax | double | - | - | state variable | - | maximum soil moisture content (porosity) |
+| b | double | - | m | state variable | - | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
+| satpsi | double | - | m | state variable | - | saturated capillary head (saturated moisture potential) |
+| quartz | double | - | m | state variable | - | soil quartz content, used in soil thermal conductivity function of Peters-Lidard |
+| ice_fraction_scheme | int | - | - | coupling variable | - | runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang|
+| soil_z | double (1D array) | - | m | spatial resolution | - | vertical resolution of the soil column (computational domain of the SFT model) |
+| soil_temperature | double (1D array) | - | K | spatial resolution | - | initial soil temperature for the discretized column |
+| soil_moisture_content | double (1D array) | - | - | spatial resolution | - | initial soil total (liquid + ice) moisture content for the discretized column |
+| soil_liquid_content | double (1D array) | - | - | spatial resolution | - | initial soil liquid moisture content for the discretized column|
+| bottom_boundary_temp | double | - | K | boundary condition | - | temperature at the bottom boundary of the domain, if not specified, zero-geothermal flux boundary condition is used (default)|
+| top_boundary_temp | double | - | K | boundary condition | - | temperature at the top/surface boundary of the domain, if provided, then this constant value is used otherwise read from a file or provided through coupling |
+| sft_standalone | boolean | true, false | - | coupling variable | - | true for standalone model run; default is false |
+| soil_moisture_bmi | boolean | true, false | - | coupling variable | - | If true soil_moisture profile is set by the SoilMoisutreProfile module throught the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
 
 ## Introduction of Soil Freeze-thaw model
 
