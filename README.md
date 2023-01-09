@@ -86,8 +86,8 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 | soil_temperature | double (1D array) | - | K | spatial resolution | initial soil temperature for the discretized column |
 | soil_moisture_content | double (1D array) | - | - | spatial resolution | initial soil total (liquid + ice) moisture content for the discretized column |
 | soil_liquid_content | double (1D array) | - | - | spatial resolution | initial soil liquid moisture content for the discretized column|
-| bottom_boundary_temp | double | - | K | boundary condition | temperature at the bottom boundary of the domain, if not specified, zero-geothermal flux boundary condition is used (default)|
-| top_boundary_temp | double | - | K | boundary condition | temperature at the top/surface boundary of the domain, if provided, then this constant value is used otherwise read from a file or provided through coupling |
+| bottom_boundary_temp | double | - | K | boundary condition | temperature at the bottom boundary (BC) of the domain, if not specified, the default BC is zero-geothermal flux|
+| top_boundary_temp | double | - | K | boundary condition | temperature at the top/surface boundary of the domain, if not specified, then other options include: 1) read from a file, or 2) provided through coupling |
 | sft_standalone | boolean | true, false | - | coupling variable | true for standalone model run; default is false |
 | soil_moisture_bmi | boolean | true, false | - | coupling variable | If true soil_moisture profile is set by the SoilMoisutreProfile module throught the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
 
