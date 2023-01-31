@@ -1,5 +1,5 @@
-#ifndef BMI_FS_H_INCLUDED
-#define BMI_FS_H_INCLUDED
+#ifndef BMI_SFT_H_INCLUDED
+#define BMI_SFT_H_INCLUDED
 
 using namespace std;
 
@@ -80,7 +80,7 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
     void GetGridFaceNodes(const int grid, int *face_nodes);
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
-    soilfreezethaw::SoilFreezeThaw* _model;
+    soilfreezethaw::SoilFreezeThaw* state;
     static const int input_var_name_count = 2;
     static const int output_var_name_count = 5;
 

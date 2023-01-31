@@ -1,5 +1,5 @@
-#ifndef BMI_FS_C_INCLUDED
-#define BMI_FS_C_INCLUDED
+#ifndef BMI_SFT_C_INCLUDED
+#define BMI_SFT_C_INCLUDED
 
 
 #include <stdio.h>
@@ -18,13 +18,13 @@ void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
   if (config_file.compare("") != 0 )
-    this->_model = new soilfreezethaw::SoilFreezeThaw(config_file);
+    this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
 }
 
 void BmiSoilFreezeThaw::
 Update()
 {
-  this->_model->Advance();
+  this->state->Advance();
 }
 
 
@@ -45,9 +45,9 @@ UpdateUntil(double t)
       this->Update();
 
     frac = n_steps - int(n_steps);
-    this->_model->dt = frac * dt;
-    this->_model->Advance();
-    this->_model->dt = dt;
+    this->state->dt = frac * dt;
+    this->state->Advance();
+    this->state->dt = dt;
   }
 }
 
@@ -55,8 +55,8 @@ UpdateUntil(double t)
 void BmiSoilFreezeThaw::
 Finalize()
 {
-  if (this->_model)
-    this->_model->~SoilFreezeThaw();
+  if (this->state)
+    this->state->~SoilFreezeThaw();
 }
 
 int BmiSoilFreezeThaw::
@@ -148,7 +148,7 @@ void BmiSoilFreezeThaw::
 GetGridShape(const int grid, int *shape)
 {
   if (grid == 2) {
-    shape[0] = this->_model->shape[0];
+    shape[0] = this->state->shape[0];
   }
 }
 
@@ -157,7 +157,7 @@ void BmiSoilFreezeThaw::
 GetGridSpacing (const int grid, double * spacing)
 {
   if (grid == 0) {
-    spacing[0] = this->_model->spacing[0];
+    spacing[0] = this->state->spacing[0];
   }
 }
 
@@ -166,7 +166,7 @@ void BmiSoilFreezeThaw::
 GetGridOrigin (const int grid, double *origin)
 {
   if (grid == 0) {
-    origin[0] = this->_model->origin[0];
+    origin[0] = this->state->origin[0];
   }
 }
 
@@ -187,7 +187,7 @@ GetGridSize(const int grid)
   if (grid == 0 || grid == 1) // for scalars
     return 1;
   else if (grid == 2) // for arrays
-    return this->_model->shape[0];
+    return this->state->shape[0];
   else
     return -1;
 }
@@ -228,7 +228,7 @@ int BmiSoilFreezeThaw::
 GetGridNodeCount(const int grid)
 {
   if (grid == 0)
-    return this->_model->shape[0];
+    return this->state->shape[0];
   else
     return -1;
 }
@@ -250,21 +250,21 @@ void *BmiSoilFreezeThaw::
 GetValuePtr (std::string name)
 {
   if (name.compare("soil_temperature_profile") == 0)
-    return (void*)this->_model->soil_temperature;
+    return (void*)this->state->soil_temperature;
   if (name.compare("soil_moisture_profile") == 0)
-    return (void*)this->_model->soil_moisture_content;
+    return (void*)this->state->soil_moisture_content;
   else if (name.compare("ground_temperature") == 0 )
-    return (void*)(&this->_model->ground_temp);
+    return (void*)(&this->state->ground_temp);
   else if (name.compare("num_cells") == 0)
-    return (void*)(&this->_model->ncells);
+    return (void*)(&this->state->ncells);
   else if (name.compare("ice_fraction_schaake") == 0)
-    return (void*)(&this->_model->ice_fraction_schaake);
+    return (void*)(&this->state->ice_fraction_schaake);
   else if (name.compare("ice_fraction_xinan") == 0)
-    return (void*)(&this->_model->ice_fraction_xinan);
+    return (void*)(&this->state->ice_fraction_xinan);
   else if (name.compare("soil_ice_fraction") == 0)
-    return (void*)(&this->_model->soil_ice_fraction);
+    return (void*)(&this->state->soil_ice_fraction);
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
-    return (void*)(&this->_model->ice_fraction_scheme_bmi); // leaving this for now, but probably not needed/used
+    return (void*)(&this->state->ice_fraction_scheme_bmi); // leaving this for now, but probably not needed/used
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";
@@ -346,7 +346,7 @@ GetComponentName()
 int BmiSoilFreezeThaw::
 GetInputItemCount()
 {
-  std::vector<std::string>* names_m = _model->InputVarNamesModel();
+  std::vector<std::string>* names_m = state->InputVarNamesModel();
   int input_var_name_count_m = names_m->size();
   
   //return this->input_var_name_count;
@@ -367,7 +367,7 @@ GetInputVarNames()
 {
   std::vector<std::string> names;
 
-  std::vector<std::string>* names_m = _model->InputVarNamesModel();
+  std::vector<std::string>* names_m = state->InputVarNamesModel();
   
   for (int i=0; i<this->input_var_name_count; i++) {
     if (std::find(names_m->begin(), names_m->end(), this->input_var_names[i]) != names_m->end()) {
@@ -399,13 +399,13 @@ GetStartTime () {
 
 double BmiSoilFreezeThaw::
 GetEndTime () {
-  return this->_model->endtime;
+  return this->state->endtime;
 }
 
 
 double BmiSoilFreezeThaw::
 GetCurrentTime () {
-  return this->_model->time;
+  return this->state->time;
 }
 
 
@@ -417,7 +417,7 @@ GetTimeUnits() {
 
 double BmiSoilFreezeThaw::
 GetTimeStep () {
-  return this->_model->dt;
+  return this->state->dt;
 }
 
 
