@@ -25,9 +25,10 @@
   @param soil_temperature           [K]    : soil temperature profile
   @param heat_capacity              [J/(m3 K)] : volumetric heat capacity (specific heat capacity * density)
   @param thermal_conductivity       [W/(mK)]   : soil bulk thermal conductivity
-  @param soil_moisture_content      [-]    : total (ice+water) soil moisture conten
-  @param soil_liquid_content        [-]    : portion of liquid in the total soil moisture content
-  @param soil_ice_content           [-]    : portion of ice in the total soil moisture content
+  @param soil_moisture_content      [-]    : total (ice+water) soil moisture content (1D profile)
+  @param soil_liquid_content        [-]    : portion of liquid in the total soil moisture content (1D profile)
+  @param soil_ice_content           [-]    : portion of ice in the total soil moisture content (1D profile)
+  @param soil_ice_fraction          [-]    : fraction of soil moisture that is ice (scalar)
   @param option_bottom_boundry      [-]    : option for bottom boundary condition. 1 = zero geothermal flux, 2 = prescribed temperature
   @param option_top_boundary        [-]    : top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
   @param smcmax                     [-]    : maximum soil moisture content (porosity)
@@ -41,8 +42,8 @@
   @param quartz                     [-]    : quartz content used in the thermal conductivity model
 */
 
-#ifndef SFTH_INCLUDED
-#define SFTH_INCLUDED
+#ifndef SFT_H_INCLUDED
+#define SFT_H_INCLUDED
 
 
 #include <vector>
@@ -86,6 +87,7 @@ namespace soilfreezethaw {
     double *soil_moisture_content = NULL;
     double *soil_liquid_content = NULL;
     double *soil_ice_content = NULL;
+    double soil_ice_fraction;
     double ground_temp;
     int    option_bottom_boundary;
     int    option_top_boundary; 

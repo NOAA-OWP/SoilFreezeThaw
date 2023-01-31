@@ -64,7 +64,8 @@ GetVarGrid(std::string name)
 {
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return 0; // int
-  else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0 || name.compare("ice_fraction_xinan") == 0)
+  else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
+	   || name.compare("ice_fraction_xinan") == 0 || name.compare("soil_ice_fraction") == 0)
     return 1; //double
   else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
@@ -132,7 +133,7 @@ GetVarLocation(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
     return "node";
-  else if (name.compare("ice_fraction_xinan") == 0)
+  else if (name.compare("ice_fraction_xinan") == 0 || name.compare("soil_ice_fraction") == 0)
     return "node";
   else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0)
     return "node";
@@ -256,14 +257,14 @@ GetValuePtr (std::string name)
     return (void*)(&this->_model->ground_temp);
   else if (name.compare("num_cells") == 0)
     return (void*)(&this->_model->ncells);
-  else if (name.compare("ice_fraction_schaake") == 0) {
+  else if (name.compare("ice_fraction_schaake") == 0)
     return (void*)(&this->_model->ice_fraction_schaake);
-  }
-  else if (name.compare("ice_fraction_xinan") == 0){
+  else if (name.compare("ice_fraction_xinan") == 0)
     return (void*)(&this->_model->ice_fraction_xinan);
-  }
+  else if (name.compare("soil_ice_fraction") == 0)
+    return (void*)(&this->_model->soil_ice_fraction);
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
-    return (void*)(&this->_model->ice_fraction_scheme_bmi);
+    return (void*)(&this->_model->ice_fraction_scheme_bmi); // leaving this for now, but probably not needed/used
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";

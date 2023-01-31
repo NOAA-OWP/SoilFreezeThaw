@@ -1,5 +1,5 @@
-#ifndef FSC_INCLUDED
-#define FSC_INCLUDED
+#ifndef SFT_CXX_INCLUDED
+#define SFT_CXX_INCLUDED
 
 #include <cstring>
 #include <stdlib.h>
@@ -35,6 +35,7 @@ SoilFreezeThaw()
   this->ice_fraction_schaake =0.0;
   this->ice_fraction_xinan =0.0;
   this->ground_temp = 273.15;
+  this->soil_ice_fraction = 0.0;
 }
 
 soilfreezethaw::SoilFreezeThaw::
@@ -62,6 +63,7 @@ SoilFreezeThaw(std::string config_file)
   this->ice_fraction_xinan = 0.0;
   this->ground_temp = 273.15;
   this->time = 0.0;
+  this->soil_ice_fraction = 0.0;
 }
 
 
@@ -98,7 +100,7 @@ InitFromConfigFile(std::string config_file)
   bool is_ice_fraction_scheme_set = false;   // ice fraction scheme
   bool is_sft_standalone_set = false;        // SFT standalone
   bool is_bottom_boundary_temp_set = false;  // bottom boundary temperature
-  bool is_top_boundary_temp_set = false;  // bottom boundary temperature
+  bool is_top_boundary_temp_set = false;     // bottom boundary temperature
     
   while (fp) {
 
@@ -378,8 +380,7 @@ ReadVectorData(std::string key)
 void soilfreezethaw::SoilFreezeThaw::
 ComputeIceFraction()
 {
-
-  double val = 0;
+  
   this->ice_fraction_schaake = 0.0; // set it to zero
   this->ice_fraction_xinan = 0.0;
   
@@ -391,13 +392,14 @@ ComputeIceFraction()
   }
   
   if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Schaake) {
+    double val = 0.0;
     for (int i =0; i < ncells; i++) {
       val += this->soil_ice_content[i] * this->soil_dz[i];
     }
     assert (this->ice_fraction_schaake <= this->soil_depth);
     this->ice_fraction_schaake = val;
   }
- else if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
+  else if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
     double fice = std::min(1.0, this->soil_ice_content[0]/this->smcmax);
     double A = 4.0; // taken from NWM SOILWATER subroutine
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
@@ -405,7 +407,19 @@ ComputeIceFraction()
   }
   else {
     throw std::runtime_error("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
-    }
+  }
+  
+  // compute soil ice fraction (the fraction of soil moisture that is ice)
+  double ice_v = 0.0;
+  double moisture_v = 0.0;
+  
+  for (int i=0; i < ncells; i++) {
+    moisture_v += this->soil_moisture_content[i] * this->soil_dz[i]; 
+    ice_v += this->soil_ice_content[i] * this->soil_dz[i];
+  }
+
+  moisture_v = moisture_v > 0 ? moisture_v : 1E-6;
+  this->soil_ice_fraction = ice_v/moisture_v;
 }
   
 double soilfreezethaw::SoilFreezeThaw::
