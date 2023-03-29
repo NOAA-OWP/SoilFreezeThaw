@@ -37,11 +37,12 @@ int main(int argc, char *argv[])
   model_cyc.Initialize(argv[1]);
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
+  
   int nz = 4;
   double endtime = 86400; //1035.91*86400.;
   double timestep = 3600;
   bool test_status = true;
-
+  
   std::vector<string> bmi_input_vars = {"ground_temperature", "soil_moisture_profile"};
   std::vector<string> bmi_output_vars = {"ice_fraction_schaake", "ice_fraction_xinan", "num_cells", "soil_temperature_profile", "soil_ice_fraction"};
 
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
     if (VERBOSITY)
       std::cout<<"Input var_name: "<< var_name <<"\n";
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_grid()
     grid = model.GetVarGrid(var_name);
     if (VERBOSITY)
@@ -149,7 +150,7 @@ int main(int argc, char *argv[])
       throw std::runtime_error(errMsg.str());
     }
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_itemsize()
     itemsize = model.GetVarItemsize(var_name);
     if (VERBOSITY)
@@ -165,7 +166,7 @@ int main(int argc, char *argv[])
       throw std::runtime_error(errMsg.str());
     }
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_location()
     location = model.GetVarLocation(var_name);
     if ( location == "") return FAILURE;
@@ -176,13 +177,13 @@ int main(int argc, char *argv[])
     else
       test_status &= true;
 	
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_units()
     units = model.GetVarUnits(var_name);
     if (VERBOSITY)
       std::cout<<" units: ["<< units <<"]\n";
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_type()
     vartype = model.GetVarType(var_name);
     if (VERBOSITY)
@@ -192,7 +193,7 @@ int main(int argc, char *argv[])
     else
       test_status &= true;
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // get_var_nbytes()
     nbytes = model.GetVarNbytes(var_name);
     if (nbytes == 0) return FAILURE;
@@ -227,7 +228,7 @@ int main(int argc, char *argv[])
     if (VERBOSITY)
       std::cout<<"Output var_name: "<< var_name <<"\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_grid() 
     grid = model.GetVarGrid(var_name);
     if (grid == -1) return -1;
@@ -239,7 +240,7 @@ int main(int argc, char *argv[])
     else
       test_status &= false;
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_itemsize()
     itemsize = model.GetVarItemsize(var_name);
     if (itemsize == 0) return FAILURE;
@@ -251,7 +252,7 @@ int main(int argc, char *argv[])
     else
       test_status &= false;
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_location()
     location = model.GetVarLocation(var_name);
     if ( location == "") return FAILURE;
@@ -263,20 +264,20 @@ int main(int argc, char *argv[])
     else
       test_status &= true;
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_units()
     units = model.GetVarUnits(var_name);
     if (VERBOSITY)
       std::cout<<" units: ["<< units <<"]\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_type()
     vartype = model.GetVarType(var_name);
     if (vartype == "") return FAILURE;
     if (VERBOSITY)
       std::cout<<" type: "<< vartype <<"\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // get_var_nbytes()
     nbytes = model.GetVarNbytes(var_name);
     if (nbytes == 0) return FAILURE;
@@ -315,14 +316,14 @@ int main(int argc, char *argv[])
     if (VERBOSITY)  
       std::cout<<"Grid id "<< grid_id[i] <<"\n";
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_rank()
     grid_rank = model.GetGridRank(grid_id[i]);
     if (grid_rank == FAILURE) return FAILURE;
     if (VERBOSITY)
       std::cout<<" rank: "<<grid_rank<<"\n";
 
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_size
     grid_size = model.GetGridSize(grid_id[i]);
     if (grid_size == grid_size_test[i]) {
@@ -346,13 +347,13 @@ int main(int argc, char *argv[])
   double dt = 0.0;
   std::string units_time;
 
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Test get_start_time()
   time = model.GetStartTime();
   if (VERBOSITY)
     std::cout<<" start time: "<< time<<"\n";
 
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Test get_end_time()
   time = model.GetEndTime();
   if (time == endtime) {
@@ -369,7 +370,7 @@ int main(int argc, char *argv[])
     throw std::runtime_error(errMsg.str());
   }
 
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Test get_time_step()
   dt = model.GetTimeStep();
   if (dt == timestep) {
@@ -379,7 +380,7 @@ int main(int argc, char *argv[])
   else
     test_status &= false;
 
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Test get_time_units()
   units_time = model.GetTimeUnits();
   if (units_time == "s") {
@@ -403,7 +404,7 @@ int main(int argc, char *argv[])
   std::cout<<"| *************************************** \n";
   std::cout<<RESET<<"\n";
   
-  /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Test get_current_time()
   time = model.GetCurrentTime();
   if (VERBOSITY)
@@ -423,23 +424,23 @@ int main(int argc, char *argv[])
     double *dest = new double[nz];
     int indices[] = {0,1,2,3};
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value() at each timestep
     model.GetValue(var_name, &(var[0]));
     std::cout<<" Get value: "<< var[0] <<"\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_at_indices()
     model.GetValueAtIndices(var_name, dest, indices, nz);
     std::cout<<" Get value at indices: " << dest[0]<<"\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_ptr()
     double *var_ptr = new double[nz];
     var_ptr= (double*) model.GetValuePtr(var_name);
     std::cout<<" Get value ptr: "<<*var_ptr<<"\n";
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // compare benchmark value with bmi GetValue
     if (var_name == "soil_moisture_profile") {
       bool check = false;
@@ -462,7 +463,7 @@ int main(int argc, char *argv[])
     else if (var_name == "ground_temperature") {
     // Go ahead and test set_value_*() for last time step here
     // Test BMI set_value()
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     double var_new = 286.6;
     double var_new_up = 0.0;
     model.SetValue(var_name, &(var_new));
@@ -472,7 +473,7 @@ int main(int argc, char *argv[])
     model.GetValue(var_name, &var_new_up);
     std::cout<<" Get value: "<< var_new_up <<"\n";    
     
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test BMI set_value_at_indices()
     double dest_new = 281.3;
     double dest_new_up = 0.0;
@@ -558,21 +559,29 @@ int main(int argc, char *argv[])
   std::cout<<RESET<<"\n";
 
 
-  // Run the model for 48 timesteps, i.e., two days and compare soil_ice_fraction with the known ice_fraction
+  // Run the model for 480 timesteps, i.e., two days and compare soil_ice_fraction with the known ice_fraction
   
-  int nstep = 48;
+  int nstep = 480;
   std::cout<<"*********** Timestepping now.......\n";
-  std::cout<<"Total timesteps = "<< nstep <<" (2 days)\n";
+  std::cout<<"Total timesteps = "<< nstep <<" (20 days)\n";
 
-  double ground_temp = 273.15;
+  double ground_temp = 280.15;
   for (int n=0; n<nstep; n++) {
-    ground_temp -= 1.0;
+    
+    if (n < 200)
+      ground_temp -= 0.5;
+    else
+      ground_temp += 0.5;
+      
+    std::cout<<"------------------------------------------------------ \n";
+    std::cout<<"Timestep | "<< n <<", ground temp = "<< ground_temp <<"\n";
+    std::cout<<"------------------------------------------------------ \n";
     model_cyc.SetValue("ground_temperature", &ground_temp);
     model_cyc.Update();    
   }
-
-  double total_ice_content = 0.0301892; // benchmark value  in meters (this is computed based on the runoff scheme)
-  double soil_ice_fraction = 0.0380744727368; // benchmark value [-]
+  
+  double total_ice_content = 0.30072303607;  // benchmark value  in meters (this is computed based on the runoff scheme)
+  double soil_ice_fraction = 0.379269814694; // benchmark value [-]
   double total_ice_content_sim, soil_ice_fraction_sim;
   
   model_cyc.GetValue("ice_fraction_schaake",&total_ice_content_sim);
@@ -582,20 +591,23 @@ int main(int argc, char *argv[])
   double err_ice_content_mm  = fabs(total_ice_content - total_ice_content_sim) *1000;
   double err_ice_fraction = fabs(soil_ice_fraction - soil_ice_fraction_sim);
     
-  if (err_ice_content_mm < 1.e-3)
+  if (err_ice_content_mm < 1E-3 || err_ice_fraction < 1E-3)
     test_status &= true;
   else
     test_status &= false;
-  
+
+  std::cout<<"\n*********************************************************\n";
   std::cout<<"Total soil ice content [mm] = "<< std::setprecision(12) << total_ice_content_sim*1000.0 <<"\n";
-  std::cout<<"Soil ice fraction [-] = "<< std::setprecision(12) << soil_ice_fraction_sim <<"\n";
+  std::cout<<"Soil ice fraction      [-]  = "<< std::setprecision(12) << soil_ice_fraction_sim <<"\n";
     
   passed = test_status > 0 ? "Yes" : "No";
   std::cout<<BLUE<<"\n";
   std::cout<<"\n*********************************************************\n";
   std::cout<<"*************** Summary of the Unit Test ***************\n";
   std::cout<<"*********************************************************\n";
-  std::cout<<"Test passed = "<< passed <<"\nSoil ice fraction error = "<< err_ice_fraction <<"\n";
+  std::cout<<"Soil ice content error [mm] = "<< err_ice_content_mm <<"\n";
+  std::cout<<"Soil ice fraction error [-] = "<< err_ice_fraction <<"\n";
+  std::cout<<"Test passed = "<< passed <<"\n";
   std::cout<<RESET<<"\n";
   
   return FAILURE;

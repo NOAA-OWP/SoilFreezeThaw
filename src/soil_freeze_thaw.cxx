@@ -74,9 +74,17 @@ InitializeArrays(void)
   this->heat_capacity = new double[ncells];
   this->soil_dz = new double[ncells];
   this->soil_ice_content = new double[ncells];
+  this->soil_temperature_prev = new double[ncells];
   
-  for (int i=0;i<ncells;i++)
+  for (int i=0;i<ncells;i++) {
     this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
+
+    // at t = 0, current and previous soil temperature states are the same
+    this->soil_temperature_prev[i] = this->soil_temperature[i];
+
+    // initialize heat capacity to zero, will be update in the advanced before updating soil T
+    this->heat_capacity[i] = 0.0;
+  }
 }
 
 void soilfreezethaw::SoilFreezeThaw::
@@ -436,8 +444,14 @@ GetDt()
 void soilfreezethaw::SoilFreezeThaw::
 Advance()
 {
-
-  /* BMI sets (total) soil moisture content only, so we update the liquid content based on the previous ice content; initially ice_content is zero; assuming we are starting somewhere in the summer/fall
+  // before advancing the time, store the current state 
+  for (int i=0; i<this->ncells;i++) {
+      this->soil_temperature_prev[i] = this->soil_temperature[i];
+  }
+  
+  /* BMI sets (total) soil moisture content only, so we update the liquid content based
+     on the previous ice content; initially ice_content is zero; assuming we are starting
+     somewhere in the summer/fall
   */
   
   if (this->is_soil_moisture_bmi_set) {
@@ -446,22 +460,18 @@ Advance()
       //this->soil_ice_content[i] = std::max(this->soil_ice_content[i], 0.0); // make sure ice_content is non-negative
     }
   }
-
-  if (verbosity.compare("high") == 0) {
-    for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil (T, theta, theta_liq) before advancing SFT = "<<this->soil_temperature[i]<<" "<<this->soil_moisture_content[i]<<" "<<this->soil_liquid_content[i]<<"\n";
-  }
   
   /* Update Thermal conductivities due to update in the soil moisture */
   ThermalConductivity(); // initialize thermal conductivities
 
   /* Update volumetric heat capacity */
   SoilHeatCapacity();
-  
+
   /* Solve the diffusion equation to get updated soil temperatures */
   SolveDiffusionEquation();
 
-  /* Now time to update ice content based on the new soil moisture and and  soil temperature profiles.
+  /* Now time to update ice content based on the new soil moisture and and
+     soil temperature profiles.
      Call Phase Change module to partition soil moisture into water and ice.
   */
   PhaseChange();
@@ -470,20 +480,78 @@ Advance()
 
   ComputeIceFraction();
 
-  /* getting temperature below 200 would mean the space resolution is too fine and time resolution is too coarse */
-  assert (this->soil_temperature[0] > 150.0); 
+  EnergyBalanceCheck();
+  /* getting temperature below 200 would mean the space resolution is too
+     fine and time resolution is too coarse */
+  //assert (this->soil_temperature[0] > 200.0); 
+
+  if (verbosity.compare("high") == 0) {
+    for (int i=0;i<ncells;i++)
+      std::cerr<<"Soil Temp : previous, current timesteps = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
+  }
+
+  if (verbosity.compare("high") == 0) {
+    for (int i=0;i<ncells;i++)
+      std::cerr<<"Soil (theta, theta_liq, theta_ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+  }
+}
+
+    
+void soilfreezethaw::SoilFreezeThaw::
+EnergyBalanceCheck()
+{
+  double net_flux = this->ground_heat_flux + this->bottom_heat_flux;
+  
+  double energy_current  = 0.0;
+  double energy_previous = 0.0;
+  double energy_residual = 0.0;
+  
+  for (int i=0;i<ncells; i++) {
+    //energy_temp += heat_capacity[i] * (soil_temperature[i] - soil_temperature_prev[i]) * soil_dz[i] / dt; // W/m^2
+    energy_previous += heat_capacity[i] * (soil_temperature_prev[i] - 273.15) * soil_dz[i] / dt; // W/m^2
+    energy_current  += heat_capacity[i] * (soil_temperature[i] - 273.15) * soil_dz[i] / dt;       // W/m^2
+  }
+  
+  energy_residual = energy_current - energy_previous;
+
+  double energy_balance = (energy_residual + this->energy_consumed) - net_flux;
+  
+  if (verbosity.compare("high") == 0) {
+    printf("Energy (previous timestep)   = %6.8f \n", energy_previous);
+    printf("Energy (current timestep)    = %6.8f \n", energy_current);
+    printf("Energy gain (+) or loss (-)  = %6.10f \n", (energy_current - energy_previous));
+    printf("Surface flux (in (+), out (-)) = %6.10f \n", this->ground_heat_flux);
+    printf("Bottom flux  (in (+), out (-)) = %6.10f \n", this->bottom_heat_flux);
+    printf("Netflux (in (+) or out (-))     = %6.10f \n", net_flux);
+    printf("Energy consumed/released (phase change) = %6.10f \n", this->energy_consumed);
+    printf("Energy error [W/m^2] = %6.4e \n", energy_balance);
+  }
+  
+  if (fabs(energy_balance) > 1.0E-4) {
+    printf("Energy (previous timestep)   = %6.8f \n", energy_previous);
+    printf("Energy (current timestep)    = %6.8f \n", energy_current);
+    printf("Energy gain (+) or loss (-)  = %6.10f \n", (energy_current - energy_previous));
+    printf("Surface flux (in (+), out (-)) = %6.10f \n", this->ground_heat_flux);
+    printf("Bottom flux  (in (+), out (-)) = %6.10f \n", this->bottom_heat_flux);
+    printf("Netflux (in (+) or out (-))     = %6.10f \n", net_flux);
+    printf("Energy consumed/released (phase change) = %6.10f \n", this->energy_consumed);
+    printf("Energy error [W/m^2] = %6.4e \n", energy_balance);
+
+    throw std::runtime_error("Soil energy balance error...");
+
+  }
   
 }
 
 /*
-  Module returns updated ground heat flux used in surface boundary condition in the diffusion equation
+  Module returns updated ground heat flux used in surface boundary condition in
+  the diffusion equation
   Option 1 : prescribed (user-defined) constant surface/ground temperature
   Option 2 : dynamic surface/ground temperature (user-provided or provided by a coupled model)
 */
 double soilfreezethaw::SoilFreezeThaw::
-GroundHeatFlux(double surfT)
+GroundHeatFlux(double soil_temp)
 {
-  double ground_heat_flux;
   double surface_temp = 0.0; // ground surface temnperature
   
   if (option_top_boundary == 1) {
@@ -498,110 +566,121 @@ GroundHeatFlux(double surfT)
   }
 
   assert (this->soil_z[0] >0);
-  ground_heat_flux = - thermal_conductivity[0] * (surfT  - surface_temp) / soil_z[0];   
-
-  return ground_heat_flux;
+  double ground_heat_flux_loc = - thermal_conductivity[0] * (soil_temp  - surface_temp) / (0.5*soil_z[0]); // half of top cell thickness
+  
+  return ground_heat_flux_loc;
 }
 
 /*
   See README.md for a detailed description of the model
   Solves a 1D diffusion equation with variable thermal conductivity
   Discretizad through an implicit Crank-Nicolson scheme
+  A, B, C are the coefficients on the left handside
+  X is the solution of the system at the current timestep
 */
 void soilfreezethaw::SoilFreezeThaw::
 SolveDiffusionEquation()
 {
-    // local 1D arrays 
-    std::vector<double> Flux(ncells);
+    // local 1D vectors
+    std::vector<double> thermal_flux(ncells);
     std::vector<double> AI(ncells);
     std::vector<double> BI(ncells);
     std::vector<double> CI(ncells);
     std::vector<double> RHS(ncells);
-    std::vector<double> Lambd(ncells);
+    std::vector<double> lambda(ncells);
+    std::vector<double> denominator(ncells);
     std::vector<double> X(ncells);
-    double botflux=0.0;
-    double h1 =0.0, h2 =0.0;
+    std::vector<double> dsoilT_dz(ncells);
+    double bottomflux = 0.0;
+    double h1 = 0.0, h2 = 0.0;
     
     // compute matrix coefficient using Crank-Nicolson discretization scheme
+    // first compute thermal fluxes and later multiplied by lambda [=dt/(heat_capacity * (h_i - h_i-1))]
+    
     for (int i=0;i<ncells; i++) {
       if (i == 0) {
 	h1 = soil_z[i];
-	double dtdz  = (soil_temperature[i+1] - soil_temperature[i])/ h1;
-	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
+	h2 = soil_z[i+1];
 	
-	double ground_heat_flux = this->GroundHeatFlux(soil_temperature[i]);
+	lambda[i] = dt / (h1 * heat_capacity[i]);
+	denominator[i] = 2.0/h2;
 	
-	Flux[i] = Lambd[i] * (thermal_conductivity[i] * dtdz + ground_heat_flux);
+	this->ground_heat_flux = this->GroundHeatFlux(soil_temperature[i]);
+	dsoilT_dz[i] = 2.0 * (soil_temperature[i+1] - soil_temperature[i])/ h2;;
+	
+	thermal_flux[i] = thermal_conductivity[i] * dsoilT_dz[i] + this->ground_heat_flux;
       }
       else if (i < ncells-1) {
 	h1 = soil_z[i] - soil_z[i-1];
-        h2 = soil_z[i+1] - soil_z[i];
-	Lambd[i] = dt/(2.0 * h2 * heat_capacity[i]);
-	double a_ = - Lambd[i] * thermal_conductivity[i-1] / h1;
-        double c_ = - Lambd[i] * thermal_conductivity[i] / h2;
-	double b_ = 1 + a_ + c_;
-	Flux[i] = -a_ * soil_temperature[i-1] + b_ * soil_temperature[i] - c_ * soil_temperature[i+1];
+        h2 = soil_z[i+1] - soil_z[i-1];
+
+	lambda[i] = dt/(h1 * heat_capacity[i]);
+	denominator[i] = 2.0/h2;
+
+	dsoilT_dz[i] = 2.0 * (soil_temperature[i+1] - soil_temperature[i])/ h2;
+
+	thermal_flux[i] = thermal_conductivity[i] * dsoilT_dz[i] - thermal_conductivity[i-1] * dsoilT_dz[i-1];
       }
       else if (i == ncells-1) {
 	h1 = soil_z[i] - soil_z[i-1];
-	Lambd[i] = dt/(2.0 * h1 * heat_capacity[i]);
+	
+	lambda[i] = dt/(h1 * heat_capacity[i]);
 	
 	if (this->option_bottom_boundary == 1) {
-	  double dtdz1 = (soil_temperature[i] - bottom_boundary_temp_const) / h1; // dT_dz = (T_bottom - T_i)/dz, note the next term uses `-dtdz1` just to be consistent with the definition of geothermnal flux 
-	  botflux  = - thermal_conductivity[i] * dtdz1;
+	  double dzdt = 2 * (soil_temperature[i] - bottom_boundary_temp_const) / h1;
+	  /* dT_dz = (T_bottom - T_i)/ (dz/2), note the next term uses `-dtdz1`
+	     just to be consistent with the definition of geothermnal flux */
+	  
+	  bottomflux = - thermal_conductivity[i] * dzdt;
 	}
-	else if (this->option_bottom_boundary == 1) {
-	  botflux = 0.;
+	else if (this->option_bottom_boundary == 2) {
+	  bottomflux = 0.;
 	}
 	
-	double dtdz = (soil_temperature[i] - soil_temperature[i-1] )/ h1;
-	Flux[i]  = Lambd[i] * (-thermal_conductivity[i]*dtdz  + botflux);
+	thermal_flux[i] = bottomflux - thermal_conductivity[i-1] * dsoilT_dz[i-1];
+
+	this->bottom_heat_flux = bottomflux;
       }
+      
     }
-    
-    // put coefficients in the corresponding vectors A,B,C, RHS
+
+    // put coefficients in the corresponding vectors A,B,C, and RHS
     for (int i=0; i<ncells;i++) {
       if (i == 0) {
 	AI[i] = 0;
-	CI[i] = - Lambd[i] *thermal_conductivity[i]/soil_z[i];
+	CI[i] = -lambda[i] * thermal_conductivity[i] * denominator[i];
 	BI[i] = 1 - CI[i];
       }
       else if (i < ncells-1) {
-	AI[i] = - Lambd[i] * thermal_conductivity[i-1]/(soil_z[i] - soil_z[i-1]);
-	CI[i] = - Lambd[i] * thermal_conductivity[i]/(soil_z[i+1] - soil_z[i]);
+	AI[i] = -lambda[i] * thermal_conductivity[i-1] * denominator[i-1];
+	CI[i] = -lambda[i] * thermal_conductivity[i] * denominator[i];
 	BI[i] = 1 - AI[i] - CI[i];
       }
       else if (i == ncells-1) { 
-	AI[i] = - Lambd[i] * thermal_conductivity[i]/(soil_z[i] - soil_z[i-1]);
+	AI[i] = -lambda[i] * thermal_conductivity[i-1] * denominator[i-1];
 	CI[i] = 0;
 	BI[i] = 1 - AI[i];
       }
-      RHS[i] = Flux[i];
-    }
-
-    // add the previous timestep soil_temperature to the RHS at the boundaries
-    for (int i=0; i<ncells;i++) {
-      if (i ==0)
-	RHS[i] = soil_temperature[i] + RHS[i];
-      else if (i == ncells-1)
-	RHS[i] = soil_temperature[i] + RHS[i];
-      else
-	RHS[i] = RHS[i];
+      RHS[i] = lambda[i] * thermal_flux[i];
     }
 
     SolverTDMA(AI, BI, CI, RHS, X);
 
-    std::copy(X.begin(), X.end(), this->soil_temperature);
+    // Update soil temperature
+    for (int i=0;i<ncells;i++)
+      this->soil_temperature[i] += X[i];
+
 }
 
-//*********************************************************************************
-// Solve, using the Thomas Algorithm (TDMA), the tri-diagonal system              *
-//     a_i X_i-1 + b_i X_i + c_i X_i+1 = d_i,     i = 0, n - 1                    *
-//                                                                                *
-// Effectively, this is the n x n matrix equation.                                *
-// a[i], b[i], c[i] are the non-zero diagonals of the matrix and d[i] is the rhs. *
-// a[0] and c[n-1] aren't used.                                                   *
-//*********************************************************************************
+//*****************************************************************************
+// Solve the tri-diagonal system using the Thomas Algorithm (TDMA)            *
+//     a_i X_i-1 + b_i X_i + c_i X_i+1 = d_i,     i = 0, n - 1                *
+//                                                                            *
+// Effectively, this is an n x n matrix equation.                             *
+// a[i], b[i], c[i] are non-zero diagonals of the matrix and d[i] is the rhs. *
+// a[0] and c[n-1] aren't used.                                               *
+// X is the solution of the n x n system                                      *
+//*****************************************************************************
 bool soilfreezethaw::SoilFreezeThaw::
 SolverTDMA(const vector<double> &a, const vector<double> &b, const vector<double> &c, const vector<double> &d, vector<double> &X ) {
    int n = d.size();
@@ -728,7 +807,7 @@ PhaseChange() {
   double *Supercool = new double[nz];    // supercooled water in soil [kg/m2]
   double *MassIce_L = new double[nz];    // soil ice mass [kg/m2]
   double *MassLiq_L = new double[nz];    // snow/soil liquid mass [kg/m2]
-  double *HeatEnergy_L = new double[nz];      // energy residual [w/m2] HM = HeatEnergy_L
+  double *HeatEnergy_L = new double[nz]();      // energy residual [w/m2] HM = HeatEnergy_L
   double *MassPhaseChange_L = new double[nz];        // melting or freezing water [kg/m2] XM_L = mass of phase change
 
   // arrays keep local copies of the data at the previous timestep
@@ -737,7 +816,8 @@ PhaseChange() {
   double *MassIce_c = new double[nz];
 
   int *IndexMelt = new int[nz]; // tracking melting/freezing index of layers
-  
+
+  this->energy_consumed = 0.0;
   //compute mass of liquid/ice in soil layers in mm
   for (int i=0; i<nz;i++) {
       MassIce_L[i] = (soil_moisture_content[i] - soil_liquid_content[i]) * soil_dz[i] * prop.wdensity_; // [kg/m2]
@@ -776,8 +856,6 @@ PhaseChange() {
     else if (MassLiq_L[i] > Supercool[i] && soil_temperature[i] <= prop.tfrez_)// freezing condition in NoahMP
       IndexMelt[i] = 2;
   }
-
-  //SoilHeatCapacity();
   
   /*------------------------------------------------------------------- */
   // ****** get excess or deficit of energy during phase change (use Hm) ********
@@ -786,11 +864,14 @@ PhaseChange() {
   //if HeatEnergy < 0 --> freezing energy otherwise melting energy
   
   for (int i=0; i<nz;i++) {
+    
     if (IndexMelt[i] > 0) {
       HeatEnergy_L[i] = (soil_temperature[i] - prop.tfrez_) * (heat_capacity[i] * soil_dz[i]) / dt; // q = m * c * delta_T
       soil_temperature[i] = prop.tfrez_; // Note the temperature does not go below 0 until there is mixture of water and ice
-    }
 
+      this->energy_consumed += HeatEnergy_L[i]; // track total energy used/lost during the phase change (for energy balance check)
+    }
+    
     if (IndexMelt[i] == 1 && HeatEnergy_L[i] <0) {
       HeatEnergy_L[i] = 0;
       IndexMelt[i] = 0;
@@ -800,9 +881,10 @@ PhaseChange() {
       HeatEnergy_L[i] = 0;
       IndexMelt[i] = 0;
     }
-
-  // compute the amount of melting or freezing water [kg/m2]. That is, how much water needs to be melted or freezed for the given energy change: MPC = MassPhaseChange
-  MassPhaseChange_L[i] = HeatEnergy_L[i]*dt/latent_heat_fusion;
+    
+    /* compute the amount of melting or freezing water [kg/m2]. That is, how much water needs to be melted
+       or freezed for the given energy change: MPC = MassPhaseChange */
+    MassPhaseChange_L[i] = HeatEnergy_L[i] * dt / latent_heat_fusion;
   }
 
   
@@ -811,7 +893,7 @@ PhaseChange() {
   // mass partition between ice and water and the corresponding adjustment for the next timestep
   for (int i=0; i<nz;i++) {
     if (IndexMelt[i] >0 && std::abs(HeatEnergy_L[i]) >0) {
-      if (MassPhaseChange_L[i] >0) //melting
+      if (MassPhaseChange_L[i] >0)      //melting
 	MassIce_L[i] = std::max(0., MassIce_c[i]-MassPhaseChange_L[i]);
       else if (MassPhaseChange_L[i] <0) { //freezing
 	if (soil_moisture_content_c[i] < Supercool[i])
@@ -823,23 +905,24 @@ PhaseChange() {
       }
     
       // compute heat residual
-      // total energy available - energy consumed by phase change (ice_old - ice_new)
-      double HEATR = HeatEnergy_L[i] - latent_heat_fusion*(MassIce_c[i]-MassIce_L[i])/dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
+      // total energy available - energy consumed by phase change (ice_old - ice_new). The residual becomes sensible heat
+      double HEATR = HeatEnergy_L[i] - latent_heat_fusion * (MassIce_c[i]-MassIce_L[i]) / dt; // [W/m2] Energy Residual, last part is the energy due to change in ice mass
       MassLiq_L[i] = std::max(0.,soil_moisture_content_c[i] - MassIce_L[i]);
 
       // Temperature correction
-
+      this->energy_consumed -= HEATR;
       if (std::abs(HEATR)>0) {
-	  double f = dt/(heat_capacity[i] * soil_dz[i]); // [m2 K/W]
-	  soil_temperature[i] = soil_temperature[i] + f*HEATR; // [K] , this is computed from HeatMass = (T_n+1-T_n) * Heat_capacity * DZ/ DT
-	}
+	double f = dt/(heat_capacity[i] * soil_dz[i]);       // [m2 K/W]
+	soil_temperature[i] = soil_temperature[i] + f * HEATR; /* [K] , this is computed from HeatMass = (T_n+1-T_n) * Heat_capacity * DZ/ DT
+								  convert sensible heat to temperature and add to the soil temp. */
+      }
 
 	       
     }
   }
   
-  for (int i=0; i<nz;i++) { //soil
-    soil_liquid_content[i] =  MassLiq_L[i] / (prop.wdensity_ * soil_dz[i]); // [-]
+  for (int i=0; i<nz;i++) {
+    soil_liquid_content[i] =  MassLiq_L[i] / (prop.wdensity_ * soil_dz[i]);                   // [-]
     soil_moisture_content[i]  = (MassLiq_L[i] + MassIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
     soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
