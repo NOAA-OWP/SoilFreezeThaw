@@ -59,7 +59,7 @@ int main(int argc, const char *argv[])
   std::vector<double> ice_fraction_golden;
   double ice_frac_v = 0;
 
-  bool golden_test = false;
+  bool golden_test = false; // if true, a new golden test results will be generated
   std::ofstream outfile;
  
   std::string filename = "./test/file_golden.csv";
