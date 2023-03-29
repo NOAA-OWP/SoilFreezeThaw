@@ -4,13 +4,15 @@
 */
 
 /*
-  The code simulates the transport of energy in the soil using the 1D diffusion equation (for more details see README on github repo (https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/README.md).
+  The code simulates the transport of energy in the soil using the 1D diffusion equation
+  (for more details see README on github repo (https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/README.md).
   Crank-Nicolson scheme is used to discretized the equation
   OUTPUTS : soil_temperature, ice_fraction_schaake, ice_fraction_xinan
   INPUTS  : Rest of the parameters are inputs either through a BMI or config file
   Soil thermal conductivity and volumetric heat capacity use empirical models
   The model is coupled to the surface through ground surface temperature
-  The model is also coupled to soil moisture profile module to provide dynamic vertical distribution of soil moisture
+  The model is also coupled to soil moisture profile module to provide dynamic vertical
+  distribution of soil moisture
 
   @param soil_depth [m]                    : depth of the computational domain 
   @param latent_heat_fusion         [J/kg] : latent heat of fusion
@@ -19,10 +21,13 @@
   @param dt                         [s]    : timestep, input options [second, hour, day]
   @param ncells                     [-]    : number of cells in the discretized soil column
   @param bottom_boundary_temp_const [K]    : temperature at the bottom boundary of the domain
-  @param topboundary_temp_const     [K]    : temperature at the top boundary of the domain (ground temperature)
+  @param top_boundary_temp_const    [K]    : temperature at the top boundary of the domain (ground temperature)
+  @param ground_heat_flux           [W/m^2]: ground heat flux to the soil from the surface
+  @param bottom_heat_flux           [W/m^2]: heat flux leaving the soil from the bottom of the domain
   @param soil_z                     [m]    : soil discretization, depth from the surface
   @param soil_dz                    [m]    : soil discretization thickness, thickness of cells
-  @param soil_temperature           [K]    : soil temperature profile
+  @param soil_temperature           [K]    : soil temperature profile (current state)
+  @param soil_temperature_prev      [K]    : soil temperature profile (previous state)
   @param heat_capacity              [J/(m3 K)] : volumetric heat capacity (specific heat capacity * density)
   @param thermal_conductivity       [W/(mK)]   : soil bulk thermal conductivity
   @param soil_moisture_content      [-]    : total (ice+water) soil moisture content (1D profile)
@@ -79,9 +84,12 @@ namespace soilfreezethaw {
     double bottom_boundary_temp_const;
     double top_boundary_temp_const;
     double ground_temp_const;
+    double ground_heat_flux;
+    double bottom_heat_flux;
     double *soil_z = NULL;
     double *soil_dz = NULL;
     double *soil_temperature = NULL;
+    double *soil_temperature_prev = NULL;
     double *heat_capacity = NULL;
     double *thermal_conductivity = NULL;
     double *soil_moisture_content = NULL;
@@ -99,7 +107,7 @@ namespace soilfreezethaw {
     double ice_fraction_xinan;
     int    ice_fraction_scheme_bmi;
     bool   is_soil_moisture_bmi_set;
-    
+    double energy_consumed;
     
     std::string ice_fraction_scheme;
     enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
@@ -139,6 +147,8 @@ namespace soilfreezethaw {
     /* computes surface runoff-based ice fraction*/
     void ComputeIceFraction();
 
+    void EnergyBalanceCheck();
+    
     // method retuns dynamically allocated input variable names
     std::vector<std::string>* InputVarNamesModel();
     
