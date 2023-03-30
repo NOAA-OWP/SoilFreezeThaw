@@ -46,6 +46,9 @@
   @param is_soil_moisture_bmi_set   [-]    : if not standalone, soil moisture is set through SoilMoistureProfiles bmi
   @param quartz                     [-]    : quartz content used in the thermal conductivity model
   @param verbosity                  [-]    : flag for screen outputs for debugging, options = none, high
+
+  @param energy_balance             [W/m2] : global (cumulative) energy balance
+  @param energy_consumed            [W/m2] : energy consumed (loss/gain) during the phase change
 */
 
 #ifndef SFT_H_INCLUDED
@@ -107,6 +110,7 @@ namespace soilfreezethaw {
     int    ice_fraction_scheme_bmi;
     bool   is_soil_moisture_bmi_set;
     double energy_consumed;
+    double energy_balance;
     
     std::string ice_fraction_scheme;
     std::string verbosity;

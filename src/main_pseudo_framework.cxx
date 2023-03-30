@@ -27,7 +27,7 @@ std::vector<double> ReadForcingData(std::string config_file);
 /***************************************************************
     Function to pass PET to CFE using BMI.
 ***************************************************************/
-void pass_pet_to_cfe(Bmi *cfe_bmi_model, Bmi *pet_bmi_model){
+void pass_pet_to_cfe(Bmi *cfe_bmi_model, Bmi *pet_bmi_model) {
     double var_val;
     double *var_ptr = &var_val;
 
@@ -40,7 +40,7 @@ void pass_pet_to_cfe(Bmi *cfe_bmi_model, Bmi *pet_bmi_model){
     This requires a lot of getters and setters, 
     so no need to clutter up main program
 ***************************************************************/
-void pass_forcing_from_aorc_to_cfe(Bmi *cfe_bmi_model, Bmi *aorc_bmi_model){
+void pass_forcing_from_aorc_to_cfe(Bmi *cfe_bmi_model, Bmi *aorc_bmi_model) {
 
     /********************************************************************
         TODO: Get variable names through BMI, then loop through those
@@ -59,7 +59,7 @@ void pass_forcing_from_aorc_to_cfe(Bmi *cfe_bmi_model, Bmi *aorc_bmi_model){
     Function to pass the ice fraction from Freeze-thaw model to CFE using BMI.
 ***************************************************************/
 
-void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw ftm_bmi_model){
+void pass_icefraction_from_sft_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw sft_bmi_model) {
   
   /********************************************************************
         TODO: Get variable names through BMI, then loop through those
@@ -73,14 +73,14 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw ftm_
   int *sf_runoff_scheme = new int[1];
 
   cfe_bmi_model->get_value(cfe_bmi_model, "SURF_RUNOFF_SCHEME", &sf_runoff_scheme[0]);
-  ftm_bmi_model.SetValue("ice_fraction_scheme_bmi", &(sf_runoff_scheme[0]));
+  sft_bmi_model.SetValue("ice_fraction_scheme_bmi", &(sf_runoff_scheme[0]));
   
   if (*sf_runoff_scheme == Schaake) {
-    ftm_bmi_model.GetValue("ice_fraction_schaake", ice_frac_ptr);
+    sft_bmi_model.GetValue("ice_fraction_schaake", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_schaake", ice_frac_ptr);
   }
   else if (*sf_runoff_scheme == Xinanjiang) {
-    ftm_bmi_model.GetValue("ice_fraction_xinan", ice_frac_ptr);
+    sft_bmi_model.GetValue("ice_fraction_xinan", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_xinan", ice_frac_ptr);
   }
  
@@ -89,13 +89,13 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw ftm_
 /***************************************************************
     Function to pass the parameters from CFE to SMP and get SMC from the Coupler to set in Freeze-thaw model.
 ***************************************************************/
-void pass_smc_from_smp_to_ftm(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *ftm_bmi_model,BmiSoilMoistureProfile *smp_bmi_model) {
+void pass_smc_from_smp_to_sft(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *sft_bmi_model,BmiSoilMoistureProfile *smp_bmi_model) {
   
   enum {Constant=1, Linear=2};
   
   int nz = 0;
   int *nz_ptr = &nz;
-  ftm_bmi_model->GetValue("num_cells", nz_ptr);
+  sft_bmi_model->GetValue("num_cells", nz_ptr);
 
   double storage = 0.0;
   double storage_change = 0.0;
@@ -127,9 +127,8 @@ void pass_smc_from_smp_to_ftm(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *ftm_bmi_mod
   double *smct = new double[nz];
     
   smp_bmi_model->GetValue("soil_moisture_profile",&smct[0]);
-  ftm_bmi_model->SetValue("soil_moisture_profile", &smct[0]);
-  // std::cout<<"SMC_main: "<<smct[0]<<" "<<smct[1]<<" "<<smct[2]<<" "<<smct[3]<<"\n";
-  //cfe_bmi_model->set_value(cfe_bmi_model,"soil_moisture_profile", smct);
+  sft_bmi_model->SetValue("soil_moisture_profile", &smct[0]);
+  
 }
 
 /***************************************************************
@@ -213,7 +212,7 @@ int
   printf("allocating memory to store entire BMI structure for PET\n");
   Bmi *pet_bmi_model = (Bmi *) malloc(sizeof(Bmi));
   
-  BmiSoilFreezeThaw ftm_bmi_model;
+  BmiSoilFreezeThaw sft_bmi_model;
 
   BmiSoilMoistureProfile smp_bmi_model;
   
@@ -243,12 +242,12 @@ int
   const char *cfg_file_pet = argv[3];
   pet_bmi_model->initialize(pet_bmi_model, cfg_file_pet);
 
-  printf("Initializeing BMI FTM model\n");
-  const char *cfg_file_ftm = argv[4];
-  ftm_bmi_model.Initialize(cfg_file_ftm);
+  printf("Initializeing BMI SFT model\n");
+  const char *cfg_file_sft = argv[4];
+  sft_bmi_model.Initialize(cfg_file_sft);
 
   //Read ground temperature data for SFT
-  std::vector<double> ground_temp = ReadForcingData(cfg_file_ftm);
+  std::vector<double> ground_temp = ReadForcingData(cfg_file_sft);
   
   printf("Initializeing BMI SMP model\n");
   const char *cfg_file_smp = argv[5];
@@ -303,9 +302,9 @@ int
     pass_pet_to_cfe(cfe_bmi_model, pet_bmi_model);   // Get and Set values
 
     if (FrozenFraction)
-      pass_icefraction_from_ftm_to_cfe(cfe_bmi_model, ftm_bmi_model);
+      pass_icefraction_from_sft_to_cfe(cfe_bmi_model, sft_bmi_model);
 
-    ftm_bmi_model.SetValue("ground_temperature", &ground_temp[i]);
+    sft_bmi_model.SetValue("ground_temperature", &ground_temp[i]);
     
     if (pet->aorc.air_temperature_2m_K != aorc->aorc.air_temperature_2m_K){
       printf("ERROR: Temperature values do not match from AORC and PET\n");
@@ -336,9 +335,9 @@ int
       print_cfe_flux_at_timestep(cfe);
     
 
-    pass_smc_from_smp_to_ftm(cfe_bmi_model, &ftm_bmi_model,&smp_bmi_model);
+    pass_smc_from_smp_to_sft(cfe_bmi_model, &sft_bmi_model,&smp_bmi_model);
 
-    ftm_bmi_model.Update(); // Update model 3
+    sft_bmi_model.Update(); // Update model 3
   }
 
   // Run the Mass Balance check
@@ -350,7 +349,7 @@ int
   printf("Finalizing BFE and AORC models\n");
   cfe_bmi_model->finalize(cfe_bmi_model);
   aorc_bmi_model->finalize(aorc_bmi_model);
-  ftm_bmi_model.Finalize();
+  sft_bmi_model.Finalize();
   return 0;
 }
 
