@@ -7,18 +7,18 @@
 #include <cstring>
 #include <cstdlib>
 #include <vector>
-#include "../bmi/bmi.hxx"
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
 #include <algorithm>
 
-string verbosity="none";
 
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
   if (config_file.compare("") != 0 )
     this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
+
+  verbosity= this->state->verbosity;
 }
 
 void BmiSoilFreezeThaw::
