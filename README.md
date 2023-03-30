@@ -1,28 +1,29 @@
 ## Standalone soil freeze-thaw (SFT) model example
 ### Example description: 
-Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with existing `golden test` ice_fraction using Schaake scheme. If test is successfull, the user should be able to see `Test passed = Yes` 
+Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with the existing `golden test` ice_fraction using Schaake runoff scheme. If the test is successfull, the user should be able to see `Test passed = Yes`
+
 ### Build
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - mkdir build && cd build
-- cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug -DSTANDALONE=ON ../
+- cmake ../ -DSTANDALONE=ON
 - make && cd ..
 ### Run
-- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh)
-- It compares results with gold test results
-
+- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) STANDALONE
+- It compares results against the benchmark (golden test results)
 
 ## Pseudo-framework integrated models example 
 ### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFT (and more models if needed/desired)
+### Notation: PFRAMEWORK denotes pseudo-framework
 ### Build 
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
 - git clone https://github.com/NOAA-OWP/cfe 
 - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_profiles
 - git clone https://github.com/NOAA-OWP/evapotranspiration pet
 - mkdir build && cd build
-- cmake -DCMAKE_INSTALL_PREFIX=\`pwd\` -DCMAKE_BUILD_TYPE=Debug ../
+- cmake ../ -DPFRAMEWORK=ON
 - make && cd ..
 ### Run
-- [run_framework.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_framework.sh)
+- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) PFRAMEWORK  
 
 ## ngen-framework standalone/integrated models example
 - See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
@@ -41,11 +42,11 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
     - make -C extern/evapotranspiration/cmake_build/
   - #### SFT
     - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
-    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN:BOOL=ON
+    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN=ON
     - make -C extern/SoilFreezeThaw/cmake_build
   - #### SMP
     - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
-    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN:BOOL=ON
+    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
     - make -C extern/SoilMoistureProfiles/cmake_build
   - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
   - make -j4 -C cmake_build
@@ -107,7 +108,7 @@ where Ke , Ksat, and Kdry are the Kersten number, dry, and saturated soil therma
 <img width="617" alt="eq3" src="https://user-images.githubusercontent.com/15165757/157316057-3aeffa5e-1b0e-4a29-b34a-12bda5d1e58e.png">
 
 here, θ, θ_w, and θ_s are the total water content, the liquid water content and the maximum soil moisture content (porosity), respectively. The parameters  Cw, Cice, Cair, and Csoil are the volumetric heat capacities of water, ice, air, and soil, respectively. Table?
-The diffusion equation (Eq. 1) is discretized using the Crank-Nicolson scheme (Ref), which is an implicit finite difference scheme and thus unconditionally stable.
+The diffusion equation (Eq. 1) is discretized using the a fully implicit finite difference scheme and thus unconditionally stable.
 
 Freezing-point depression equation 
 Frozen soils not only impact the soil thermal and hydrological properties, but its presence strongly affects the partition of precipitation into surface runoff and infiltration leading to a strongly coupled surface and subsurface system. Due to the formation of impermeable soil over the winter period, infiltration of water significantly reduces during the spring freshet generating high peaks in the surface discharge.
