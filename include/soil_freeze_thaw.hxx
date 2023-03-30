@@ -45,6 +45,7 @@
   @param ice_fraction_scheme_bmi    [-]    : option set through a bmi
   @param is_soil_moisture_bmi_set   [-]    : if not standalone, soil moisture is set through SoilMoistureProfiles bmi
   @param quartz                     [-]    : quartz content used in the thermal conductivity model
+  @param verbosity                  [-]    : flag for screen outputs for debugging, options = none, high
 */
 
 #ifndef SFT_H_INCLUDED
@@ -59,8 +60,6 @@
 #include <cassert>
 
 using namespace std;
-
-extern string verbosity;
 
 class Properties;
 
@@ -110,6 +109,7 @@ namespace soilfreezethaw {
     double energy_consumed;
     
     std::string ice_fraction_scheme;
+    std::string verbosity;
     enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
 
     /*

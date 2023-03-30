@@ -245,7 +245,10 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     if (param_key == "verbosity") {
-      verbosity = param_value;
+      if (param_value == "high" || param_value == "low")
+	this->verbosity = param_value;
+      else
+	this->verbosity = "none";
       continue;
     }
   }
