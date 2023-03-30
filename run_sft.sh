@@ -21,7 +21,7 @@ if [ $option == "STANDALONE" ]; then
     args='./configs/laramie_bmi_config_sft_standalone.txt'
     exe_name='sft_standalone'
 else if [ $option == "PFRAMEWORK" ]; then
-	 args="./configs/laramie_bmi_config_cfe_pass.txt ./configs/laramie_bmi_config_aorc.txt ./configs/laramie_bmi_config_pet_pass.txt ./configs/laramie_bmi_config_sft.txt ./configs/laramie_bmi_config_smp.txt"
+	 args="./configs/laramie_config_cfe.txt ./configs/laramie_config_aorc.txt ./configs/laramie_config_pet.txt ./configs/laramie_config_sft.txt ./configs/laramie_config_smp.txt"
 	 exe_name='sft_pframework'
      fi
 fi

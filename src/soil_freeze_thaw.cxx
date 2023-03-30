@@ -64,6 +64,7 @@ SoilFreezeThaw(std::string config_file)
   this->ground_temp = 273.15;
   this->time = 0.0;
   this->soil_ice_fraction = 0.0;
+  this->energy_balance = 0.0;
 }
 
 
@@ -490,16 +491,14 @@ Advance()
 
   if (verbosity.compare("high") == 0) {
     for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil Temp : previous, current timesteps = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
-  }
+      std::cerr<<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
 
-  if (verbosity.compare("high") == 0) {
     for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil (theta, theta_liq, theta_ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+      std::cerr<<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
   }
 }
 
-    
+
 void soilfreezethaw::SoilFreezeThaw::
 EnergyBalanceCheck()
 {
@@ -517,32 +516,25 @@ EnergyBalanceCheck()
   
   energy_residual = energy_current - energy_previous;
 
-  double energy_balance = (energy_residual + this->energy_consumed) - net_flux;
+  double energy_balance_timestep = (energy_residual + this->energy_consumed) - net_flux;
+
+  this->energy_balance += energy_balance_timestep;
   
-  if (verbosity.compare("high") == 0) {
+  if (verbosity.compare("high") == 0 || fabs(energy_balance) > 1.0E-4) {
     printf("Energy (previous timestep)   = %6.8f \n", energy_previous);
     printf("Energy (current timestep)    = %6.8f \n", energy_current);
     printf("Energy gain (+) or loss (-)  = %6.10f \n", (energy_current - energy_previous));
     printf("Surface flux (in (+), out (-)) = %6.10f \n", this->ground_heat_flux);
     printf("Bottom flux  (in (+), out (-)) = %6.10f \n", this->bottom_heat_flux);
     printf("Netflux (in (+) or out (-))     = %6.10f \n", net_flux);
-    printf("Energy consumed/released (phase change) = %6.10f \n", this->energy_consumed);
-    printf("Energy error [W/m^2] = %6.4e \n", energy_balance);
+    printf("Energy consumed/released (phase change)   = %6.10f \n", this->energy_consumed);
+    printf("Energy balance error [W/m^2] (local)   = %6.4e \n", energy_balance_timestep);
+    printf("Energy lalance error [W/m^2] (global) = %6.4e \n", energy_balance);
+
+    if (fabs(energy_balance) > 1.0E-4)
+      throw std::runtime_error("Soil energy balance error...");
   }
   
-  if (fabs(energy_balance) > 1.0E-4) {
-    printf("Energy (previous timestep)   = %6.8f \n", energy_previous);
-    printf("Energy (current timestep)    = %6.8f \n", energy_current);
-    printf("Energy gain (+) or loss (-)  = %6.10f \n", (energy_current - energy_previous));
-    printf("Surface flux (in (+), out (-)) = %6.10f \n", this->ground_heat_flux);
-    printf("Bottom flux  (in (+), out (-)) = %6.10f \n", this->bottom_heat_flux);
-    printf("Netflux (in (+) or out (-))     = %6.10f \n", net_flux);
-    printf("Energy consumed/released (phase change) = %6.10f \n", this->energy_consumed);
-    printf("Energy error [W/m^2] = %6.4e \n", energy_balance);
-
-    throw std::runtime_error("Soil energy balance error...");
-
-  }
   
 }
 
