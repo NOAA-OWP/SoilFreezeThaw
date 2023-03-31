@@ -484,7 +484,6 @@ Advance()
 
   ComputeIceFraction();
 
-  EnergyBalanceCheck();
   /* getting temperature below 200 would mean the space resolution is too
      fine and time resolution is too coarse */
   //assert (this->soil_temperature[0] > 200.0); 
@@ -496,6 +495,8 @@ Advance()
     for (int i=0;i<ncells;i++)
       std::cerr<<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
   }
+
+  EnergyBalanceCheck();
 }
 
 
@@ -521,15 +522,16 @@ EnergyBalanceCheck()
   this->energy_balance += energy_balance_timestep;
   
   if (verbosity.compare("high") == 0 || fabs(energy_balance) > 1.0E-4) {
-    printf("Energy (previous timestep)   = %6.8f \n", energy_previous);
-    printf("Energy (current timestep)    = %6.8f \n", energy_current);
-    printf("Energy gain (+) or loss (-)  = %6.10f \n", (energy_current - energy_previous));
-    printf("Surface flux (in (+), out (-)) = %6.10f \n", this->ground_heat_flux);
-    printf("Bottom flux  (in (+), out (-)) = %6.10f \n", this->bottom_heat_flux);
-    printf("Netflux (in (+) or out (-))     = %6.10f \n", net_flux);
-    printf("Energy consumed/released (phase change)   = %6.10f \n", this->energy_consumed);
-    printf("Energy balance error [W/m^2] (local)   = %6.4e \n", energy_balance_timestep);
-    printf("Energy lalance error [W/m^2] (global) = %6.4e \n", energy_balance);
+    
+    printf("Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
+    printf("Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
+    printf("Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
+    printf("Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
+    printf("Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
+    printf("Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
+    printf("Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
+    printf("Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
+    printf("Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
 
     if (fabs(energy_balance) > 1.0E-4)
       throw std::runtime_error("Soil energy balance error...");
