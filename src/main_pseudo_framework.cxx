@@ -290,6 +290,10 @@ int
   if (cfe->verbosity > 0)
     print_cfe_flux_header();
   for (int i = 0; i < 24566; i++){
+
+    std::cout<<"------------------------------------------------------ \n";
+    std::cout<<"Timestep | "<< i <<", ground temp = "<< ground_temp[i] <<"\n";
+    std::cout<<"------------------------------------------------------ \n";
     
     aorc_bmi_model->update(aorc_bmi_model);                         // Update model 1
 

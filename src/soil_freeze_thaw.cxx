@@ -484,10 +484,6 @@ Advance()
 
   ComputeIceFraction();
 
-  /* getting temperature below 200 would mean the space resolution is too
-     fine and time resolution is too coarse */
-  //assert (this->soil_temperature[0] > 200.0); 
-
   if (verbosity.compare("high") == 0) {
     for (int i=0;i<ncells;i++)
       std::cerr<<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
@@ -497,6 +493,10 @@ Advance()
   }
 
   EnergyBalanceCheck();
+
+  /* getting temperature below 200 would mean the space resolution is too
+     fine and time resolution is too coarse */
+  assert (this->soil_temperature[0] > 200.0); 
 }
 
 
