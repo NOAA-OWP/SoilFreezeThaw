@@ -499,47 +499,6 @@ Advance()
   assert (this->soil_temperature[0] > 200.0); 
 }
 
-
-void soilfreezethaw::SoilFreezeThaw::
-EnergyBalanceCheck()
-{
-  double net_flux = this->ground_heat_flux + this->bottom_heat_flux;
-  
-  double energy_current  = 0.0;
-  double energy_previous = 0.0;
-  double energy_residual = 0.0;
-  
-  for (int i=0;i<ncells; i++) {
-    //energy_temp += heat_capacity[i] * (soil_temperature[i] - soil_temperature_prev[i]) * soil_dz[i] / dt; // W/m^2
-    energy_previous += heat_capacity[i] * (soil_temperature_prev[i] - 273.15) * soil_dz[i] / dt; // W/m^2
-    energy_current  += heat_capacity[i] * (soil_temperature[i] - 273.15) * soil_dz[i] / dt;       // W/m^2
-  }
-  
-  energy_residual = energy_current - energy_previous;
-
-  double energy_balance_timestep = (energy_residual + this->energy_consumed) - net_flux;
-
-  this->energy_balance += energy_balance_timestep;
-  
-  if (verbosity.compare("high") == 0 || fabs(energy_balance) > 1.0E-4) {
-    
-    printf("Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
-    printf("Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
-    printf("Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
-    printf("Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
-    printf("Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
-    printf("Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
-    printf("Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
-    printf("Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
-    printf("Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
-
-    if (fabs(energy_balance) > 1.0E-4)
-      throw std::runtime_error("Soil energy balance error...");
-  }
-  
-  
-}
-
 /*
   Module returns updated ground heat flux used in surface boundary condition in
   the diffusion equation
@@ -924,6 +883,58 @@ PhaseChange() {
     soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
 }
+
+
+/*
+  Module computes the energy balance (locally and globally)
+  will throw an error if energy balance is not satisfied with in
+  the error tolerance
+  @param ground_heat_flux [W/m2] is the energy at the top of the ground surface
+  @param bottom_heat_flux [W/m2] is the energy (leaving the soil) through the bottom of the domain
+*/
+
+void soilfreezethaw::SoilFreezeThaw::
+EnergyBalanceCheck()
+{
+  double net_flux = this->ground_heat_flux + this->bottom_heat_flux;
+  
+  double energy_current  = 0.0;
+  double energy_previous = 0.0;
+  double energy_residual = 0.0;
+  double tolerance       = 1.0E-4;
+  double Tref            = 273.15; // reference temperature [K]
+    
+  for (int i=0;i<ncells; i++) {
+    //energy_temp += heat_capacity[i] * (soil_temperature[i] - soil_temperature_prev[i]) * soil_dz[i] / dt; // W/m^2
+    energy_previous += heat_capacity[i] * (soil_temperature_prev[i] - Tref) * soil_dz[i] / dt; // W/m^2
+    energy_current  += heat_capacity[i] * (soil_temperature[i] - Tref) * soil_dz[i] / dt;       // W/m^2
+  }
+  
+  energy_residual = energy_current - energy_previous;
+
+  double energy_balance_timestep = (energy_residual + this->energy_consumed) - net_flux;
+
+  this->energy_balance += energy_balance_timestep;
+  
+  if (verbosity.compare("high") == 0 || fabs(energy_balance) >  tolerance) {
+    
+    printf("Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
+    printf("Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
+    printf("Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
+    printf("Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
+    printf("Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
+    printf("Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
+    printf("Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
+    printf("Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
+    printf("Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+
+    if (fabs(energy_balance) > tolerance)
+      throw std::runtime_error("Soil energy balance error...");
+  }
+  
+  
+}
+
 
 /*
   class containing some of the static variables used by several modules
