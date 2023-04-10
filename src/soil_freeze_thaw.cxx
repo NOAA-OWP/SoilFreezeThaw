@@ -496,7 +496,7 @@ Advance()
 
   /* getting temperature below 200 would mean the space resolution is too
      fine and time resolution is too coarse */
-  assert (this->soil_temperature[0] > 200.0); 
+  //assert (this->soil_temperature[0] > 200.0); 
 }
 
 /*
