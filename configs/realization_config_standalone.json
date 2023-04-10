@@ -13,14 +13,15 @@
 		    "params": {
 			"model_type_name": "bmi_sft",
 			"library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
-			"init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/laramie_bmi_config_ftm_standalone.txt",
+			"init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/laramie_config_sft_standalone.txt",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "num_cells",
 			"variables_names_map" : {
 			    "ground_temperature" : "TMP_ground_surface"
 			},
 			"output_variables" : [
-			    "ice_fraction_schaake"
+			    "ice_fraction_schaake",
+			    "soil_ice_fraction"
 			],
 			"uses_forcing_file": false
 		    }
