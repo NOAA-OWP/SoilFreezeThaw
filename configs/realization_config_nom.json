@@ -30,7 +30,7 @@
 				"name": "bmi_c++",
 				"params": {
                                     "model_type_name": "bmi_c++_sloth",
-                                    "library_file": "extern/sloth/cmake_build/libslothmodel.so",
+                                    "library_file": "extern/sloth/cmake_build/libslothmodel",
                                     "init_config": "/dev/null",
                                     "allow_exceed_end_time": true,
                                     "main_output_variable": "z",
@@ -44,7 +44,7 @@
 				"name": "bmi_fortran",
 				"params": {
                                     "model_type_name": "bmi_fortran_noahowp",
-                                    "library_file": "./extern/noah-owp-modular/cmake_build/libsurfacebmi.so",
+                                    "library_file": "./extern/noah-owp-modular/cmake_build/libsurfacebmi",
                                     "forcing_file": "",
                                     "init_config": "./NOAH/{{id}}.input",
                                     "allow_exceed_end_time": true,
@@ -66,7 +66,7 @@
 				"name": "bmi_c++",
 				"params": {
 				    "model_type_name": "bmi_smp",
-				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi.dylib",
+				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi",
 				    "init_config": "./smp/cat-101_bmi_config_smp.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "soil_water_table",
@@ -87,7 +87,7 @@
 				"name": "bmi_c++",
 				"params": {
 				    "model_type_name": "bmi_sft",
-				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi.dylib",
+				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
 				    "init_config": "./sft/cat-101_bmi_config_ftm.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "num_cells",
@@ -101,7 +101,7 @@
 				"name": "bmi_c",
 				"params": {
                                     "model_type_name": "bmi_c_cfe",
-                                    "library_file": "./extern/cfe/cmake_build/libcfebmi.dylib",
+                                    "library_file": "./extern/cfe/cmake_build/libcfebmi",
                                     "forcing_file": "",
                                     "init_config": "./cfe/cat-101_bmi_config_cfe_pass.txt",
                                     "allow_exceed_end_time": true,

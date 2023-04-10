@@ -80,7 +80,7 @@ namespace soilfreezethaw {
     double time;
     double endtime;
     double dt;
-    int ncells;
+    int    ncells;
     double soil_depth; 
     double latent_heat_fusion;
     double bottom_boundary_temp_const;
@@ -151,6 +151,7 @@ namespace soilfreezethaw {
     /* computes surface runoff-based ice fraction*/
     void ComputeIceFraction();
 
+    /* computes energy balance locally and globally */
     void EnergyBalanceCheck();
     
     // method retuns dynamically allocated input variable names
