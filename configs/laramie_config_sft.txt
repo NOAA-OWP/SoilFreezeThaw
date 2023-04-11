@@ -1,8 +1,8 @@
 #forcing_file=./extern/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12.csv
-verbosity=high
+verbosity=none
 forcing_file=./forcings/Laramie_14Jun09_to_15Apr12.csv
 soil_moisture_bmi=1
-end_time=1.[d]
+end_time=1.0[d]
 dt=1.0[h]
 soil_params.smcmax=0.439[m/m]
 soil_params.b=5.25[]
