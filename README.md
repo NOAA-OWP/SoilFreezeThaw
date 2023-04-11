@@ -57,18 +57,22 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
    mkdir sft && cd sft
    ln -s ../extern
    ln -s ../data 
+   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/configs
+   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/forcings
   ```
- #### standalone SFTM in the ngen framework
+ #### SFT standalone example (uses prescribed ground surface temperature)
  ```
-   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_standalone.json . 
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_standalone.json
+ ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_standalone.json
  ```
-#### Run integrated models in the ngen framework
+ #### Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
  ```
-   cp extern/SoilFreezeThaw/SoilFreezeThaw/configs/realization_config_multi.json .
-   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realization_config_multi.json
-  ```
-  Note: An example file is also provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/configs/realization_config_nom.json))  to show the coupling of noah-owp-modular with CFE+SMP+SFT.
+ ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_multi.json
+ ```
+ #### Integrated models (SLoTH+PET+SMP+SFT+CFE) example with NOAH-OWP-Mod (NOAH-OWP-Mod calculates ground surface temperature)
+ ```
+ ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_nom.json
+ ```
+  
 #### Post-process step
   - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
   - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
