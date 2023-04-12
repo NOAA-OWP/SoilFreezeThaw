@@ -51,7 +51,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
     - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
     - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
     - make -C extern/SoilMoistureProfiles/cmake_build
-  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON=ON -DBMI_C_LIB_ACTIVE=ON -DBMI_FORTRAN_ACTIVE=ON
+  - cmake -B cmake_build -S . -DBMI_C_LIB_ACTIVE=ON -DBMI_FORTRAN_ACTIVE=ON
   - make -j4 -C cmake_build
   
   - #### Build [SLoTH](https://github.com/NOAA-OWP/SLoTH) using the following instructions. SLoTH bmi provides dummy values for bmi input variables that are not used in the realization.
