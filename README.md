@@ -37,6 +37,9 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - #### fortran bmi
     - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
     - make -C extern/iso_c_fortran_bmi/cmake_build
+  - #### NOAH-OWP-Modular
+    - cmake -B extern/noah-owp-modular/cmake_build -S extern/noah-owp-modular
+    - make -C extern/noah-owp-modular/cmake_build
   - #### PET
     - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
     - make -C extern/evapotranspiration/cmake_build/
@@ -48,9 +51,16 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
     - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
     - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
     - make -C extern/SoilMoistureProfiles/cmake_build
-  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON:BOOL=ON -DBMI_C_LIB_ACTIVE:BOOL=ON -DBMI_FORTRAN_ACTIVE:BOOL=ON
+  - cmake -B cmake_build -S . -DNGEN_ACTIVATE_PYTHON=ON -DBMI_C_LIB_ACTIVE=ON -DBMI_FORTRAN_ACTIVE=ON
   - make -j4 -C cmake_build
-
+  
+  - #### Build [SLoTH](https://github.com/NOAA-OWP/SLoTH) using the following instructions. SLoTH bmi provides dummy values for bmi input variables that are not used in the realization.
+    - cd extern/sloth/ && git checkout latest 
+    - git submodule update --init --recursive
+    - cd ../..
+    - cmake -B extern/sloth/cmake_build -S extern/sloth/
+    - make -C extern/sloth/cmake_build
+  
  ### Run 
  #### Pre-process step
  ```
