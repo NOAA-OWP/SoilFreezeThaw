@@ -32,7 +32,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init --recursive
   - #### CFE
-    - cmake -B extern/cfe/cmake_build -S extern/cfe
+    - cmake -B extern/cfe/cmake_build -S extern/cfe/cfe/ -DNGEN=ON
     - make -C extern/cfe/cmake_build
   - #### fortran bmi
     - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
