@@ -8,7 +8,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - cmake ../ -DSTANDALONE=ON
 - make && cd ..
 ### Run
-- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) STANDALONE
+- [./run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) STANDALONE
 - It compares results against the benchmark (golden test results)
 
 ## Pseudo-framework integrated models example 
@@ -23,7 +23,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 - cmake ../ -DPFRAMEWORK=ON
 - make && cd ..
 ### Run
-- [run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) PFRAMEWORK  
+- [./run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) PFRAMEWORK  
 
 ## ngen-framework standalone/integrated models example
 - See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
