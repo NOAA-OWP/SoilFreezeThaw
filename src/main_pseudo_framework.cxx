@@ -289,7 +289,15 @@ int
   printf("looping through and calling updata\n");
   if (cfe->verbosity > 0)
     print_cfe_flux_header();
-  for (int i = 0; i < 24566; i++){
+
+  // get time steps
+  double endtime  = sft_bmi_model.GetEndTime();
+  double timestep = sft_bmi_model.GetTimeStep();
+  int nsteps = int(endtime/timestep); // total number of time steps
+
+  assert (nsteps <= int(ground_temp.size()) ); // assertion to ensure that nsteps are less or equal than the input data
+  
+  for (int i = 0; i < nsteps; i++){
 
     std::cout<<"------------------------------------------------------ \n";
     std::cout<<"Timestep | "<< i <<", ground temp = "<< ground_temp[i] <<"\n";
