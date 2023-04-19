@@ -26,7 +26,6 @@ SoilFreezeThaw()
   this->origin[1] = 0.;
   this->dt = 3600;
   this->latent_heat_fusion = 0.3336E06;
-  this->ground_temp_const = 260.;
   this->bottom_boundary_temp_const = 275.15;
   this->option_bottom_boundary = 2;
   this->option_top_boundary = 2;
@@ -42,7 +41,6 @@ soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw(std::string config_file)
 {
   this->latent_heat_fusion = 0.3336E06;
-  this->ground_temp_const = 260.0;
   
   //this->option_bottom_boundary = 2; // 1: constant temp, 2: zero thermal flux
   //this->option_top_boundary = 2;    // 1: constant temp, 2: from a file
@@ -511,7 +509,7 @@ GroundHeatFlux(double soil_temp)
   double surface_temp = 0.0; // ground surface temnperature
   
   if (option_top_boundary == 1) {
-    surface_temp = this->ground_temp_const; // temperature specified as constant
+    surface_temp = this->top_boundary_temp_const; // temperature specified as constant
   }
   else if (option_top_boundary == 2) {
     surface_temp = this->ground_temp;       // temperature from a file/coupling

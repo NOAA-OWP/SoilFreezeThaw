@@ -16,7 +16,6 @@
 
   @param soil_depth [m]                    : depth of the computational domain 
   @param latent_heat_fusion         [J/kg] : latent heat of fusion
-  @param ground_temp_const          [K]    : constant ground temperature (an option for the surface boundary condition)
   @param end_time                   [s]    : end time of the simulation, input options [second, hour, day]
   @param dt                         [s]    : timestep, input options [second, hour, day]
   @param ncells                     [-]    : number of cells in the discretized soil column
@@ -85,7 +84,6 @@ namespace soilfreezethaw {
     double latent_heat_fusion;
     double bottom_boundary_temp_const;
     double top_boundary_temp_const;
-    double ground_temp_const;
     double ground_heat_flux;
     double bottom_heat_flux;
     double *soil_z = NULL;
