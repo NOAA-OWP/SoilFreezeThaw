@@ -79,7 +79,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
  ```
  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_multi.json
  ```
- #### Integrated models (SLoTH+PET+SMP+SFT+CFE) example with NOAH-OWP-Mod (NOAH-OWP-Mod calculates ground surface temperature)
+ #### Integrated models (SLoTH+SMP+SFT+CFE) example with NOAH-OWP-Mod (NOAH-OWP-Mod calculates ground surface temperature and PET)
  ```
  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_nom.json
  ```
