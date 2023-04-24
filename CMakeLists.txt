@@ -57,13 +57,23 @@ endif()
 ## cfe + aorc + pet + ftm
 
 if(PFRAMEWORK)
-  add_executable(${exe_name} ./src/main_pseudo_framework.cxx ./cfe/src/cfe.c ./cfe/src/giuh.c ./cfe/src/conceptual_reservoir.c ./cfe/src/bmi_cfe.c ./cfe/forcing_code/src/aorc.c ./cfe/forcing_code/src/bmi_aorc.c ./pet/src/pet.c ./pet/src/bmi_pet.c)
+  add_executable(${exe_name} ./src/main_pseudo_framework.cxx
+                 ./extern/cfe/src/cfe.c ./extern/cfe/src/bmi_cfe.c
+		 ./extern/cfe/src/giuh.c ./extern/cfe/src/conceptual_reservoir.c
+		 ./extern/aorc_bmi/src/aorc.c ./extern/aorc_bmi/src/bmi_aorc.c
+		 ./extern/evapotranspiration/src/pet.c ./extern/evapotranspiration/src/bmi_pet.c)
 
-  add_library(sftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx ./smc_profiles/src/bmi_soil_moisture_profile.cxx ./smc_profiles/src/soil_moisture_profile.cxx ./smc_profiles/include/bmi_soil_moisture_profile.hxx ./smc_profiles/include/soil_moisture_profile.hxx)
+  add_library(sftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx
+              ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx
+	      ./extern/SoilMoistureProfiles/src/bmi_soil_moisture_profile.cxx
+	      ./extern/SoilMoistureProfiles/src/soil_moisture_profile.cxx
+	      ./extern/SoilMoistureProfiles/include/bmi_soil_moisture_profile.hxx
+	      ./extern/SoilMoistureProfiles/include/soil_moisture_profile.hxx)
 
   target_link_libraries(${exe_name} LINK_PUBLIC sftlib)
   target_link_libraries(${exe_name} PRIVATE m)
-  target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cfe/include)
+  target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/cfe/include)
+  target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
 elseif(STANDALONE)
   add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx)
 endif()
