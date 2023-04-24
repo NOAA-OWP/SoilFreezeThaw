@@ -16,9 +16,10 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 ### Notation: PFRAMEWORK denotes pseudo-framework
 ### Build 
 - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
-- git clone https://github.com/NOAA-OWP/cfe 
-- git clone https://github.com/NOAA-OWP/SoilMoistureProfiles smc_profiles
-- git clone https://github.com/NOAA-OWP/evapotranspiration pet
+- git clone https://github.com/NOAA-OWP/cfe extern/cfe
+- git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
+- git clone https://github.com/NOAA-OWP/aorc_bmi extern/aorc_bmi
+- git clone https://github.com/NOAA-OWP/evapotranspiration extern/evapotranspiration
 - mkdir build && cd build
 - cmake ../ -DPFRAMEWORK=ON
 - make && cd ..

@@ -2,23 +2,20 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
-#include "../cfe/include/cfe.h"
-#include "../cfe/include/bmi.h"
-#include "../cfe/include/bmi_cfe.h"
-
-#include "../pet/include/pet.h"
-#include "../pet/include/bmi_pet.h"
-#include "../cfe/forcing_code/include/aorc.h"
-#include "../cfe/forcing_code/include/bmi_aorc.h"
-
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
 
-
-#include "../smc_profiles/include/bmi_soil_moisture_profile.hxx"
-#include "../smc_profiles/include/soil_moisture_profile.hxx"
+// include extern models
+#include "cfe/include/cfe.h"
+#include "cfe/include/bmi.h"
+#include "cfe/include/bmi_cfe.h"
+#include "evapotranspiration/include/pet.h"
+#include "evapotranspiration/include/bmi_pet.h"
+#include "aorc_bmi/include/aorc.h"
+#include "aorc_bmi/include/bmi_aorc.h"
+#include "SoilMoistureProfiles/include/bmi_soil_moisture_profile.hxx"
+#include "SoilMoistureProfiles/include/soil_moisture_profile.hxx"
 
 #define FrozenFraction true
 
