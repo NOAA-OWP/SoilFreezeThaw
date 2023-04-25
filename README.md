@@ -96,6 +96,7 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 | smcmax | double | - | - | state variable | maximum soil moisture content (porosity) |
 | b | double | - | m | state variable | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
 | satpsi | double | - | m | state variable | saturated capillary head (saturated moisture potential) |
+| quartz | double | - | m | state variable | soil quartz content, used in soil thermal conductivity function of Peters-Lidard |
 | ice_fraction_scheme | int | - | - | coupling variable | runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang|
 | soil_z | double (1D array) | - | m | spatial resolution | vertical resolution of the soil column (computational domain of the SFT model) |
 | soil_temperature | double (1D array) | - | K | spatial resolution | initial soil temperature for the discretized column |
@@ -136,9 +137,10 @@ where T and To  are the soil temperature and freezing temperatures, respectively
 
 where Ψ_s, θ_s, and θ_l are saturated soil matric potential [m], saturated soil moisture [-] (porosity), and soil liquid moisture [-], respectively. The exponent b is the Clapp-Hornberger parameter. According to the ‘freezing equals drying’ approximation (Ref), we equate Eq. (4) and Eq. (5) to obtain an expression for liquid water content:
 
-<img width="626" alt="eq6" src="https://user-images.githubusercontent.com/15165757/157317016-3b8c0ad1-1f4b-4370-9773-c97aba0d0ee5.png">
+<img width="573" alt="eq6" src="https://user-images.githubusercontent.com/15165757/234313360-8e07354e-877c-4c37-96bf-2dafe28ca0cf.png">
 
 Equation (6) is called the “freezing-point depression equation” (Refs) and gives the maximum amount of liquid water (unfrozen soil moisture content) that can exist below the subfreezing temperature. The frozen soil moisture content (i, ice fraction) is given by:
 θ_ice = θ_t- θ_l , where t is the total water content given by soil water retention curve: 
 
-<img width="385" alt="eq8" src="https://user-images.githubusercontent.com/15165757/158890563-0ff39857-c8d4-41fe-ab06-2f5548ec25a1.png">
+<img width="427" alt="eq7" src="https://user-images.githubusercontent.com/15165757/234313430-e9b64235-fe4d-47eb-9766-417957ffbb52.png">
+
