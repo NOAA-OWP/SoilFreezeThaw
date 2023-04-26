@@ -91,8 +91,8 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
 
 
 ## Parameters in the config file
-| Variable | Datatype |  Limits  | Units | Role |  Description |
-| -------- | -------- | ------ | ----- | ---- | ----------- |
+| Variable ______________ | Datatype ________ | Limits ______ | Units ______ | Role _____ |  Description __________________________________________________ |
+| ------ | -------- | ------ | ----- | ---- | ----------- |
 | forcing_file | string | - | - | filename | provides ground temperature (not needed when coupled to models providing ground temperature data|
 | smcmax | double | - | - | state variable | maximum soil moisture content (porosity) |
 | b | double | - | m | state variable | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
