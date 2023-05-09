@@ -16,15 +16,15 @@
 			"allow_exceed_end_time": true,
 			"main_output_variable": "Q_OUT",
 			"output_header_fields" : [
-                                        "rain_rate",
-                                        "direct_runoff",
-                                        "giuh_runoff",
-                                        "nash_lateral_runoff",
-                                        "deep_gw_to_channel_flux",
-                                        "q_out",
-                                        "soil_storage",
-			                "ice_fraction_schaake"
-                                    ],
+                            "rain_rate",
+                            "direct_runoff",
+                            "giuh_runoff",
+                            "nash_lateral_runoff",
+                            "deep_gw_to_channel_flux",
+                            "q_out",
+                            "soil_storage",
+			    "ice_fraction_schaake"
+                        ],
 			"modules": [
 			    {
 				"name": "bmi_c++",
@@ -36,10 +36,10 @@
                                     "main_output_variable": "z",
                                     "uses_forcing_file": false,
                                     "model_params": {
-					"soil_moisture_layered(1,double,1,node)": 0.0,
+					"soil_moisture_wetting_fronts(1,double,1,node)": 0.0,
 					"soil_thickness_layered(1,double,1,node)": 0.0,
-					"soil_depths_layered(1,double,1,node)": 0.0,
-					"num_cells_layered(1,int,1,node)": 1.0,
+					"soil_depth_wetting_fronts(1,double,1,node)": 0.0,
+					"num_wetting_fronts(1,int,1,node)": 1.0,
 					"Qb_topmodel(1,double,1,node)": 0.0,
 					"Qv_topmodel(1,double,1,node)": 0.0,
 					"global_deficit(1,double,1,node)": 0.0
