@@ -79,13 +79,7 @@
 				    "variables_names_map" : {
 					"soil_storage" : "SOIL_STORAGE",
 					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
-				    },
-				    "default_output_values": [
-					{
-					    "name": "SOIL_STORAGE_CHANGE",
-					    "value": 0.0
-					}
-				    ],
+				    }
 				    "uses_forcing_file": false
 				}
 			    },
@@ -137,11 +131,8 @@
 		}
             ],
             "forcing": {
-		
 		"path" : "./forcings/HUC01/cat-20521.csv",
-		"provider": "CsvPerFeature"
-		
-            }
+	    }
         }
     }
 }
