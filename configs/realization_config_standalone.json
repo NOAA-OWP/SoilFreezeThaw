@@ -28,10 +28,7 @@
 		}
             ],
             "forcing": {
-		
-		"path" : "./forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
-		"provider": "CsvPerFeature"
-		
+		"path" : "./forcings/Laramie_14Jun09_to_15Apr12_ngen.csv"
             }
         }
     }

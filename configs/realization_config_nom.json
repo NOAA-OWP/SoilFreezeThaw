@@ -15,7 +15,21 @@
 			"init_config": "",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "Q_OUT",
+			"output_variables" : [
+			    "soil_ice_fraction",
+			    "TG",
+			    "RAIN_RATE",
+			    "DIRECT_RUNOFF",
+			    "GIUH_RUNOFF",
+			    "NASH_LATERAL_RUNOFF",
+			    "DEEP_GW_TO_CHANNEL_FLUX",
+			    "Q_OUT",
+			    "SOIL_STORAGE",
+			    "ice_fraction_schaake"
+			],
 			"output_header_fields" : [
+			    "soil_ice_fraction",
+			    "ground_temperature",
                             "rain_rate",
                             "direct_runoff",
                             "giuh_runoff",
@@ -79,7 +93,7 @@
 				    "variables_names_map" : {
 					"soil_storage" : "SOIL_STORAGE",
 					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
-				    }
+				    },
 				    "uses_forcing_file": false
 				}
 			    },
@@ -111,16 +125,6 @@
 					"water_potential_evaporation_flux": "EVAPOTRANS",
 					"atmosphere_water__liquid_equivalent_precipitation_rate": "QINSUR"
                                     },
-				    "output_variables" : [
-					"RAIN_RATE",
-					"DIRECT_RUNOFF",
-					"GIUH_RUNOFF",
-					"NASH_LATERAL_RUNOFF",
-					"DEEP_GW_TO_CHANNEL_FLUX",
-					"Q_OUT",
-					"SOIL_STORAGE",
-					"ice_fraction_schaake"
-				    ],
                                     "uses_forcing_file": false
 				}
                             }
@@ -131,7 +135,7 @@
 		}
             ],
             "forcing": {
-		"path" : "./forcings/HUC01/cat-20521.csv",
+		"path" : "./forcings/HUC01/cat-20521.csv"
 	    }
         }
     }

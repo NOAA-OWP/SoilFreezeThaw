@@ -15,7 +15,19 @@
 			"init_config": "",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "Q_OUT",
+			"output_variables" : [
+			    "soil_ice_fraction",
+			    "RAIN_RATE",
+			    "DIRECT_RUNOFF",
+			    "GIUH_RUNOFF",
+			    "NASH_LATERAL_RUNOFF",
+			    "DEEP_GW_TO_CHANNEL_FLUX",
+			    "Q_OUT",
+			    "SOIL_STORAGE",
+			    "ice_fraction_schaake"
+			],
 			"output_header_fields" : [
+			    "soil_ice_fraction",
                             "rain_rate",
                             "direct_runoff",
                             "giuh_runoff",
@@ -71,12 +83,6 @@
 					"soil_storage" : "SOIL_STORAGE",
 					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
 				    },
-				    "default_output_values": [
-					{
-					    "name": "SOIL_STORAGE_CHANGE",
-					    "value": 0.0
-					}
-				    ],
 				    "uses_forcing_file": false
 				}
 			    },
@@ -115,16 +121,6 @@
 					"land_surface_radiation~incoming~shortwave__energy_flux" : "DSWRF_surface",
 					"land_surface_air__pressure" : "PRES_surface"
                                     },
-				    "output_variables" : [
-					"RAIN_RATE",
-					"DIRECT_RUNOFF",
-					"GIUH_RUNOFF",
-					"NASH_LATERAL_RUNOFF",
-					"DEEP_GW_TO_CHANNEL_FLUX",
-					"Q_OUT",
-					"SOIL_STORAGE",
-					"ice_fraction_schaake"
-				    ],
                                     "uses_forcing_file": false
 				}
                             }
@@ -135,10 +131,7 @@
 		}
             ],
             "forcing": {
-		
-		"path" : "./forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
-		"provider": "CsvPerFeature"
-		
+		"path" : "./forcings/Laramie_14Jun09_to_15Apr12_ngen.csv"		
             }
         }
     }
