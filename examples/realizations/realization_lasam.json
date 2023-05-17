@@ -1,0 +1,149 @@
+{
+    "time": {
+	"start_time": "2009-06-14 20:00:00",
+        "end_time": "2012-04-03 09:00:00",
+        "output_interval": 3600
+    },
+    "catchments": {
+        "cat-27": {
+            "formulations": [
+                {
+		    "name": "bmi_multi",
+                    "params": {
+			"model_type_name": "bmi_multi_noah_cfe_sft_smp",
+			"forcing_file": "",
+			"init_config": "",
+			"allow_exceed_end_time": true,
+			"main_output_variable": "total_discharge",
+			"output_variables" : [
+			    "soil_ice_fraction",
+			    "TG",
+			    "precipitation",
+			    "potential_evapotranspiration",
+			    "actual_evapotranspiration",
+			    "soil_storage",
+			    "surface_runoff",
+			    "giuh_runoff",
+			    "groundwater_to_stream_recharge",
+			    "percolation",
+			    "total_discharge",
+			    "infiltration",
+			    "EVAPOTRANS",
+			    "soil_moisture_fraction"
+			],
+			"output_header_fields" : [
+			    "soil_ice_fraction",
+			    "ground_temperature",
+                            "rain_rate",
+			    "PET_rate",
+			    "actual_ET",
+			    "soil_storage",
+                            "direct_runoff",
+                            "giuh_runoff",
+                            "deep_gw_to_channel_flux",
+			    "soil_to_gw_flux",
+                            "q_out",
+			    "infiltration",
+			    "PET_NOM",
+			    "soil_moisture_fraction"
+                        ],
+			"modules": [
+			    {
+				"name": "bmi_c++",
+				"params": {
+                                    "model_type_name": "bmi_c++_sloth",
+                                    "library_file": "./extern/sloth/cmake_build/libslothmodel",
+                                    "init_config": "/dev/null",
+                                    "allow_exceed_end_time": true,
+                                    "main_output_variable": "z",
+                                    "uses_forcing_file": false,
+                                    "model_params": {
+					"sloth_soil_storage(1,double,m,node)" : 1.0E-10,
+					"sloth_soil_storage_change(1,double,m,node)" : 0.0,
+					"Qb_topmodel(1,double,1,node)": 0.0,
+					"Qv_topmodel(1,double,1,node)": 0.0,
+					"global_deficit(1,double,1,node)": 0.0,
+					"potential_evapotranspiration_rate(1,double,1,node)": 0.0
+                                    }
+				}
+                            },
+			    {
+				"name": "bmi_fortran",
+				"params": {
+                                    "model_type_name": "bmi_fortran_noahowp",
+                                    "library_file": "./extern/noah-owp-modular/cmake_build/libsurfacebmi",
+                                    "forcing_file": "",
+                                    "init_config": "./configs/nom/cat-20521.input",
+                                    "allow_exceed_end_time": true,
+                                    "main_output_variable": "QINSUR",
+                                    "variables_names_map": {
+					"PRCPNONC": "atmosphere_water__liquid_equivalent_precipitation_rate",
+					"Q2": "atmosphere_air_water~vapor__relative_saturation",
+					"SFCTMP": "land_surface_air__temperature",
+					"UU": "land_surface_wind__x_component_of_velocity",
+					"VV": "land_surface_wind__y_component_of_velocity",
+					"LWDN": "land_surface_radiation~incoming~longwave__energy_flux",
+					"SOLDN": "land_surface_radiation~incoming~shortwave__energy_flux",
+					"SFCPRS": "land_surface_air__pressure"
+                                    },                              
+                                    "uses_forcing_file": false
+				}
+                            },
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_smp",
+				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi",
+				    "init_config": "./configs/smp_lgar/cat-20521.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "soil_water_table",
+				    "variables_names_map" : {
+					"soil_storage" : "sloth_soil_storage",
+					"soil_storage_change" : "sloth_soil_storage_change",
+					"soil_moisture_wetting_fronts" : "soil_moisture_wetting_fronts",
+					"soil_depth_wetting_fronts" : "soil_depth_wetting_fronts",
+					"num_wetting_fronts" : "soil_num_wetting_fronts"
+				    },
+				    "uses_forcing_file": false
+				}
+			    },
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_sft",
+				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
+				    "init_config": "./configs/sft/cat-20521.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "num_cells",
+				    "variables_names_map" : {
+					"ground_temperature" : "TG"
+				    },
+				    "uses_forcing_file": false
+				}
+			    },
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_lasam",
+				    "library_file": "./extern/LGAR-C/cmake_build/liblasambmi",
+				    "init_config":"./configs/lgar/cat-20521.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "precipitation_rate",
+				    "variables_names_map" : {
+					"precipitation_rate" : "QINSUR",
+					"potential_evapotranspiration_rate": "EVAPOTRANS"
+				    },
+				    "uses_forcing_file": false
+				}
+			    }
+			],
+			"uses_forcing_file": false
+                    }
+		}
+            ],
+            "forcing": {
+		"path" : "./forcings/cat-20521.csv"
+	    }
+        }
+    }
+}
