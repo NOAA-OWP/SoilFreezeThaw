@@ -72,18 +72,18 @@ Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fra
    ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/configs
    ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/forcings
   ```
- #### SFT standalone example (uses prescribed ground surface temperature)
+ #### Example 1: SFT standalone example (uses prescribed ground surface temperature)
  ```
  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_standalone.json
  ```
- #### Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
+ #### Example 2: Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
  ```
  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_multi.json
  ```
- #### Integrated models (SLoTH+SMP+SFT+CFE) example with NOAH-OWP-Mod (NOAH-OWP-Mod calculates ground surface temperature and PET)
- ```
- ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_nom.json
- ```
+ #### Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod
+ See [Examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples)
+ 
+ 
   
 #### Post-process step
   - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
