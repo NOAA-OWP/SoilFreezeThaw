@@ -25,6 +25,7 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
       this->output_var_names[2] = "num_cells";
       this->output_var_names[3] = "soil_temperature_profile";
       this->output_var_names[4] = "soil_ice_fraction";
+      this->output_var_names[5] = "ground_heat_flux";
 
     };
 
@@ -81,8 +82,8 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
     soilfreezethaw::SoilFreezeThaw* state;
-    static const int input_var_name_count = 2;
-    static const int output_var_name_count = 5;
+    static const int input_var_name_count  = 2;
+    static const int output_var_name_count = 6;
 
     std::string input_var_names[input_var_name_count];
     std::string output_var_names[output_var_name_count];
