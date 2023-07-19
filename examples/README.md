@@ -6,8 +6,6 @@ Build ngen framework and models (see [README.md](https://github.com/NOAA-OWP/Soi
 ```
 cp -r /path_to_ngen_dir/extern/SoilFreezeThaw/SoilFreezeThaw/examples test
 cd test
-ln -s /path_to_ngen_dir/extern
-ln -s /path_to_ngen_dir/data
-ln -s /path_to_ngen_dir/cmake_build
+ln -s path_to_ngen_dir ngen (edit this line according to your settings)
 ./ngen/cmake_build/ngen ./ngen/data/catchment_data.geojson cat-27 ./ngen/data/nexus_data.geojson nex-26 realizations/realization_X.json (where X = cfe or lasam)
 ```
