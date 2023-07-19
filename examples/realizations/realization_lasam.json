@@ -52,7 +52,7 @@
 				"name": "bmi_c++",
 				"params": {
                                     "model_type_name": "bmi_c++_sloth",
-                                    "library_file": "./extern/sloth/cmake_build/libslothmodel",
+                                    "library_file": "./ngen/extern/sloth/cmake_build/libslothmodel",
                                     "init_config": "/dev/null",
                                     "allow_exceed_end_time": true,
                                     "main_output_variable": "z",
@@ -71,7 +71,7 @@
 				"name": "bmi_fortran",
 				"params": {
                                     "model_type_name": "bmi_fortran_noahowp",
-                                    "library_file": "./extern/noah-owp-modular/cmake_build/libsurfacebmi",
+                                    "library_file": "./ngen/extern/noah-owp-modular/cmake_build/libsurfacebmi",
                                     "forcing_file": "",
                                     "init_config": "./configs/nom/cat-20521.input",
                                     "allow_exceed_end_time": true,
@@ -92,8 +92,23 @@
 			    {
 				"name": "bmi_c++",
 				"params": {
+				    "model_type_name": "bmi_lasam",
+				    "library_file": "./ngen/extern/LGAR-C/cmake_build/liblasambmi",
+				    "init_config":"./configs/lgar/cat-20521.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "precipitation_rate",
+				    "variables_names_map" : {
+					"precipitation_rate" : "QINSUR",
+					"potential_evapotranspiration_rate": "EVAPOTRANS"
+				    },
+				    "uses_forcing_file": false
+				}
+			    },
+			    {
+				"name": "bmi_c++",
+				"params": {
 				    "model_type_name": "bmi_smp",
-				    "library_file": "./extern/SoilMoistureProfiles/cmake_build/libsmpbmi",
+				    "library_file": "./ngen/extern/SoilMoistureProfiles/cmake_build/libsmpbmi",
 				    "init_config": "./configs/smp_lgar/cat-20521.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "soil_water_table",
@@ -111,27 +126,12 @@
 				"name": "bmi_c++",
 				"params": {
 				    "model_type_name": "bmi_sft",
-				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
+				    "library_file": "./ngen/extern/SoilFreezeThaw/cmake_build/libsftbmi",
 				    "init_config": "./configs/sft/cat-20521.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "num_cells",
 				    "variables_names_map" : {
 					"ground_temperature" : "TG"
-				    },
-				    "uses_forcing_file": false
-				}
-			    },
-			    {
-				"name": "bmi_c++",
-				"params": {
-				    "model_type_name": "bmi_lasam",
-				    "library_file": "./extern/LGAR-C/cmake_build/liblasambmi",
-				    "init_config":"./configs/lgar/cat-20521.txt",
-				    "allow_exceed_end_time": true,
-				    "main_output_variable": "precipitation_rate",
-				    "variables_names_map" : {
-					"precipitation_rate" : "QINSUR",
-					"potential_evapotranspiration_rate": "EVAPOTRANS"
 				    },
 				    "uses_forcing_file": false
 				}
