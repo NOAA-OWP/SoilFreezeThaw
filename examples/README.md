@@ -9,5 +9,5 @@ cd test
 ln -s /path_to_ngen_dir/extern
 ln -s /path_to_ngen_dir/data
 ln -s /path_to_ngen_dir/cmake_build
-./cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_X.json (where X = cfe or lasam)
+./ngen/cmake_build/ngen ./ngen/data/catchment_data.geojson cat-27 ./ngen/data/nexus_data.geojson nex-26 realizations/realization_X.json (where X = cfe or lasam)
 ```
