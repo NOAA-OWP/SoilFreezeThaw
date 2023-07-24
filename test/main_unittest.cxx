@@ -38,19 +38,21 @@ int main(int argc, char *argv[])
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
   
-  int nz = 4;
-  double endtime = 86400; //1035.91*86400.;
-  double timestep = 3600;
-  bool test_status = true;
+  int    nz          = 4;
+  double endtime     = 86400; //1035.91*86400.;
+  double timestep    = 3600;
+  bool   test_status = true;
   
   std::vector<string> bmi_input_vars = {"ground_temperature", "soil_moisture_profile"};
-  std::vector<string> bmi_output_vars = {"ice_fraction_schaake", "ice_fraction_xinan", "num_cells", "soil_temperature_profile", "soil_ice_fraction"};
+  std::vector<string> bmi_output_vars = {"ice_fraction_schaake", "ice_fraction_xinan", "num_cells",
+					 "soil_temperature_profile", "soil_ice_fraction", "ground_heat_flux"};
 
   int num_input_vars  = bmi_input_vars.size();
   int num_output_vars = bmi_output_vars.size();
   
   int nbytes_input[] = {sizeof(double), int(nz * sizeof(double))};
-  int nbytes_output[] = {sizeof(double), sizeof(double), sizeof(int), int(sizeof(double) * nz), sizeof(double)};
+  int nbytes_output[] = {sizeof(double), sizeof(double), sizeof(int), int(sizeof(double) * nz), sizeof(double),
+			 sizeof(double)};
   
   double soil_moisture_profile[] = {0.389,0.396,0.397,0.397}; // total_moisture_content
   double soil_T[] = {280.15,280.15,280.15,280.15}; //soil temperature
