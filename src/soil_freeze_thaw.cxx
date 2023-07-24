@@ -98,7 +98,7 @@ InitFromConfigFile(std::string config_file)
   bool is_dt_set = false;
   bool is_soil_z_set = false;
   bool is_smcmax_set = false;
-  bool is_bb_set = false;
+  bool is_b_set = false;
   bool is_quartz_set = false;
   bool is_satpsi_set = false;
   bool is_soil_temperature_set = false;
@@ -175,10 +175,10 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     if (param_key == "soil_params.b") {
-      this->bb = std::stod(param_value);
-      std::string bb_unit = line.substr(loc_u+1,line.length());
-      assert (this->bb > 0);
-      is_bb_set = true;
+      this->b = std::stod(param_value);
+      std::string b_unit = line.substr(loc_u+1,line.length());
+      assert (this->b > 0);
+      is_b_set = true;
       continue;
     }
     if (param_key == "soil_params.quartz") {
@@ -281,9 +281,9 @@ InitFromConfigFile(std::string config_file)
     std::cout<<"Config file: "<<this->config_file<<"\n";
     throw std::runtime_error("smcmax not set in the config file!");
   }
-  if (!is_bb_set) {
+  if (!is_b_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("bb (Clapp-Hornberger's parameter) not set in the config file!");
+    throw std::runtime_error("b (Clapp-Hornberger's parameter) not set in the config file!");
   }
   if (!is_quartz_set) {
     std::cout<<"Config file: "<<this->config_file<<"\n";
@@ -792,7 +792,7 @@ PhaseChange() {
   /*------------------------------------------------------------------- */
   //Soil water potential
   // SUPERCOOL is the maximum liquid water that can exist below (T - TFRZ) freezing point
-  double lam = -1./(this->bb);
+  double lam = -1./(this->b);
   for (int i=0; i<nz;i++) {
     if (soil_temperature[i] < prop.tfrez_) {
       double smp = latent_heat_fusion /(prop.grav_*soil_temperature[i]) * (prop.tfrez_ - soil_temperature[i]);     // [m] Soil Matrix potential
