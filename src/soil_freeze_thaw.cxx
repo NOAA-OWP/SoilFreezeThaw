@@ -105,7 +105,6 @@ InitFromConfigFile(std::string config_file)
   bool is_soil_moisture_content_set = false; // total moisture content
   bool is_soil_liquid_content_set = false;   // liquid moisture content
   bool is_ice_fraction_scheme_set = false;   // ice fraction scheme
-  bool is_sft_standalone_set = false;        // SFT standalone
   bool is_bottom_boundary_temp_set = false;  // bottom boundary temperature
   bool is_top_boundary_temp_set = false;     // bottom boundary temperature
     
@@ -133,7 +132,7 @@ InitFromConfigFile(std::string config_file)
       this->is_soil_moisture_bmi_set = true;
       continue;
     }
-    if (param_key == "end_time") {
+    else if (param_key == "end_time") {
       this->endtime = std::stod(param_value);
 
       if (param_unit == "[d]" || param_unit == "[day]") 
@@ -146,7 +145,7 @@ InitFromConfigFile(std::string config_file)
       is_endtime_set = true;
       continue;
     }
-    if (param_key == "dt") {
+    else if (param_key == "dt") {
       this->dt = std::stod(param_value);
       if (param_unit == "[d]" || param_unit == "[day]")
 	this->dt *= 86400;
@@ -158,7 +157,7 @@ InitFromConfigFile(std::string config_file)
       is_dt_set = true;
       continue;
     }
-    if (param_key == "soil_z") {
+    else if (param_key == "soil_z") {
       std::vector<double> vec = ReadVectorData(param_value);
       
       this->soil_z = new double[vec.size()];
@@ -169,30 +168,30 @@ InitFromConfigFile(std::string config_file)
       is_soil_z_set = true;
       continue;
     }
-    if (param_key == "soil_params.smcmax") {
+    else if (param_key == "soil_params.smcmax") {
       this->smcmax = std::stod(param_value);
       is_smcmax_set = true;
       continue;
     }
-    if (param_key == "soil_params.b") {
+    else if (param_key == "soil_params.b") {
       this->b = std::stod(param_value);
       std::string b_unit = line.substr(loc_u+1,line.length());
       assert (this->b > 0);
       is_b_set = true;
       continue;
     }
-    if (param_key == "soil_params.quartz") {
+    else if (param_key == "soil_params.quartz") {
       this->quartz = std::stod(param_value);
       assert (this->quartz > 0);
       is_quartz_set = true;
       continue;
     }
-    if (param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
+    else if (param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
       this->satpsi = std::stod(param_value);
       is_satpsi_set = true;
       continue;
     }
-    if (param_key == "soil_temperature") {
+    else if (param_key == "soil_temperature") {
       std::vector<double> vec = ReadVectorData(param_value);
       this->soil_temperature = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
@@ -203,7 +202,7 @@ InitFromConfigFile(std::string config_file)
       continue;
 
     }
-    if (param_key == "soil_moisture_content") {
+    else if (param_key == "soil_moisture_content") {
       std::vector<double> vec = ReadVectorData(param_value);
       this->soil_moisture_content = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++)
@@ -212,7 +211,7 @@ InitFromConfigFile(std::string config_file)
       is_soil_moisture_content_set = true;
       continue;
     }
-    if (param_key == "soil_liquid_content") {
+    else if (param_key == "soil_liquid_content") {
       std::vector<double> vec = ReadVectorData(param_value);
       this->soil_liquid_content = new double[vec.size()];
       for (unsigned int i=0; i < vec.size(); i++) {
@@ -223,27 +222,22 @@ InitFromConfigFile(std::string config_file)
       is_soil_liquid_content_set = true;
       continue;
     }
-    if (param_key == "ice_fraction_scheme") {
+    else if (param_key == "ice_fraction_scheme") {
       this->ice_fraction_scheme = param_value;
       is_ice_fraction_scheme_set = true;
       continue;
     }
-    if (param_key == "sft_standalone") {
-      if (param_value == "true" || param_value == "True" || stod(param_value) == 1)  
-	is_sft_standalone_set = true;
-      continue;
-    }
-    if (param_key == "bottom_boundary_temp") {
+    else if (param_key == "bottom_boundary_temp") {
       this->bottom_boundary_temp_const = stod(param_value);
       is_bottom_boundary_temp_set = true;
       continue;
     }
-    if (param_key == "top_boundary_temp") {
+    else if (param_key == "top_boundary_temp") {
       this->top_boundary_temp_const = stod(param_value);
       is_top_boundary_temp_set = true;
       continue;
     }
-    if (param_key == "verbosity") {
+    else if (param_key == "verbosity") {
       if (param_value == "high" || param_value == "low")
 	this->verbosity = param_value;
       else
@@ -310,17 +304,6 @@ InitFromConfigFile(std::string config_file)
     throw std::runtime_error("Ice fraction scheme not set in the config file!");
   }
 
-  // standalone SFT does not need dynamic soil moisture profile from SMP, so adjusting the input var names
-  if(is_sft_standalone_set) {
-      input_var_names_model = new std::vector<std::string>;
-      input_var_names_model->push_back("ground_temperature");
-    }
-  else {
-    input_var_names_model = new std::vector<std::string>;
-    input_var_names_model->push_back("ground_temperature");
-    input_var_names_model->push_back("soil_moisture_profile");
-  }
-
   this->option_bottom_boundary = is_bottom_boundary_temp_set == true ? 1 : 2; // if false zero geothermal flux is the BC
 
   this->option_top_boundary = is_top_boundary_temp_set == true ? 1 : 2; // 1: constant temp, 2: from a file
@@ -329,16 +312,6 @@ InitFromConfigFile(std::string config_file)
   assert (n_st == this->ncells);
   assert (n_mct == this->ncells);
   assert (n_mcl == this->ncells);
-}
-
-
-/*
-returns dynamically allocated 1D vector of strings that contains correct input variable names based on the model (conceptual or layered) chosen
-*/
-std::vector<std::string>* soilfreezethaw::SoilFreezeThaw::
-InputVarNamesModel()
-{
-  return input_var_names_model;
 }
 
 /*

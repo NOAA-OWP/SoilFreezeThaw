@@ -352,12 +352,7 @@ GetComponentName()
 int BmiSoilFreezeThaw::
 GetInputItemCount()
 {
-  std::vector<std::string>* names_m = state->InputVarNamesModel();
-  int input_var_name_count_m = names_m->size();
-  
-  //return this->input_var_name_count;
-  assert (this->input_var_name_count >= input_var_name_count_m);
-  return input_var_name_count_m;
+  return this->input_var_name_count;
 }
 
 
@@ -372,14 +367,9 @@ std::vector<std::string> BmiSoilFreezeThaw::
 GetInputVarNames()
 {
   std::vector<std::string> names;
-
-  std::vector<std::string>* names_m = state->InputVarNamesModel();
   
-  for (int i=0; i<this->input_var_name_count; i++) {
-    if (std::find(names_m->begin(), names_m->end(), this->input_var_names[i]) != names_m->end()) {
-      names.push_back(this->input_var_names[i]);
-    }
-  }
+  for (int i=0; i<this->input_var_name_count; i++)
+    names.push_back(this->input_var_names[i]);
   
   return names;
 }

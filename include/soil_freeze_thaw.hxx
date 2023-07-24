@@ -113,11 +113,6 @@ namespace soilfreezethaw {
     std::string ice_fraction_scheme;
     std::string verbosity;
     enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
-
-    /*
-      input var changes when running SFT in coupled mode and in standalone mode in the ngen framework. When standalone, soil_moisture_profile is not needed, so we have to setup input var names dynamically; only needed for ngen framework
-     */
-    std::vector<std::string>* input_var_names_model; 
     
     SoilFreezeThaw();
     SoilFreezeThaw(std::string config_file);

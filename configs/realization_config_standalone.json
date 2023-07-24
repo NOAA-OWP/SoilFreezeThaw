@@ -8,20 +8,55 @@
         "cat-27": {
             "formulations": [
                 {
-		    
-		    "name": "bmi_c++",
-		    "params": {
-			"model_type_name": "bmi_sft",
-			"library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
-			"init_config": "./configs/laramie_config_sft_standalone.txt",
+		    "name": "bmi_multi",
+                    "params": {
+			"model_type_name": "bmi_multi_noahowp_cfe",
+			"forcing_file": "",
+			"init_config": "",
 			"allow_exceed_end_time": true,
 			"main_output_variable": "num_cells",
-			"variables_names_map" : {
-			    "ground_temperature" : "TMP_ground_surface"
-			},
 			"output_variables" : [
 			    "ice_fraction_schaake",
-			    "soil_ice_fraction"
+			    "soil_ice_fraction",
+			    "soil_temperature_profile",
+			    "ground_heat_flux"
+			],
+			"output_header_fields" : [
+			    "ice_fraction_schaake",
+			    "soil_ice_fraction",
+			    "soil_temperature_profile",
+			    "ground_heat_flux"
+			],
+			"modules": [
+			    {
+				"name": "bmi_c++",
+				"params": {
+                                    "model_type_name": "bmi_c++_sloth",
+                                    "library_file": "./extern/sloth/cmake_build/libslothmodel",
+                                    "init_config": "/dev/null",
+                                    "allow_exceed_end_time": true,
+                                    "main_output_variable": "z",
+                                    "uses_forcing_file": false,
+                                    "model_params": {
+					"sloth_smp(4,double,1,node)": [0.389,0.396,0.397,0.397]
+                                    }
+				}
+                            },
+			    {
+				"name": "bmi_c++",
+				"params": {
+				    "model_type_name": "bmi_sft",
+				    "library_file": "./extern/SoilFreezeThaw/cmake_build/libsftbmi",
+				    "init_config": "./configs/laramie_config_sft_standalone.txt",
+				    "allow_exceed_end_time": true,
+				    "main_output_variable": "num_cells",
+				    "variables_names_map" : {
+					"ground_temperature" : "TMP_ground_surface",
+					"soil_moisture_profile" : "sloth_smp"
+				    },
+				    "uses_forcing_file": false
+				}
+			    }
 			],
 			"uses_forcing_file": false
 		    }

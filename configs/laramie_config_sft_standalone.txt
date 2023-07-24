@@ -10,5 +10,4 @@ soil_z=0.1,0.4,1.0,2.0[m]
 soil_temperature=280.15,280.15,280.15,280.15[K]
 soil_moisture_content=0.389,0.396,0.397,0.397[]
 soil_liquid_content=0.389,0.396,0.397,0.397[]
-sft_standalone=true
 bottom_boundary_temp=275.15
