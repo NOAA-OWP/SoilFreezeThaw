@@ -30,6 +30,7 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
       // add calibratable parameters
       this->calib_var_names[0]  = "smcmax";
       this->calib_var_names[1]  = "b";
+      this->calib_var_names[2]  = "satpsi";
 
     };
 
@@ -88,7 +89,7 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
     soilfreezethaw::SoilFreezeThaw* state;
     static const int input_var_name_count  = 2;
     static const int output_var_name_count = 6;
-    static const int calib_var_name_count  = 2;
+    static const int calib_var_name_count  = 3;
 
     std::string input_var_names[input_var_name_count];
     std::string output_var_names[output_var_name_count];

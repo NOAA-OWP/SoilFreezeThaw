@@ -617,29 +617,34 @@ int main(int argc, char *argv[])
   std::cout<<"*********** Testing Calibratable parameters .......\n";
   std::cout<<"\n*********************************************************\n";
   
-  double smcmax_set, b_set;
+  double smcmax_set, b_set, satpsi_set;
   ground_temp = 280.15;
   
   model_calib.GetValue("smcmax", &smcmax_set);
   model_calib.GetValue("b", &b_set);
+  model_calib.GetValue("satpsi", &satpsi_set);
   model_calib.SetValue("ground_temperature", &ground_temp);
   
-  std::cout<<"Initial values | smcmax = "<< smcmax_set <<" , b = "<< b_set <<"\n";
+  std::cout<<"Initial values | smcmax = "<< smcmax_set <<" , b = "<< b_set <<" , satpsi = "<< satpsi_set <<"\n";
 
-  double smcmax_get, b_get;
+  double smcmax_get, b_get, satpsi_get;
+  
   for (int n=0; n<2; n++) {
     smcmax_set += 0.01;
     b_set      += 0.05;
-
+    satpsi_set      += 0.02;
+    
     std::cout<<"------------------------------------------------------ \n";
-    std::cout<<"Setting | smcmax = "<< smcmax_set <<" , b = "<< b_set <<"\n";
+    std::cout<<"Setting | smcmax = "<< smcmax_set <<" , b = "<< b_set <<" , satpsi = "<< satpsi_set <<"\n";
     std::cout<<"------------------------------------------------------ \n";
     model_calib.SetValue("smcmax", &smcmax_set);
     model_calib.SetValue("b", &b_set);
+    model_calib.SetValue("satpsi", &satpsi_set);
 
     model_calib.GetValue("smcmax", &smcmax_get);
     model_calib.GetValue("b", &b_get);
-    std::cout<<"Getting | smcmax = "<< smcmax_get <<" , b = "<< b_get <<"\n";
+    model_calib.GetValue("satpsi", &satpsi_get);
+    std::cout<<"Getting | smcmax = "<< smcmax_get <<" , b = "<< b_get <<" , satpsi = "<< satpsi_get <<"\n";
     std::cout<<"------------------------------------------------------ \n";
     model_calib.Update();
   }
