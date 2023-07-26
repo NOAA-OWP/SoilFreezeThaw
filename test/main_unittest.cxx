@@ -23,7 +23,7 @@
 
 int main(int argc, char *argv[])
 {
-  BmiSoilFreezeThaw model,model_cyc;
+  BmiSoilFreezeThaw model, model_cyc, model_calib;
 
   if (argc != 2) {
     printf("Usage: ./run_unittest.sh \n\n");
@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 
   model.Initialize(argv[1]);
   model_cyc.Initialize(argv[1]);
+  model_calib.Initialize(argv[1]);
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
   
@@ -611,6 +612,37 @@ int main(int argc, char *argv[])
   std::cout<<"Soil ice fraction error [-] = "<< err_ice_fraction <<"\n";
   std::cout<<"Test passed = "<< passed <<"\n";
   std::cout<<RESET<<"\n";
+
+  std::cout<<"\n*********************************************************\n";
+  std::cout<<"*********** Testing Calibratable parameters .......\n";
+  std::cout<<"\n*********************************************************\n";
+  
+  double smcmax_set, b_set;
+  ground_temp = 280.15;
+  
+  model_calib.GetValue("smcmax", &smcmax_set);
+  model_calib.GetValue("b", &b_set);
+  model_calib.SetValue("ground_temperature", &ground_temp);
+  
+  std::cout<<"Initial values | smcmax = "<< smcmax_set <<" , b = "<< b_set <<"\n";
+
+  double smcmax_get, b_get;
+  for (int n=0; n<2; n++) {
+    smcmax_set += 0.01;
+    b_set      += 0.05;
+
+    std::cout<<"------------------------------------------------------ \n";
+    std::cout<<"Setting | smcmax = "<< smcmax_set <<" , b = "<< b_set <<"\n";
+    std::cout<<"------------------------------------------------------ \n";
+    model_calib.SetValue("smcmax", &smcmax_set);
+    model_calib.SetValue("b", &b_set);
+
+    model_calib.GetValue("smcmax", &smcmax_get);
+    model_calib.GetValue("b", &b_get);
+    std::cout<<"Getting | smcmax = "<< smcmax_get <<" , b = "<< b_get <<"\n";
+    std::cout<<"------------------------------------------------------ \n";
+    model_calib.Update();
+  }
   
   return FAILURE;
 }

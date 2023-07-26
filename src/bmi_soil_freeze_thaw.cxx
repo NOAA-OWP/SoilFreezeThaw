@@ -66,7 +66,8 @@ GetVarGrid(std::string name)
     return 0; // int
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
 	   || name.compare("ice_fraction_xinan") == 0 || name.compare("soil_ice_fraction") == 0
-	   || name.compare("ground_heat_flux") == 0)
+	   || name.compare("ground_heat_flux") == 0 || name.compare("smcmax") == 0
+	   || name.compare("b") == 0)
     return 1; //double
   else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
@@ -190,7 +191,7 @@ GetGridSize(const int grid)
 {
   if (grid == 0 || grid == 1) // for scalars
     return 1;
-  else if (grid == 2) // for arrays
+  else if (grid == 2)        // for arrays
     return this->state->shape[0];
   else
     return -1;
@@ -271,6 +272,10 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->soil_ice_fraction);
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
     return (void*)(&this->state->ice_fraction_scheme_bmi); // leaving this for now, but probably not needed/used
+  else if (name.compare("smcmax") == 0)
+    return (void*)(&this->state->smcmax);
+  else if (name.compare("b") == 0)
+    return (void*)(&this->state->b);
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";
