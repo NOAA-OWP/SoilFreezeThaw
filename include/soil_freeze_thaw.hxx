@@ -36,7 +36,7 @@
   @param option_bottom_boundry      [-]    : option for bottom boundary condition. 1 = zero geothermal flux, 2 = prescribed temperature
   @param option_top_boundary        [-]    : top surface boundary condition. 1 = prescribed flux, 2 = prescribed temperature
   @param smcmax                     [-]    : maximum soil moisture content (porosity)
-  @param bb                         [-]    : pore size distribution, beta exponent in Clapp-Hornberger (1978) function
+  @param b                          [-]    : pore size distribution, beta exponent in Clapp-Hornberger (1978) function
   @param satpsi                     [m]    : saturated capillary head (saturated moisture potential, capillary fringe thickness)
   @param ice_fraction_schaake       [-]    : ice fraction based on Schaake runoff scheme (computes volume of frozen water)
   @param ice_fraction_xinan         [-]    : ice fraction based on Xinanjiang runoff scheme (based on ice content in the top cell)
@@ -100,7 +100,7 @@ namespace soilfreezethaw {
     int    option_bottom_boundary;
     int    option_top_boundary; 
     double smcmax; 
-    double bb;
+    double b;
     double satpsi;
     double quartz;
     double ice_fraction_schaake;
@@ -113,11 +113,6 @@ namespace soilfreezethaw {
     std::string ice_fraction_scheme;
     std::string verbosity;
     enum SurfaceRunoffScheme{Schaake=1, Xinanjiang=2}; // surface runoff schemes
-
-    /*
-      input var changes when running SFT in coupled mode and in standalone mode in the ngen framework. When standalone, soil_moisture_profile is not needed, so we have to setup input var names dynamically; only needed for ngen framework
-     */
-    std::vector<std::string>* input_var_names_model; 
     
     SoilFreezeThaw();
     SoilFreezeThaw(std::string config_file);

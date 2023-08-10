@@ -17,8 +17,8 @@ class NotImplemented : public std::logic_error {
 class BmiSoilFreezeThaw : public bmixx::Bmi {
   public:
     BmiSoilFreezeThaw() {
-      this->input_var_names[0] = "ground_temperature";
-      this->input_var_names[1] = "soil_moisture_profile";
+      this->input_var_names[0]  = "ground_temperature";
+      this->input_var_names[1]  = "soil_moisture_profile";
       
       this->output_var_names[0] = "ice_fraction_schaake";
       this->output_var_names[1] = "ice_fraction_xinan";
@@ -26,6 +26,11 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
       this->output_var_names[3] = "soil_temperature_profile";
       this->output_var_names[4] = "soil_ice_fraction";
       this->output_var_names[5] = "ground_heat_flux";
+
+      // add calibratable parameters
+      this->calib_var_names[0]  = "smcmax";
+      this->calib_var_names[1]  = "b";
+      this->calib_var_names[2]  = "satpsi";
 
     };
 
@@ -84,9 +89,11 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
     soilfreezethaw::SoilFreezeThaw* state;
     static const int input_var_name_count  = 2;
     static const int output_var_name_count = 6;
+    static const int calib_var_name_count  = 3;
 
     std::string input_var_names[input_var_name_count];
     std::string output_var_names[output_var_name_count];
+    std::string calib_var_names[calib_var_name_count];
     std::string verbosity;
 };
 
