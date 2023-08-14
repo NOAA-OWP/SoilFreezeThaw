@@ -365,7 +365,8 @@ ComputeIceFraction()
 {
   
   this->ice_fraction_schaake = 0.0; // set it to zero
-  this->ice_fraction_xinan = 0.0;
+  this->ice_fraction_xinan   = 0.0;
+  this->soil_ice_fraction    = 0.0;
   
   if (this->ice_fraction_scheme == "Schaake") {
     this->ice_fraction_scheme_bmi = 1;
@@ -401,8 +402,9 @@ ComputeIceFraction()
     ice_v += this->soil_ice_content[i] * this->soil_dz[i];
   }
 
-  moisture_v = moisture_v > 0 ? moisture_v : 1E-6;
-  this->soil_ice_fraction = ice_v/moisture_v;
+  //moisture_v = moisture_v > 0 ? moisture_v : 1E-6;
+  if (moisture_v > 0 && ice_v > 1E-6)
+    this->soil_ice_fraction = ice_v/moisture_v;
 }
   
 double soilfreezethaw::SoilFreezeThaw::
