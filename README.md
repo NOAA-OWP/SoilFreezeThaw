@@ -1,112 +1,33 @@
-## Standalone soil freeze-thaw (SFT) model example
-### Example description: 
-Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with the existing `golden test` ice_fraction using Schaake runoff scheme. If the test is successfull, the user should be able to see `Test passed = Yes`
+## Soil Freeze-thaw Model
+The soil freeze-thaw model simulates the transport of heat in the soil using one-dimensional vertical column. The model uses standard diffusion equation discretized using fully-implicit scheme at the interior and semi-implicit scheme at the top and bottom boundaries, similar to NOAH-MP. More details are provided below.
 
-### Build
-- git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
-- mkdir build && cd build
-- cmake ../ -DSTANDALONE=ON
-- make && cd ..
-### Run
-- [./run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) STANDALONE
-- It compares results against the benchmark (golden test results)
+### Instructions for: 
+  - Installation (see [instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md))
+  - Test examples
+    - Unittest (see [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/README.md))
+    - simulations with synthetic forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
+    - simulations with real forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
 
-## Pseudo-framework integrated models example 
-### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFT (and more models if needed/desired)
-### Notation: PFRAMEWORK denotes pseudo-framework
-### Build 
-- git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
-- git clone https://github.com/NOAA-OWP/cfe extern/cfe
-- git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
-- git clone https://github.com/NOAA-OWP/aorc_bmi extern/aorc_bmi
-- git clone https://github.com/NOAA-OWP/evapotranspiration extern/evapotranspiration
-- mkdir build && cd build
-- cmake ../ -DPFRAMEWORK=ON
-- make && cd ..
-### Run
-- [./run_sft.sh](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh) PFRAMEWORK  
+### Model Configuration File
+  - Detailed description of the parameters for model configuration is provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/configs/README.md))
 
-## ngen-framework standalone/integrated models example
-- See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
-- ### Specific instructions for building an integrated system
-### Build
-  - git clone https://github.com/noaa-owp/ngen && cd ngen
-  - git submodule update --init --recursive
-  - #### CFE
-    - git submodule update --remote extern/cfe/cfe 
-    - cmake -B extern/cfe/cmake_build -S extern/cfe/cfe/ -DNGEN=ON
-    - make -C extern/cfe/cmake_build
-  - #### fortran bmi
-    - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
-    - make -C extern/iso_c_fortran_bmi/cmake_build
-  - #### NOAH-OWP-Modular
-    - cmake -B extern/noah-owp-modular/cmake_build -S extern/noah-owp-modular
-    - make -C extern/noah-owp-modular/cmake_build
-  - #### PET
-    - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
-    - make -C extern/evapotranspiration/cmake_build/
-  - #### SFT
-    - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
-    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN=ON
-    - make -C extern/SoilFreezeThaw/cmake_build
-  - #### SMP
-    - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
-    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
-    - make -C extern/SoilMoistureProfiles/cmake_build
-  - cmake -B cmake_build -S . -DBMI_C_LIB_ACTIVE=ON -DBMI_FORTRAN_ACTIVE=ON
-  - make -j4 -C cmake_build
+### Nextgen Realization Files
+  - Realization files for running LASAM (coupled/uncoupled modes) in the nextgen framework are provided here ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/realizations/README.md))
   
-  - #### Build [SLoTH](https://github.com/NOAA-OWP/SLoTH) using the following instructions. SLoTH bmi provides dummy values for bmi input variables that are not used in the realization.
-    - cd extern/sloth/ && git checkout latest 
-    - git submodule update --init --recursive
-    - cd ../..
-    - cmake -B extern/sloth/cmake_build -S extern/sloth/
-    - make -C extern/sloth/cmake_build
-  
- ### Run 
- #### Pre-process step
- ```
-   mkdir sft && cd sft
-   ln -s ../extern
-   ln -s ../data 
-   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/configs
-   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/forcings
-  ```
- #### Example 1: SFT standalone example (uses prescribed ground surface temperature)
- ```
- ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_standalone.json
- ```
- #### Example 2: Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
- ```
- ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_config_multi.json
- ```
- #### Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod
- See [Examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples)
- 
- 
-  
+### Getting help
+For questions, please contact Ahmad Jan (ahmad.jan@noaa.gov), the main developer/maintainer of the repository.
+
+### Known issues or raise an issue
+We are constantly looking to improve the model and/or fix bugs as they arise. Please see the Git Issues for known issues or if you want to suggest adding a capability or found a bug, please open an issue.
+
+### Getting involved
+See general instructions to contribute to the model development ([instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/CONTRIBUTING.md)). Simply fork the respository and submit a pull request.
+
 #### Post-process step
-  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/test/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/test/file_golden.csv))
+  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/file_golden.csv))
   - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
 
 
-## Parameters in the config file
-| Variable ______________ | Datatype ________ | Limits ______ | Units ______ | Role _____ |  Description __________________________________________________ |
-| ------ | -------- | ------ | ----- | ---- | ----------- |
-| forcing_file | string | - | - | filename | provides ground temperature (not needed when coupled to models providing ground temperature data|
-| smcmax | double | - | - | state variable | maximum soil moisture content (porosity) |
-| b | double | - | m | state variable | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
-| satpsi | double | - | m | state variable | saturated capillary head (saturated moisture potential) |
-| quartz | double | - | m | state variable | soil quartz content, used in soil thermal conductivity function of Peters-Lidard |
-| ice_fraction_scheme | int | - | - | coupling variable | runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang|
-| soil_z | double (1D array) | - | m | spatial resolution | vertical resolution of the soil column (computational domain of the SFT model) |
-| soil_temperature | double (1D array) | - | K | spatial resolution | initial soil temperature for the discretized column |
-| soil_moisture_content | double (1D array) | - | - | spatial resolution | initial soil total (liquid + ice) moisture content for the discretized column |
-| soil_liquid_content | double (1D array) | - | - | spatial resolution | initial soil liquid moisture content for the discretized column|
-| bottom_boundary_temp | double | - | K | boundary condition | temperature at the bottom boundary (BC) of the domain, if not specified, the default BC is zero-geothermal flux|
-| top_boundary_temp | double | - | K | boundary condition | temperature at the top/surface boundary of the domain, if not specified, then other options include: 1) read from a file, or 2) provided through coupling |
-| sft_standalone | boolean | true, false | - | coupling variable | true for standalone model run; default is false |
-| soil_moisture_bmi | boolean | true, false | - | coupling variable | If true soil_moisture_profile is set by the SoilMoisutreProfile module through the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
 
 ## Introduction of Soil Freeze-thaw model
 
