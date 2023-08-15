@@ -1,5 +1,5 @@
 ## Soil Freeze-thaw Model
-The soil freeze-thaw model simulates the transport of heat in the soil using one-dimensional vertical column. The model uses standard diffusion equation discretized using fully-implicit scheme at the interior and semi-implicit scheme at the top and bottom boundaries, similar to NOAH-MP. More details are provided below.
+The soil freeze-thaw model simulates the transport of heat in soil using one-dimensional vertical column. The model uses standard diffusion equation discretized using fully-implicit scheme at the interior and semi-implicit scheme at the top and bottom boundaries, similar to NOAH-MP. More details are provided below.
 
 ### Instructions for: 
   - Installation (see [instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md))
