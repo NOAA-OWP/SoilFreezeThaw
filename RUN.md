@@ -32,3 +32,6 @@ We provide three examples here to run and test SFT (coupled/uncoupled modes) in 
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_multi.json
   ```
   - Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod see [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples)
+  - #### Post-process step
+    - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/file_golden.csv))
+    - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
