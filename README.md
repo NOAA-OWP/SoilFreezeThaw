@@ -5,8 +5,8 @@ The soil freeze-thaw model simulates the transport of heat in soil using one-dim
   - Installation (see [instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md))
   - Test examples
     - Unittest (see [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/README.md))
-    - simulations with synthetic forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
-    - simulations with real forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
+    - Synthetic example: simulations with synthetic forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
+    - Real field example: simulations with real forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md))
 
 ### Model Configuration File
   - Detailed description of the parameters for model configuration is provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/configs/README.md))

@@ -1,5 +1,6 @@
 # Soil Freeze Thaw model/BMI unit test
 Usage: run `./run_unittest.sh` (change/set $CXX to g++ compiler on your machaine)
+If everything goes well, you should see the `Test passed? Yes` in the Summary of the Unit test.
 
 Multiple checks are performed:
 1. Check number of input/output variables

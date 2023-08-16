@@ -1,24 +1,20 @@
 # Running instructions
-Here, we provide a few examples to run and test SFT.
+Here, we provide a few examples to run and test SFT. Before running the following examples, it is recommended to run the unitest [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests).
 
-### Examples (standalone mode)
-  - Unit test: It is recommended to build and run the unittest before running other examples. More instructions are provided [here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests).
-
-<pre>
-Run: see <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests">tests</a>
-</pre>
-  - Synthetic test: Uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. It compares results against the benchmark (golden test results)
+### Synthetic example (standalone mode)
+  - the example uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. It compares results against the benchmark (golden test results)
 <pre>
 Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> STANDALONE (from SoilFreezeThaw directory)    
 </pre>
 
-### Examples (pseudo framework mode)
-  - Real field example: Runs SFT for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with the existing `golden test` ice_fraction using Schaake runoff scheme. If the test is successful, the user should be able to see `Test passed? Yes`
+### Real field example (pseudo framework mode)
+  - the example runs SFT coupled with Conceptual Funational Equivalent (CFE) and Soil Moisture Profiles (SMP) for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with the existing `golden test` ice_fraction using Schaake runoff scheme. If the test is successful, the user should be able to see `Test passed? Yes`
 <pre>
 Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> PFRAMEWORK (from SoilFreezeThaw directory)
 </pre>
 
 ### Examples (nextgen framework mode)
+We provide three examples here to run and test SFT (coupled/uncoupled modes) in the nextgen framework. The following pre-process step needs to be completed before running the below examples.
   - #### Pre-process step
   ```
   mkdir sft && cd sft
@@ -36,4 +32,3 @@ Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_multi.json
   ```
   - Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod see [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples)
-  See [Examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples)
