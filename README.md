@@ -15,19 +15,13 @@ The soil freeze-thaw model simulates the transport of heat in soil using one-dim
   - Realization files for running LASAM (coupled/uncoupled modes) in the nextgen framework are provided here ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/realizations/README.md))
   
 ### Getting help
-For questions, please contact Ahmad Jan (ahmad.jan@noaa.gov), the main developer/maintainer of the repository.
+For questions, please contact Ahmad Jan (ahmad.jan(at)noaa.gov), the main developer/maintainer of the repository.
 
 ### Known issues or raise an issue
-We are constantly looking to improve the model and/or fix bugs as they arise. Please see the Git Issues for known issues or if you want to suggest adding a capability or found a bug, please open an issue.
+We are constantly looking to improve the model and/or fix bugs as they arise. Please see the Git Issues for known issues or if you want to suggest adding a capability or to report a bug, please open an issue.
 
 ### Getting involved
-See general instructions to contribute to the model development ([instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/CONTRIBUTING.md)). Simply fork the respository and submit a pull request.
-
-#### Post-process step
-  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/file_golden.csv))
-  - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
-
-
+See general instructions to contribute to the model development ([instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/CONTRIBUTING.md)). Simply fork the repository and submit a pull request.
 
 ## Introduction of Soil Freeze-thaw model
 
