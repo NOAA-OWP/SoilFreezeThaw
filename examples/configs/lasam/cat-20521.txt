@@ -1,5 +1,5 @@
 verbosity=none
-soil_params_file=./data/vG_default_params.dat
+soil_params_file=./configs/lasam/vG_default_params.dat
 layer_thickness=44.0,131.0,25.0[cm]
 initial_psi=2000.0[cm]
 timestep=300[sec]

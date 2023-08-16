@@ -13,7 +13,7 @@ Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run
 Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> PFRAMEWORK (from SoilFreezeThaw directory)
 </pre>
 
-### Examples (nextgen framework mode)
+#### Real field example (nextgen framework mode)
 We provide three examples here to run and test SFT (coupled/uncoupled modes) in the nextgen framework. The following pre-process step needs to be completed before running the below examples. Note run these examples from the ngen directory you cloned [here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#build-nextgen-framework-mode).
   - #### Pre-process step
   ```
@@ -22,14 +22,15 @@ We provide three examples here to run and test SFT (coupled/uncoupled modes) in 
   ln -s ../data 
   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/configs
   ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/forcings
+  ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/realizations
   ```
   - Example 1: SFT standalone example (uses prescribed ground surface temperature; same as Synthetic test)
   ```
-  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_standalone.json
+  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_standalone.json
   ```
   - Example 2: Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
   ```
-  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 configs/realization_multi.json
+  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
   ```
   - Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod see [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples)
   - #### Post-process step

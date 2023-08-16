@@ -7,12 +7,10 @@ The soil freeze-thaw model simulates the transport of heat in soil using one-dim
     - Unittest (see [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/README.md))
     - Synthetic example: simulations with synthetic forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md#synthetic-example-standalone-mode))
     - Real field example: simulations with real forcing data (see [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md#real-field-example-pseudo-framework-mode))
-
+    - Real field example: two nextgen realization examples coupling 1) SFT with [CFE](https://github.com/NOAA-OWP/cfe/) and 2) SFT with [LASAM](https://github.com/NOAA-OWP/LGAR-C) running on a catchment in HUC01 region are also provided [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md).
+    
 ### Model Configuration File
   - Detailed description of the parameters for model configuration is provided ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/configs/README.md))
-
-### Nextgen Realization Files
-  - Realization files for running LASAM (coupled/uncoupled modes) in the nextgen framework are provided here ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/realizations/README.md))
   
 ### Getting help
 For questions, please contact Ahmad Jan (ahmad.jan(at)noaa.gov), the main developer/maintainer of the repository.

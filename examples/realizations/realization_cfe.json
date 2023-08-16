@@ -129,7 +129,7 @@
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "num_cells",
 				    "variables_names_map" : {
-					"ground_temperature" : "TG"
+					"ground_temperature" : "TGS"
 				    },
 				    "uses_forcing_file": false
 				}

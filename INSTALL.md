@@ -32,6 +32,11 @@ Detailed instructions on how to build SFT in three modes (standalone, pseudo, an
     - git submodule update --remote extern/cfe/cfe 
     - cmake -B extern/cfe/cmake_build -S extern/cfe/cfe/ -DNGEN=ON
     - make -C extern/cfe/cmake_build
+  - #### LASAM
+    - git clone https://github.com/NOAA-OWP/LGAR-C extern/LASAM
+    - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
+    - cmake -B extern/LASAM/cmake_build -S extern/LASAM/ -DNGEN=ON
+    - make -C extern/LASAM/cmake_build
   - #### fortran bmi
     - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
     - make -C extern/iso_c_fortran_bmi/cmake_build
