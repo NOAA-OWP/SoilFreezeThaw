@@ -2,10 +2,10 @@
 The soil freeze-thaw model simulates the transport of heat in soil using a one-dimensional vertical column. The model uses a standard diffusion equation discretized using a fully-implicit scheme at the interior and a semi-implicit scheme at the top and bottom boundaries, similar to NOAH-MP. More details are provided below.
 
 ## Build and Run Instructions
-Detailed instructions on how to build and run SoilMoistureProfiels (SMP) can be found here [INSTALL](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md))
+Detailed instructions on how to build and run SoilFreezeThaw (SFT) model can be found here [INSTALL](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md))
   - Test examples highlights
     - Unittest (see [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/README.md))
-    - Synthetic example: simulations with prescribed soil moiture profiles (static input) (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#synthetic-example-standalone-mode))
+    - Synthetic example: simulations with prescribed soil moisture profiles (static input) (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#synthetic-example-standalone-mode))
     - Real field example: simulations with real forcing data (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md#real-field-example-pseudo-framework-mode))
     - Real field example: two nextgen realization examples coupling 1) SFT with [CFE](https://github.com/NOAA-OWP/cfe/) and 2) SFT with [LASAM](https://github.com/NOAA-OWP/LGAR-C) running on a catchment in HUC01 region are also provided [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md).
     
@@ -45,7 +45,7 @@ In unfrozen conditions, the liquid water content is equal to the total water con
 
 <img width="607" alt="eq4" src="https://user-images.githubusercontent.com/15165757/157316409-3c51afda-e64b-4f6b-bf9e-efa50466cae4.png">	
 
-where T and To  are the soil temperature and freezing temperatures, respectively (Ref), g is the acceleration of gravity [m/s^2] and Lf is the latent heat of fusion [J/Kg]. The soil matric potential, psi [m], as a function of soil moisture content is given by (ref: Clapp-Hornberger):
+where T and To are the soil temperature and freezing temperatures, respectively (Ref), g is the acceleration of gravity [m/s^2] and Lf is the latent heat of fusion [J/Kg]. The soil matric potential, psi [m], as a function of soil moisture content is given by (ref: Clapp-Hornberger):
 
 <img width="513" alt="eq5" src="https://user-images.githubusercontent.com/15165757/234057006-7b73ee81-4fb8-4320-bb55-91e7cf6f0b98.png">
 
