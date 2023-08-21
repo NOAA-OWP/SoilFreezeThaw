@@ -1,30 +1,54 @@
-# Installation instructions
-
+# Build and Run Instructions
 Detailed instructions on how to build SFT in three modes (standalone, pseudo, and nextgen frameworks). Building SFT requires [GCC](https://gcc.gnu.org) and [CMAKE](https://cmake.org/) on your machine.
 
-### Build (standalone mode)
- - git clone https://github.com/NOAA-OWP/SoilFreezeThaw
- - cd SoilFreezeThaw && mkdir build && cd build
- - cmake ../ -DSTANDALONE=ON
- - make && cd ..
+## Clone the reposity
+```
+git clone https://github.com/NOAA-OWP/SoilFreezeThaw
+cd SoilFreezeThaw 
+```
+***Note:** Before running the following examples, it is recommended to run the unittests [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests).
 
+## Standalone mode example
+The example uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. The simualted results are compared against the benchmark results.
 
-### Build (pseudo framework mode)
-#### Integrated models: [CFE](https://github.com/NOAA-OWP/cfe/), [PET](https://github.com/NOAA-OWP/evapotranspiration), [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), SFT (and more models if needed/desired)
-#### Notation: PFRAMEWORK denotes pseudo-framework
+### Build
+```
+ mkdir build && cd build
+ cmake ../ -DSTANDALONE=ON
+ make && cd ..
+```
+### Run
+<pre>
+Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> STANDALONE (from SoilFreezeThaw directory)    
+</pre>
 
- - git clone https://github.com/NOAA-OWP/SoilFreezeThaw && cd SoilFreezeThaw
- - git clone https://github.com/NOAA-OWP/cfe extern/cfe
- - git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
- - git clone https://github.com/NOAA-OWP/aorc_bmi extern/aorc_bmi
- - git clone https://github.com/NOAA-OWP/evapotranspiration extern/evapotranspiration
- - mkdir build && cd build
- - cmake ../ -DPFRAMEWORK=ON
- - make && cd ..
+## Pseudo framework mode example
+The example runs SFT coupled with Conceptual Funational Equivalent [CFE](https://github.com/NOAA-OWP/cfe/), Soil Moisture Profiles [SMP]( https://github.com/NOAA-OWP/SoilMoistureProfiles), potential evapotranspiration model [PET](https://github.com/NOAA-OWP/evapotranspiration) for about 3 years using Laramie, WY forcing data. The simulated ice_fraction is compared with the existing `golden test` ice_fraction using Schaake runoff scheme. If the test is successful, the user should be able to see `Test passed? Yes`.
+**Notation:*** PFRAMEWORK denotes pseudo-framework
+### Build
+All these steps should happen inside the SoilFreezeThaw directory.
+```
+git clone https://github.com/NOAA-OWP/cfe extern/cfe
+git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
+git clone https://github.com/NOAA-OWP/aorc_bmi extern/aorc_bmi
+git clone https://github.com/NOAA-OWP/evapotranspiration extern/evapotranspiration
+mkdir build && cd build
+cmake ../ -DPFRAMEWORK=ON
+make && cd ..
+```
+### Run
+<pre>
+Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> PFRAMEWORK (from SoilFreezeThaw directory)
+</pre>
 
+## Nextgen framework mode example
+We provide three examples here to run and test SFT (coupled/uncoupled modes) in the nextgen framework.
+- Example 1: SFT standalone example (uses prescribed ground surface temperature; same as Synthetic test)
+- Example 2: Integrated models (SLoTH+PET+SMP+SFT+CFE) example without NOAH-OWP-Mod (uses prescribed ground surface temperature)
+- Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod
 
-### Build (nextgen framework mode)
-- See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
+### Build
+See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
 - ### Specific instructions for building an integrated system
   - git clone https://github.com/noaa-owp/ngen && cd ngen
   - git submodule update --init --recursive
@@ -62,3 +86,29 @@ Detailed instructions on how to build SFT in three modes (standalone, pseudo, an
     - cd ../..
     - cmake -B extern/sloth/cmake_build -S extern/sloth/
     - make -C extern/sloth/cmake_build
+
+### Run
+The following pre-process step needs to be completed before running the below examples.
+  #### Pre-process step
+  ```
+  mkdir sft && cd sft
+  ln -s ../extern
+  ln -s ../data 
+  ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/configs
+  ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/forcings
+  ln -s ./extern/SoilFreezeThaw/SoilFreezeThaw/realizations
+  ```
+  
+  #### Example 1
+  ```
+  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_standalone.json
+  ```
+  #### Example 2
+  ```
+  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
+  ```
+  #### Example 3
+  Detailed instructions for running this example along with realization and model config files are provide in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples) directory.
+## Post-process step
+  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/file_golden.csv))
+  - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
