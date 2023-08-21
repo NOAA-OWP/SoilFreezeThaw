@@ -15,26 +15,26 @@
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw()
 {
-  this->endtime = 10.;
-  this->time = 0.;
-  this->shape[0] = 1;
-  this->shape[1] = 1;
-  this->shape[2] = 1;
+  this->endtime    = 10.;
+  this->time       = 0.;
+  this->shape[0]   = 1;
+  this->shape[1]   = 1;
+  this->shape[2]   = 1;
   this->spacing[0] = 1.;
   this->spacing[1] = 1.;
-  this->origin[0] = 0.;
-  this->origin[1] = 0.;
-  this->dt = 3600;
-  this->latent_heat_fusion = 0.3336E06;
+  this->origin[0]  = 0.;
+  this->origin[1]  = 0.;
+  this->dt         = 3600;
+  this->latent_heat_fusion      = 0.3336E06;
+  this->option_bottom_boundary  = 2;
+  this->option_top_boundary     = 2;
+  this->ice_fraction_scheme     = " ";
+  this->soil_depth              = 0.0;
+  this->ice_fraction_schaake    = 0.0;
+  this->ice_fraction_xinanjiang = 0.0;
+  this->ground_temp             = 273.15;
+  this->soil_ice_fraction       = 0.0;
   this->bottom_boundary_temp_const = 275.15;
-  this->option_bottom_boundary = 2;
-  this->option_top_boundary = 2;
-  this->ice_fraction_scheme= " ";
-  this->soil_depth =0.0;
-  this->ice_fraction_schaake =0.0;
-  this->ice_fraction_xinan =0.0;
-  this->ground_temp = 273.15;
-  this->soil_ice_fraction = 0.0;
 }
 
 soilfreezethaw::SoilFreezeThaw::
@@ -47,22 +47,22 @@ SoilFreezeThaw(std::string config_file)
 
   this->InitFromConfigFile(config_file);
   
-  this->shape[0] = this->ncells;
-  this->shape[1] = 1;
-  this->shape[2] = 1;
+  this->shape[0]   = this->ncells;
+  this->shape[1]   = 1;
+  this->shape[2]   = 1;
   this->spacing[0] = 1.;
   this->spacing[1] = 1.;
-  this->origin[0] = 0.0;
-  this->origin[1] = 0.0;
+  this->origin[0]  = 0.0;
+  this->origin[1]  = 0.0;
 
   this->InitializeArrays();
   SoilCellsThickness(); // get soil cells thickness
-  this->ice_fraction_schaake = 0.0;
-  this->ice_fraction_xinan = 0.0;
-  this->ground_temp = 273.15;
-  this->time = 0.0;
-  this->soil_ice_fraction = 0.0;
-  this->energy_balance = 0.0;
+  this->ice_fraction_schaake    = 0.0;
+  this->ice_fraction_xinanjiang = 0.0;
+  this->ground_temp             = 273.15;
+  this->time                    = 0.0;
+  this->soil_ice_fraction       = 0.0;
+  this->energy_balance          = 0.0;
 }
 
 
@@ -364,9 +364,9 @@ void soilfreezethaw::SoilFreezeThaw::
 ComputeIceFraction()
 {
   
-  this->ice_fraction_schaake = 0.0; // set it to zero
-  this->ice_fraction_xinan   = 0.0;
-  this->soil_ice_fraction    = 0.0;
+  this->ice_fraction_schaake    = 0.0; // set it to zero
+  this->ice_fraction_xinanjiang = 0.0;
+  this->soil_ice_fraction       = 0.0;
   
   if (this->ice_fraction_scheme == "Schaake") {
     this->ice_fraction_scheme_bmi = 1;
@@ -387,7 +387,7 @@ ComputeIceFraction()
     double fice = std::min(1.0, this->soil_ice_content[0]/this->smcmax);
     double A = 4.0; // taken from NWM SOILWATER subroutine
     double fcr = std::max(0.0, std::exp(-A*(1.0-fice)) - std::exp(-A)) / (1.0 - std::exp(-A));
-    this->ice_fraction_xinan = fcr;
+    this->ice_fraction_xinanjiang = fcr;
   }
   else {
     throw std::runtime_error("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");

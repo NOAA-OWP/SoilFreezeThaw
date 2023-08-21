@@ -21,7 +21,7 @@ class BmiSoilFreezeThaw : public bmixx::Bmi {
       this->input_var_names[1]  = "soil_moisture_profile";
       
       this->output_var_names[0] = "ice_fraction_schaake";
-      this->output_var_names[1] = "ice_fraction_xinan";
+      this->output_var_names[1] = "ice_fraction_xinanjiang";
       this->output_var_names[2] = "num_cells";
       this->output_var_names[3] = "soil_temperature_profile";
       this->output_var_names[4] = "soil_ice_fraction";

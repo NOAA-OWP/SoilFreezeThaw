@@ -7,7 +7,7 @@
   The code simulates the transport of energy in the soil using the 1D diffusion equation
   (for more details see README on github repo (https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/README.md).
   Crank-Nicolson scheme is used to discretized the equation
-  OUTPUTS : soil_temperature, ice_fraction_schaake, ice_fraction_xinan
+  OUTPUTS : soil_temperature, ice_fraction_schaake, ice_fraction_xinanjiang
   INPUTS  : Rest of the parameters are inputs either through a BMI or config file
   Soil thermal conductivity and volumetric heat capacity use empirical models
   The model is coupled to the surface through ground surface temperature
@@ -39,7 +39,7 @@
   @param b                          [-]    : pore size distribution, beta exponent in Clapp-Hornberger (1978) function
   @param satpsi                     [m]    : saturated capillary head (saturated moisture potential, capillary fringe thickness)
   @param ice_fraction_schaake       [-]    : ice fraction based on Schaake runoff scheme (computes volume of frozen water)
-  @param ice_fraction_xinan         [-]    : ice fraction based on Xinanjiang runoff scheme (based on ice content in the top cell)
+  @param ice_fraction_xinanjiang    [-]    : ice fraction based on Xinanjiang runoff scheme (based on ice content in the top cell)
   @param ice_fraction_scheme        [-]    : option set from the config file for the runoff scheme (Schaake=1, Xinanjiang=2)
   @param ice_fraction_scheme_bmi    [-]    : option set through a bmi
   @param is_soil_moisture_bmi_set   [-]    : if not standalone, soil moisture is set through SoilMoistureProfiles bmi
@@ -104,7 +104,7 @@ namespace soilfreezethaw {
     double satpsi;
     double quartz;
     double ice_fraction_schaake;
-    double ice_fraction_xinan;
+    double ice_fraction_xinanjiang;
     int    ice_fraction_scheme_bmi;
     bool   is_soil_moisture_bmi_set;
     double energy_consumed;

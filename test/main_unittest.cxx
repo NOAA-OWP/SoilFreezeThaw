@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   bool   test_status = true;
   
   std::vector<string> bmi_input_vars = {"ground_temperature", "soil_moisture_profile"};
-  std::vector<string> bmi_output_vars = {"ice_fraction_schaake", "ice_fraction_xinan", "num_cells",
+  std::vector<string> bmi_output_vars = {"ice_fraction_schaake", "ice_fraction_xinanjiang", "num_cells",
 					 "soil_temperature_profile", "soil_ice_fraction", "ground_heat_flux"};
 
   int num_input_vars  = bmi_input_vars.size();
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
     }
     else {
       std::stringstream errMsg;
-      errMsg << "Variable name"<< var_name<<" should be: ice_fraction_schaake or ice_fraction_xinan or num_cell \n";
+      errMsg << "Variable name"<< var_name<<" should be: ice_fraction_schaake or ice_fraction_xinanjiang or num_cell \n";
       throw std::runtime_error(errMsg.str());
 
     }
@@ -519,7 +519,7 @@ int main(int argc, char *argv[])
       else
 	test_status &= false;
     }
-    else if (var_name.compare("ice_fraction_schaake") == 0 || var_name.compare("ice_fraction_xinan") == 0
+    else if (var_name.compare("ice_fraction_schaake") == 0 || var_name.compare("ice_fraction_xinanjiang") == 0
 	     || var_name.compare("soil_ice_fraction") == 0) {
       double val_v = 0;
       double val = 0.0; // benchmark value

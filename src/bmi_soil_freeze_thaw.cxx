@@ -65,7 +65,7 @@ GetVarGrid(std::string name)
   if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return 0; // int
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
-	   || name.compare("ice_fraction_xinan") == 0 || name.compare("soil_ice_fraction") == 0
+	   || name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0
 	   || name.compare("ground_heat_flux") == 0 || name.compare("smcmax") == 0
 	   || name.compare("b") == 0 || name.compare("satpsi") == 0)
     return 1; //double
@@ -137,7 +137,7 @@ GetVarLocation(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
     return "node";
-  else if (name.compare("ice_fraction_xinan") == 0 || name.compare("soil_ice_fraction") == 0)
+  else if (name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0)
     return "node";
   else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0
 	   || name.compare("ground_heat_flux") == 0)
@@ -266,8 +266,8 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->ncells);
   else if (name.compare("ice_fraction_schaake") == 0)
     return (void*)(&this->state->ice_fraction_schaake);
-  else if (name.compare("ice_fraction_xinan") == 0)
-    return (void*)(&this->state->ice_fraction_xinan);
+  else if (name.compare("ice_fraction_xinanjiang") == 0)
+    return (void*)(&this->state->ice_fraction_xinanjiang);
   else if (name.compare("soil_ice_fraction") == 0)
     return (void*)(&this->state->soil_ice_fraction);
   else if (name.compare("ice_fraction_scheme_bmi") == 0)
