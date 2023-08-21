@@ -21,7 +21,7 @@ We are constantly looking to improve the model and/or fix bugs as they arise. Pl
 ## Getting involved
 See general instructions to contribute to the model development ([instructions](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/CONTRIBUTING.md)). Simply fork the repository and submit a pull request.
 
-## Introduction of Soil Freeze-thaw model
+## Soil Freeze-thaw Model Description
 
 The diffusion equation is used to simulate the transport of energy in the soil.
 
