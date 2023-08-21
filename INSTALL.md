@@ -1,7 +1,7 @@
 # Build and Run Instructions
 Detailed instructions on how to build SFT in three modes (standalone, pseudo, and nextgen frameworks). Building SFT requires [GCC](https://gcc.gnu.org) and [CMAKE](https://cmake.org/) on your machine.
 
-## Clone the reposity
+## Clone the repository
 ```
 git clone https://github.com/NOAA-OWP/SoilFreezeThaw
 cd SoilFreezeThaw 
