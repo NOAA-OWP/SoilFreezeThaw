@@ -6,7 +6,7 @@ Detailed instructions on how to build and run SoilFreezeThaw (SFT) model can be 
   - Test examples highlights
     - Unittest (see [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/README.md))
     - Synthetic example: simulations with prescribed soil moisture profiles (static input) (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#synthetic-example-standalone-mode))
-    - Real field example: simulations with real forcing data (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md#real-field-example-pseudo-framework-mode))
+    - Real field example: simulations with real forcing data (see [build/run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#real-field-example-pseudo-framework-mode))
     - Real field example: two nextgen realization examples coupling 1) SFT with [CFE](https://github.com/NOAA-OWP/cfe/) and 2) SFT with [LASAM](https://github.com/NOAA-OWP/LGAR-C) running on a catchment in HUC01 region are also provided [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md).
     
 ## Model Configuration File
