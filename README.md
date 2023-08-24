@@ -10,7 +10,7 @@ Detailed instructions on how to build and run SoilFreezeThaw (SFT) model can be 
     - Examples (nextgen framework mode):
        - Synthetic example: Identical to the above `Synthetic example` but runs in the nextgen framework.
        - Real field example: Identical to the above `Real field example` but runs in the nextgen framework.
-       - Real field example: Two nextgen realization examples coupling 1) SFT with [CFE](https://github.com/NOAA-OWP/cfe/) and 2) SFT with [LASAM](https://github.com/NOAA-OWP/LGAR-C) running on a catchment in HUC01 region are also provided in [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md) directory. Build and run instructions are given at [build](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#nextgen-framework-mode-example), [Run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md), respectively.
+       - Real field example: Two nextgen realization examples coupling 1) SFT with [CFE](https://github.com/NOAA-OWP/cfe/) and 2) SFT with [LASAM](https://github.com/NOAA-OWP/LGAR-C) running on a catchment in HUC01 region are also provided in [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md) directory. Build and run instructions are given at [build](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/INSTALL.md#nextgen-framework-mode-example) and [run](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/examples/README.md), respectively.
     
 ## Model Configuration File
 A detailed description of the parameters for model configuration is provided [here](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/configs/README.md).
