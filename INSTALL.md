@@ -106,7 +106,7 @@ The following pre-process step needs to be completed before running the below ex
   ```
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_standalone.json
   ```
-  Run: python ./extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py (from the sft directory) to compare Example 1 results against the benchmark.
+  Run: `python ./extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` (from the sft directory) to compare Example 1 results against the benchmark.
   #### Example 2
   ```
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
