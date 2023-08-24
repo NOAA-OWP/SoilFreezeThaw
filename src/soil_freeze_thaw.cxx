@@ -91,6 +91,11 @@ InitFromConfigFile(std::string config_file)
 { 
   std::ifstream fp;
   fp.open(config_file);
+
+  if (!fp) {
+    std::cerr<<"File \""<<config_file<<"\"does not exist."<<"\n";
+    abort();
+  }
   int n_st, n_mct, n_mcl;
 
   this->is_soil_moisture_bmi_set = false;

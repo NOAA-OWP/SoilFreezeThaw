@@ -93,8 +93,8 @@
 				"name": "bmi_c++",
 				"params": {
 				    "model_type_name": "bmi_lasam",
-				    "library_file": "./ngen/extern/LGAR-C/cmake_build/liblasambmi",
-				    "init_config":"./configs/lgar/cat-20521.txt",
+				    "library_file": "./ngen/extern/LASAM/cmake_build/liblasambmi",
+				    "init_config":"./configs/lasam/cat-20521.txt",
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "precipitation_rate",
 				    "variables_names_map" : {
@@ -131,7 +131,7 @@
 				    "allow_exceed_end_time": true,
 				    "main_output_variable": "num_cells",
 				    "variables_names_map" : {
-					"ground_temperature" : "TG"
+					"ground_temperature" : "TGS"
 				    },
 				    "uses_forcing_file": false
 				}

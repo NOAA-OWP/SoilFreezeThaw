@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
   bool golden_test = false; // if true, a new golden test results will be generated
   std::ofstream outfile;
  
-  std::string filename = "./test/file_golden.csv";
+  std::string filename = "./tests/file_golden.csv";
   
   if (golden_test) {
     

@@ -18,10 +18,10 @@ fi
 args=" "
 exe_name=" "
 if [ $option == "STANDALONE" ]; then
-    args='./configs/laramie_config_sft_standalone.txt'
+    args='./configs/laramie_config_standalone.txt'
     exe_name='sft_standalone'
 else if [ $option == "PFRAMEWORK" ]; then
-	 args="./configs/laramie_config_cfe.txt ./configs/laramie_config_aorc.txt ./configs/laramie_config_pet.txt ./configs/laramie_config_sft.txt ./configs/laramie_config_smp.txt"
+	 args="./configs/extern/laramie_config_cfe.txt ./configs/extern/laramie_config_aorc.txt ./configs/extern/laramie_config_pet.txt ./configs/extern/laramie_config_sft.txt ./configs/extern/laramie_config_smp.txt"
 	 exe_name='sft_pframework'
      fi
 fi

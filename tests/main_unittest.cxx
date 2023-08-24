@@ -610,7 +610,7 @@ int main(int argc, char *argv[])
   std::cout<<"*********************************************************\n";
   std::cout<<"Soil ice content error [mm] = "<< err_ice_content_mm <<"\n";
   std::cout<<"Soil ice fraction error [-] = "<< err_ice_fraction <<"\n";
-  std::cout<<"Test passed = "<< passed <<"\n";
+  std::cout<<"Test passed? "<< passed <<"\n";
   std::cout<<RESET<<"\n";
 
   std::cout<<"\n*********************************************************\n";
