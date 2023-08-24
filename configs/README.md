@@ -1,5 +1,5 @@
 ## Configuration File
-Example configuration files are provided here. To run the given examples see the instructions ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/RUN.md)).
+Example configuration files are provided here. To run the given examples see the instructions ([here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/RUN.md)).
 
 A detailed description of the parameters for model configuration (i.e., initialize/setup) is provided below. The asterisk (*) denotes calibratable parameters, (i.e., `smcmax, b, and satpsi` can be calibrated)
 | Variable ______________ | Datatype ________ | Limits ______ | Units ______ | Role _____ |  Description __________________________________________________ |

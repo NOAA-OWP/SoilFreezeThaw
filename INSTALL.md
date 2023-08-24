@@ -6,7 +6,7 @@ Detailed instructions on how to build and run SFT in three modes (standalone, ps
 git clone https://github.com/NOAA-OWP/SoilFreezeThaw
 cd SoilFreezeThaw 
 ```
-***Note:** Before running the following examples, it is recommended to run the unittests [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests).
+***Note:** Before running the following examples, it is recommended to run the unittests [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/tests).
 
 ## Standalone mode example
 The example uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. The simulated results are compared against the benchmark results.
@@ -19,7 +19,7 @@ The example uses prescribed soil moisture conditions (static) and ground surface
 ```
 ### Run
 <pre>
-Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> STANDALONE (from SoilFreezeThaw directory)    
+Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh">./run_sft.sh</a> STANDALONE (from SoilFreezeThaw directory)    
 </pre>
 
 ## Pseudo framework mode example
@@ -38,7 +38,7 @@ make && cd ..
 ```
 ### Run
 <pre>
-Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/run_sft.sh">./run_sft.sh</a> PFRAMEWORK (from SoilFreezeThaw directory)
+Run: <a href="https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/run_sft.sh">./run_sft.sh</a> PFRAMEWORK (from SoilFreezeThaw directory)
 </pre>
 
 ## Nextgen framework mode example
@@ -112,7 +112,7 @@ The following pre-process step needs to be completed before running the below ex
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
   ```
   #### Example 3
-  Detailed instructions for running this example along with realization and model config files are provide in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/examples) directory.
+  Detailed instructions for running this example along with realization and model config files are provide in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples) directory.
 ## Post-process step
-  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/ajk/doc_update/tests/file_golden.csv))
+  - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/file_golden.csv))
   - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
