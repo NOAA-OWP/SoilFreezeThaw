@@ -1,5 +1,5 @@
 # Build and Run Instructions
-Detailed instructions on how to build SFT in three modes (standalone, pseudo, and nextgen frameworks). Building SFT requires [GCC](https://gcc.gnu.org) and [CMAKE](https://cmake.org/) on your machine.
+Detailed instructions on how to build and run SFT in three modes (standalone, pseudo, and nextgen frameworks) are provided below. Building SFT requires [GCC](https://gcc.gnu.org) and [CMAKE](https://cmake.org/) on your machine.
 
 ## Clone the repository
 ```
@@ -9,7 +9,7 @@ cd SoilFreezeThaw
 ***Note:** Before running the following examples, it is recommended to run the unittests [tests](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/ajk/doc_update/tests).
 
 ## Standalone mode example
-The example uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. The simualted results are compared against the benchmark results.
+The example uses prescribed soil moisture conditions (static) and ground surface temperature for Laramie, WY. The simulated results are compared against the benchmark results.
 
 ### Build
 ```
