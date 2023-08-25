@@ -112,7 +112,7 @@ The following pre-process step needs to be completed before running the below ex
   ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
   ```
   #### Example 3
-  Detailed instructions for running this example along with realization and model config files are provide in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples) directory.
+  Detailed instructions for running this example along with realization and model config files are provided in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples) directory.
 ## Post-process step
   - For standalone simulations: run `python extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` ([test_standalone_ngen.py](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/test_standalone_ngen.py) script compares results with a gold test [output](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/tests/file_golden.csv))
   - For integrated simulation: Output data is stored in cat-27.csv, use your favorite tool to visualize data
