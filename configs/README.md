@@ -17,4 +17,4 @@ A detailed description of the parameters for model configuration (i.e., initiali
 | bottom_boundary_temp | double | - | K | boundary condition | temperature at the bottom boundary (BC) of the domain, if not specified, the default BC is zero-geothermal flux|
 | top_boundary_temp | double | - | K | boundary condition | temperature at the top/surface boundary of the domain, if not specified, then other options include: 1) read from a file, or 2) provided through coupling |
 | sft_standalone | boolean | true, false | - | coupling variable | true for standalone model run; default is false |
-| soil_moisture_bmi | boolean | true, false | - | coupling variable | If true soil_moisture_profile is set by the SoilMoisutreProfile module through the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
+| soil_moisture_bmi | boolean | true, false | - | coupling variable | If true soil_moisture_profile is set by the SoilMoistureProfile module through the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
