@@ -59,5 +59,10 @@ jobs:
     - name: Build and Run Unittest
       run: |
         cd tests
+        if [ ${{ runner.os }} == 'macOS' ]
+        then
+          brew install gnu-sed
+          PATH="$(brew --prefix)/opt/gnu-sed/libexec/gnubin:$PATH"
+        fi
         sed -i 's/\${CXX}/g++/' run_unittest.sh
         ./run_unittest.sh
