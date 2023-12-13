@@ -1,0 +1,67 @@
+# Test changes that have been pushed to the master branch
+
+name: Testing and Validation
+
+# Controls when the action will run.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+#env:
+  # Obtained from https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  # TODO: add something later that can check the runners for hyperthreading
+  #LINUX_NUM_PROC_CORES: 2
+  #MACOS_NUM_PROC_CORES: 3
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Run general unit tests in linux environment
+  test_unit:
+    # The type of runner that the job will run on
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Checkout the commit
+      uses: actions/checkout@v2
+    
+   # - name: check gcc version
+   #   run: gcc --version
+    
+    - name: Build and Run Standalone
+      run: |
+        mkdir build && cd build
+        cmake ../ -DSTANDALONE=ON
+        make && cd ..
+        ./run_sft.sh STANDALONE
+        
+    - name: Build and Run Pseudo Framework Mode
+      run: |
+        git clone https://github.com/NOAA-OWP/cfe extern/cfe
+        git clone https://github.com/NOAA-OWP/SoilMoistureProfiles extern/SoilMoistureProfiles
+        git clone https://github.com/NOAA-OWP/aorc_bmi extern/aorc_bmi
+        git clone https://github.com/NOAA-OWP/evapotranspiration extern/evapotranspiration
+        if [ -d build ]; then
+          rm -rf build
+        fi
+        mkdir build && cd build
+        cmake ../ -DPFRAMEWORK=ON
+        make && cd ..
+        ./run_sft.sh PFRAMEWORK
+
+    - name: Build and Run Unittest
+      run: |
+        cd tests
+        sed -i 's/\${CXX}/g++/' run_unittest.sh
+        ./run_unittest.sh
+
+        
+    - name: Build and Run BMI Unit Test
+      run: cd test && ./make_and_run_bmi_unit_test.sh
