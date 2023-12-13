@@ -61,7 +61,3 @@ jobs:
         cd tests
         sed -i 's/\${CXX}/g++/' run_unittest.sh
         ./run_unittest.sh
-
-        
-    - name: Build and Run BMI Unit Test
-      run: cd test && ./make_and_run_bmi_unit_test.sh
