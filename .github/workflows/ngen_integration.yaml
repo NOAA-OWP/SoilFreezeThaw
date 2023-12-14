@@ -36,8 +36,8 @@ jobs:
 
       - name: Build the SFT Library
         run: |
-        cmake -B cmake_build -S . -DNGEN=ON
-        make -C cmake_build
+          cmake -B cmake_build -S . -DNGEN=ON
+          make -C cmake_build
 
       - name: Save SoilFreezeThaw to a Temp Directory
         run: |
@@ -53,8 +53,8 @@ jobs:
 
       - name: Build the SMP Library
         run: |
-        cmake -B cmake_build -S . -DNGEN=ON
-        make -C cmake_build
+          cmake -B cmake_build -S . -DNGEN=ON
+          make -C cmake_build
 
       - name: Save SoilMoistureProfiles to a Temp Directory
         run: |
