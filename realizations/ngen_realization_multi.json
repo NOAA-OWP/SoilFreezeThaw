@@ -131,7 +131,7 @@
 		}
             ],
             "forcing": {
-		"path" : "./extern/SoilFreezeThaw/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv",
+		"path" : "./extern/SoilFreezeThaw/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv"
             }
         }
     }
