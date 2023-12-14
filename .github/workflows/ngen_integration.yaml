@@ -41,7 +41,7 @@ jobs:
 
       - name: Save SoilFreezeThaw to a Temp Directory
         run: |
-          # Move files to appropriate temporary directory
+          # Move files to a temporary directory
           mkdir ${{runner.temp}}/sft
           mv ./* ${{runner.temp}}/sft
 
@@ -58,7 +58,7 @@ jobs:
 
       - name: Save SoilMoistureProfiles to a Temp Directory
         run: |
-          # Move files to appropriate temporary directory
+          # Move files to a temporary directory
           mkdir ${{runner.temp}}/smp
           mv ./* ${{runner.temp}}/smp
 
