@@ -128,8 +128,8 @@ jobs:
         run: |
           # Run ngen with topmodel with CFE
           mv ${{ steps.ngen_id1.outputs.build-dir }} ./ngen-build/
-          #inputfile='extern/SoilFreezeThaw/SoilFreezeThaw/realizations/ngen_realization_multi.json'
-          inputfile='data/example_bmi_multi_realization_config.json'
+          inputfile='extern/SoilFreezeThaw/SoilFreezeThaw/realizations/ngen_realization_multi.json'
+          #inputfile='data/example_bmi_multi_realization_config.json'
           ./ngen-build/ngen ./data/catchment_data.geojson "cat-27" ./data/nexus_data.geojson "nex-26" $inputfile
 
       # The following remove a post ngen build error likely related to the temporary files left over during the
