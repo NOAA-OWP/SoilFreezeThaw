@@ -173,25 +173,33 @@ InitFromConfigFile(std::string config_file)
       is_soil_z_set = true;
       continue;
     }
-    else if (param_key == "soil_params.smcmax") {
+    // NOTE: `soil_params.smcmax` may be deprecated in the future.
+    // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
+    else if (param_key == "smcmax" || param_key == "soil_params.smcmax") {
       this->smcmax = std::stod(param_value);
       is_smcmax_set = true;
       continue;
     }
-    else if (param_key == "soil_params.b") {
+    // NOTE: `soil_params.b` may be deprecated in the future.
+    // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
+    else if (param_key == "b" || param_key == "soil_params.b") {
       this->b = std::stod(param_value);
       std::string b_unit = line.substr(loc_u+1,line.length());
       assert (this->b > 0);
       is_b_set = true;
       continue;
     }
-    else if (param_key == "soil_params.quartz") {
+    // NOTE: `soil_params.quartz` may be deprecated in the future.
+    // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
+    else if (param_key == "quartz" || param_key == "soil_params.quartz") {
       this->quartz = std::stod(param_value);
       assert (this->quartz > 0);
       is_quartz_set = true;
       continue;
     }
-    else if (param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
+    // NOTE: `soil_params.satpsi` may be deprecated in the future.
+    // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
+    else if (param_key == "satpsi" || param_key == "soil_params.satpsi") {  //Soil saturated matrix potential
       this->satpsi = std::stod(param_value);
       is_satpsi_set = true;
       continue;
