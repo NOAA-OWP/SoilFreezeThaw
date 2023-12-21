@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
   
-  int    nz          = 4;
+  const int    nz          = 4;
   double endtime     = 86400; //1035.91*86400.;
   double timestep    = 3600;
   bool   test_status = true;
@@ -423,8 +423,8 @@ int main(int argc, char *argv[])
     std::string var_name = names_in[i];
     std::cout<<"Variable name: "<< var_name <<"\n";
     
-    double *var = new double[nz];
-    double *dest = new double[nz];
+    auto var = std::unique_ptr<double[]>(new double[nz]);
+    auto dest = std::unique_ptr<double[]>(new double[nz]);
     int indices[] = {0,1,2,3};
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -434,13 +434,12 @@ int main(int argc, char *argv[])
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_at_indices()
-    model.GetValueAtIndices(var_name, dest, indices, nz);
-    std::cout<<" Get value at indices: " << dest[0]<<"\n";
+    model.GetValueAtIndices(var_name, &(dest[0]), indices, nz);
+    std::cout<<" Get value at indices: " << dest[0] <<"\n";
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_ptr()
-    double *var_ptr = new double[nz];
-    var_ptr= (double*) model.GetValuePtr(var_name);
+    const double* var_ptr = (double*) model.GetValuePtr(var_name);
     std::cout<<" Get value ptr: "<<*var_ptr<<"\n";
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
