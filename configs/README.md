@@ -18,3 +18,5 @@ A detailed description of the parameters for model configuration (i.e., initiali
 | top_boundary_temp | double | - | K | boundary condition | temperature at the top/surface boundary of the domain, if not specified, then other options include: 1) read from a file, or 2) provided through coupling |
 | sft_standalone | boolean | true, false | - | coupling variable | true for standalone model run; default is false |
 | soil_moisture_bmi | boolean | true, false | - | coupling variable | If true soil_moisture_profile is set by the SoilMoistureProfile module through the BMI; if false then config file must provide soil_moisture_content and soil_liquid_content |
+| dt | double | - | s, sec, h, hr, d, day | timestep size | Size of a simulation timestep. If no unit is specified defaults to hour. |
+| end_time | double | - | s, sec, h, hr, d, day  | simulation duration | Simulation duration. If no unit is specified defaults to hour. |
