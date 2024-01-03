@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
   std::cout<<"\n**************** TEST VALUES ************************************\n";
   
-  int    nz          = 4;
+  const int    nz          = 4;
   double endtime     = 86400; //1035.91*86400.;
   double timestep    = 3600;
   bool   test_status = true;
@@ -423,8 +423,8 @@ int main(int argc, char *argv[])
     std::string var_name = names_in[i];
     std::cout<<"Variable name: "<< var_name <<"\n";
     
-    double *var = new double[nz];
-    double *dest = new double[nz];
+    auto var = std::unique_ptr<double[]>(new double[nz]);
+    auto dest = std::unique_ptr<double[]>(new double[nz]);
     int indices[] = {0,1,2,3};
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -434,13 +434,12 @@ int main(int argc, char *argv[])
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_at_indices()
-    model.GetValueAtIndices(var_name, dest, indices, nz);
-    std::cout<<" Get value at indices: " << dest[0]<<"\n";
+    model.GetValueAtIndices(var_name, &(dest[0]), indices, nz);
+    std::cout<<" Get value at indices: " << dest[0] <<"\n";
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_value_ptr()
-    double *var_ptr = new double[nz];
-    var_ptr= (double*) model.GetValuePtr(var_name);
+    const double* var_ptr = (double*) model.GetValuePtr(var_name);
     std::cout<<" Get value ptr: "<<*var_ptr<<"\n";
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -481,11 +480,11 @@ int main(int argc, char *argv[])
     double dest_new = 281.3;
     double dest_new_up = 0.0;
     
-    model.SetValueAtIndices(var_name, &indices[0], nz, &dest_new);
+    model.SetValueAtIndices(var_name, &indices[0], 1, &dest_new);
     
     std::cout<<" Set value at indices: "<< dest_new <<"\n";
     // get_value_at_indices to see if changed
-    model.GetValueAtIndices(var_name, &dest_new_up,  &indices[0], nz);
+    model.GetValueAtIndices(var_name, &dest_new_up,  &indices[0], 1);
     std::cout<<" Get value at indices: "<< dest_new_up <<"\n";
     
     if (dest_new == dest_new_up)
