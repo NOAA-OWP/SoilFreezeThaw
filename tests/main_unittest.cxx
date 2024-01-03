@@ -12,7 +12,8 @@
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
 
-#define FAILURE 0
+#define SUCCESS 0
+#define FAILURE 1
 #define VERBOSITY 1
 
 #define GREEN "\033[32m"
@@ -322,7 +323,7 @@ int main(int argc, char *argv[])
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_rank()
     grid_rank = model.GetGridRank(grid_id[i]);
-    if (grid_rank == FAILURE) return FAILURE;
+    if (grid_rank == 0) return FAILURE;
     if (VERBOSITY)
       std::cout<<" rank: "<<grid_rank<<"\n";
 
@@ -648,5 +649,5 @@ int main(int argc, char *argv[])
     model_calib.Update();
   }
   
-  return FAILURE;
+  return test_status ? SUCCESS : FAILURE;
 }
