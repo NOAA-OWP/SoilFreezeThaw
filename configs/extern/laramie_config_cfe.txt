@@ -1,5 +1,4 @@
 forcing_file=BMI
-#forcing_file=./extern/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv
 soil_params.depth=2.0[m]
 soil_params.b=5.25[]
 soil_params.satdk=0.00000338[m s-1]
@@ -22,10 +21,5 @@ giuh_ordinates=0.06,0.51,0.28,0.12,0.03
 num_timesteps=1
 verbosity=1
 surface_partitioning_scheme=Schaake
-#surface_partitioning_scheme=Xinanjiang
-#a_Xinanjiang_inflection_point_parameter=1
-#b_Xinanjiang_shape_parameter=1
-#x_Xinanjiang_shape_parameter=1
-#urban_decimal_fraction=0.0
 sft_coupled=true
 ice_content_threshold=0.15

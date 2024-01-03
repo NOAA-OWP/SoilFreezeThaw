@@ -1,0 +1,118 @@
+# Test ngen-sft integration
+
+name: Ngen Integration Tests
+
+# Controls when the action will run.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  # Obtained from https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  # TODO: add something later that can check the runners for hyperthreading
+  LINUX_NUM_PROC_CORES: 2
+  MACOS_NUM_PROC_CORES: 3
+  ASAN_OPTIONS: detect_leaks=false
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Run general unit tests in linux environment
+  test_sft:
+    # The type of runner that the job will run on
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout and build the SoilFreezeThaw
+      - name: Checkout the commit
+        uses: actions/checkout@v4
+
+      - name: Build the SFT Library
+        run: |
+          cmake -B cmake_build -S . -DNGEN=ON
+          make -C cmake_build
+
+      - name: Save SoilFreezeThaw to a Temp Directory
+        run: |
+          # Move files to a temporary directory
+          mkdir ${{runner.temp}}/sft
+          mv ./* ${{runner.temp}}/sft
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout actions in another repo
+        uses: actions/checkout@v4
+        with:
+          repository: noaa-owp/soilmoistureprofiles
+
+      - name: Build the SMP Library
+        run: |
+          cmake -B cmake_build -S . -DNGEN=ON
+          make -C cmake_build
+
+      - name: Save SoilMoistureProfiles to a Temp Directory
+        run: |
+          # Move files to a temporary directory
+          mkdir ${{runner.temp}}/smp
+          mv ./* ${{runner.temp}}/smp
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout actions in another repo
+        uses: actions/checkout@v4
+        with:
+          repository: noaa-owp/ngen
+
+      - name: Build CFE
+        id: submod_build_3
+        uses: ./.github/actions/ngen-submod-build
+        with:
+          mod-dir: "extern/cfe/"
+          targets: "cfebmi"
+
+      - name: Build PET
+        id: submod_build_5
+        uses: ./.github/actions/ngen-submod-build
+        with:
+          mod-dir: "extern/evapotranspiration/evapotranspiration"
+          targets: "petbmi"
+
+      - name: Build SLoTH
+        id: submod_build_6
+        uses: ./.github/actions/ngen-submod-build
+        with:
+          mod-dir: "extern/sloth/"
+          targets: "slothmodel"
+
+      # Build Ngen and save some files
+      - name: Build Ngen
+        id: ngen_id1
+        uses: ./.github/actions/ngen-build
+        with:
+          targets: "ngen"
+          build-cores: ${{ env.LINUX_NUM_PROC_CORES }}
+          #is this required for this test?
+          bmi_c: 'ON'
+        timeout-minutes: 15
+
+      - name: Move SFT Files Including cmake_build to Appropriate Directory
+        run: |
+          rm -rf extern/SoilFreezeThaw/SoilFreezeThaw/*
+          mv ${{runner.temp}}/sft/* extern/SoilFreezeThaw/SoilFreezeThaw
+
+      - name: Move SMP Files Including cmake_build to Appropriate Directory
+        run: |
+          rm -rf extern/SoilMoistureProfiles/SoilMoistureProfiles/*
+          mv ${{runner.temp}}/smp/* extern/SoilMoistureProfiles/SoilMoistureProfiles
+
+      - name: Run Ngen Test
+        run: |
+          # Run ngen with CFE
+          mv ${{ steps.ngen_id1.outputs.build-dir }} ./ngen-build/
+          inputfile='extern/SoilFreezeThaw/SoilFreezeThaw/realizations/realization_multi_ngenCI.json'
+          ./ngen-build/ngen ./data/catchment_data.geojson "cat-27" ./data/nexus_data.geojson "nex-26" $inputfile
