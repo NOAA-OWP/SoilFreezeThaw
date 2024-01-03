@@ -68,12 +68,6 @@ jobs:
         with:
           repository: noaa-owp/ngen
 
-      - name: Build ISO C Fortran BMI
-        id: submod_build_2
-        uses: ./.github/actions/ngen-submod-build
-        with:
-          mod-dir: "extern/iso_c_fortran_bmi/"
-
       - name: Build CFE
         id: submod_build_3
         uses: ./.github/actions/ngen-submod-build
@@ -104,7 +98,6 @@ jobs:
           build-cores: ${{ env.LINUX_NUM_PROC_CORES }}
           #is this required for this test?
           bmi_c: 'ON'
-          bmi_fortran: 'ON'
         timeout-minutes: 15
 
       - name: Move SFT Files Including cmake_build to Appropriate Directory
