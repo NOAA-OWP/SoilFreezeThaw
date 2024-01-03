@@ -68,6 +68,12 @@ jobs:
         with:
           repository: noaa-owp/ngen
 
+      - name: Build ISO C Fortran BMI
+        id: submod_build_2
+        uses: ./.github/actions/ngen-submod-build
+        with:
+          mod-dir: "extern/iso_c_fortran_bmi/"
+
       - name: Build CFE
         id: submod_build_3
         uses: ./.github/actions/ngen-submod-build
