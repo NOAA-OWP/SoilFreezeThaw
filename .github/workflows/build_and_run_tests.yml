@@ -35,6 +35,18 @@ jobs:
    # - name: check gcc version
    #   run: gcc --version
     
+    - name: Build and Run Unittest
+      run: |
+        cd tests
+        if [ ${{ runner.os }} == 'macOS' ]
+        then
+          brew install gnu-sed
+          #PATH="$(brew --prefix)/opt/gnu-sed/libexec/gnubin:$PATH"
+          PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+        fi
+        sed -i 's/\${CXX}/g++/' run_unittest.sh
+        ./run_unittest.sh
+
     - name: Build and Run Standalone
       run: |
         mkdir build && cd build
@@ -55,15 +67,3 @@ jobs:
         cmake ../ -DPFRAMEWORK=ON
         make && cd ..
         ./run_sft.sh PFRAMEWORK
-
-    - name: Build and Run Unittest
-      run: |
-        cd tests
-        if [ ${{ runner.os }} == 'macOS' ]
-        then
-          brew install gnu-sed
-          #PATH="$(brew --prefix)/opt/gnu-sed/libexec/gnubin:$PATH"
-          PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-        fi
-        sed -i 's/\${CXX}/g++/' run_unittest.sh
-        ./run_unittest.sh

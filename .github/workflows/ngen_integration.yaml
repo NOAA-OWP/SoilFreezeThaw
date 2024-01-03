@@ -1,4 +1,4 @@
-# Test ngen-cfe integration
+# Test ngen-sft integration
 
 name: Ngen Integration Tests
 
@@ -20,7 +20,7 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # Run general unit tests in linux environment
-  test_surfacebmi_plus_cfe:
+  test_sft:
     # The type of runner that the job will run on
     strategy:
       matrix:
@@ -67,19 +67,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: noaa-owp/ngen
-
-      - name: Build Surfacebmi
-        id: submod_build_1
-        uses: ./.github/actions/ngen-submod-build
-        with:
-          mod-dir: " extern/noah-owp-modular/"
-          targets: "surfacebmi"
-
-      - name: Build ISO C Fortran BMI
-        id: submod_build_2
-        uses: ./.github/actions/ngen-submod-build
-        with:
-          mod-dir: "extern/iso_c_fortran_bmi/"
 
       - name: Build CFE
         id: submod_build_3
