@@ -68,13 +68,23 @@ jobs:
         with:
           repository: noaa-owp/ngen
 
-      - name: Build CFE
-        id: submod_build_3
-        uses: ./.github/actions/ngen-submod-build
+      # Checkout and build CFE
+      - name: Checkout the commit
+        uses: actions/checkout@v4
         with:
-          mod-dir: "extern/cfe/"
-          targets: "cfebmi"
+          repository: noaa-owp/cfe
+      
+      - name: Build CFE Library
+        run: |
+          cmake -B cmake_build -S . -DNGEN=ON
+          make -C cmake_build
 
+      - name: Save CFE to a Temp Directory
+        run: |
+          # Move files to a temporary directory
+          mkdir ${{runner.temp}}/cfe
+          mv ./* ${{runner.temp}}/cfe
+      
       - name: Build PET
         id: submod_build_5
         uses: ./.github/actions/ngen-submod-build
@@ -110,6 +120,14 @@ jobs:
           rm -rf extern/SoilMoistureProfiles/SoilMoistureProfiles/*
           mv ${{runner.temp}}/smp/* extern/SoilMoistureProfiles/SoilMoistureProfiles
 
+      - name: Move CFE Files Including cmake_build to Appropriate Directory
+        run: |
+	  if [ -d "./extern/cfe/" ]; then
+             rm -rf extern/cfe
+          fi
+          mkdir -p extern/cfe/cfe
+          mv ${{runner.temp}}/cfe/* extern/cfe/cfe
+	  
       - name: Run Ngen Test
         run: |
           # Run ngen with CFE

@@ -104,7 +104,7 @@
 				"name": "bmi_c",
 				"params": {
                                     "model_type_name": "bmi_c_cfe",
-                                    "library_file": "./extern/cfe/cmake_build/libcfebmi",
+                                    "library_file": "./extern/cfe/cfe/cmake_build/libcfebmi",
                                     "forcing_file": "",
                                     "init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/extern/laramie_config_cfe.txt",
                                     "allow_exceed_end_time": true,
