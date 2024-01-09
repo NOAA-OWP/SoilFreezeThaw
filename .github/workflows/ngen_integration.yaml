@@ -62,12 +62,6 @@ jobs:
           mkdir ${{runner.temp}}/smp
           mv ./* ${{runner.temp}}/smp
 
-      # Checkout ngen
-      - name: checkout actions in another repo
-        uses: actions/checkout@v4
-        with:
-          repository: noaa-owp/ngen
-
       # Checkout and build CFE
       - name: Checkout the commit
         uses: actions/checkout@v4
@@ -84,6 +78,12 @@ jobs:
           # Move files to a temporary directory
           mkdir ${{runner.temp}}/cfe
           mv ./* ${{runner.temp}}/cfe
+
+      # Checkout ngen
+      - name: checkout actions in another repo
+        uses: actions/checkout@v4
+        with:
+          repository: noaa-owp/ngen
       
       - name: Build PET
         id: submod_build_5
@@ -127,7 +127,7 @@ jobs:
           fi
           mkdir -p extern/cfe/cfe
           mv ${{runner.temp}}/cfe/* extern/cfe/cfe
-
+      
       - name: Run Ngen Test
         run: |
           # Run ngen with CFE
