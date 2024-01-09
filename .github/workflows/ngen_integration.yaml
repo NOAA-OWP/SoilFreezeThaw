@@ -127,7 +127,7 @@ jobs:
           fi
           mkdir -p extern/cfe/cfe
           mv ${{runner.temp}}/cfe/* extern/cfe/cfe
-	  
+
       - name: Run Ngen Test
         run: |
           # Run ngen with CFE
