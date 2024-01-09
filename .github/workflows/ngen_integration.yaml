@@ -45,7 +45,7 @@ jobs:
           mkdir ${{runner.temp}}/sft
           mv ./* ${{runner.temp}}/sft
 
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checkout and build SoilMoistureProfiles
       - name: checkout actions in another repo
         uses: actions/checkout@v4
         with:
@@ -62,7 +62,7 @@ jobs:
           mkdir ${{runner.temp}}/smp
           mv ./* ${{runner.temp}}/smp
 
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checkout ngen
       - name: checkout actions in another repo
         uses: actions/checkout@v4
         with:
@@ -114,5 +114,5 @@ jobs:
         run: |
           # Run ngen with CFE
           mv ${{ steps.ngen_id1.outputs.build-dir }} ./ngen-build/
-          inputfile='extern/SoilFreezeThaw/SoilFreezeThaw/realizations/realization_multi_ngenCI.json'
+          inputfile='extern/SoilFreezeThaw/SoilFreezeThaw/realizations/realization_coupled.json'
           ./ngen-build/ngen ./data/catchment_data.geojson "cat-27" ./data/nexus_data.geojson "nex-26" $inputfile
