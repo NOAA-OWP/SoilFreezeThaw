@@ -106,7 +106,6 @@ jobs:
         with:
           targets: "ngen"
           build-cores: ${{ env.LINUX_NUM_PROC_CORES }}
-          #is this required for this test?
           bmi_c: 'ON'
         timeout-minutes: 15
 
@@ -122,10 +121,7 @@ jobs:
 
       - name: Move CFE Files Including cmake_build to Appropriate Directory
         run: |
-          if [ -d "./extern/cfe/" ]; then
-             rm -rf extern/cfe
-          fi
-          mkdir -p extern/cfe/cfe
+          rm -rf extern/cfe/cfe/*
           mv ${{runner.temp}}/cfe/* extern/cfe/cfe
       
       - name: Run Ngen Test
