@@ -60,27 +60,27 @@ See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#r
      - make -j4 -C cmake_build
   - #### CFE
     - git submodule update --remote extern/cfe/cfe 
-    - cmake -B extern/cfe/cmake_build -S extern/cfe/cfe/ -DNGEN=ON
-    - make -C extern/cfe/cmake_build
+    - cmake -B extern/cfe/cfe/cmake_build -S extern/cfe/cfe/ -DNGEN=ON
+    - make -C extern/cfe/cfe/cmake_build
   - #### LASAM
     - git clone https://github.com/NOAA-OWP/LGAR-C extern/LASAM
     - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
-    - cmake -B extern/LASAM/cmake_build -S extern/LASAM/ -DNGEN=ON
-    - make -C extern/LASAM/cmake_build
+    - cmake -B extern/LASAM/LASAM/cmake_build -S extern/LASAM/ -DNGEN=ON
+    - make -C extern/LASAM/LASAM/cmake_build
   - #### NOAH-OWP-Modular
-    - cmake -B extern/noah-owp-modular/cmake_build -S extern/noah-owp-modular
-    - make -C extern/noah-owp-modular/cmake_build
+    - cmake -B extern/noah-owp-modular/noah-owp-modular/cmake_build -S extern/noah-owp-modular
+    - make -C extern/noah-owp-modular/noah-owp-modular/cmake_build
   - #### PET
-    - cmake -B extern/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
-    - make -C extern/evapotranspiration/cmake_build/
+    - cmake -B extern/evapotranspiration/evapotranspiration/cmake_build -S extern/evapotranspiration/evapotranspiration/
+    - make -C extern/evapotranspiration/evapotranspiration/cmake_build/
   - #### SFT
     - git submodule update --remote extern/SoilFreezeThaw/SoilFreezeThaw  
-    - cmake -B extern/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN=ON
-    - make -C extern/SoilFreezeThaw/cmake_build
+    - cmake -B extern/SoilFreezeThaw/SoilFreezeThaw/cmake_build -S extern/SoilFreezeThaw/SoilFreezeThaw/ -DNGEN=ON
+    - make -C extern/SoilFreezeThaw/SoilFreezeThaw/cmake_build
   - #### SMP
     - git submodule update --remote extern/SoilMoistureProfiles/SoilMoistureProfiles
-    - cmake -B extern/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
-    - make -C extern/SoilMoistureProfiles/cmake_build
+    - cmake -B extern/SoilMoistureProfiles/SoilMoistureProfiles/cmake_build -S extern/SoilMoistureProfiles/SoilMoistureProfiles/ -DNGEN=ON
+    - make -C extern/SoilMoistureProfiles/SoilMoistureProfiles/cmake_build
  
   - #### SLoTH
     SLoTH is also needed to run SFT in the ngen framework. SLoTH is a BMI that is used to set a bmi variable(s) that is not provided by other BMIs but required by the model. So build [SLoTH](https://github.com/NOAA-OWP/SLoTH) using the following instructions
