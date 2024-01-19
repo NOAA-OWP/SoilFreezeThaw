@@ -56,7 +56,7 @@ See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#r
     - cmake -B extern/iso_c_fortran_bmi/cmake_build -S extern/iso_c_fortran_bmi
     - make -C extern/iso_c_fortran_bmi/cmake_build
   - #### build ngen
-     - cmake -B cmake_build -S . -DBMI_C_LIB_ACTIVE=ON -DBMI_FORTRAN_ACTIVE=ON -DNGEN_ACTIVATE_PYTHON=ON
+     - cmake -B cmake_build -S . -DNGEN_WITH_BMI_C=ON -DNGEN_WITH_BMI_FORTRAN=ON -DNGEN_WITH_PYTHON=ON
      - make -j4 -C cmake_build
   - #### CFE
     - git submodule update --remote extern/cfe/cfe 
