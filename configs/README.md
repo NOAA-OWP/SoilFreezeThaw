@@ -1,14 +1,19 @@
 ## Configuration File
 Example configuration files are provided in this directory. To build and run the given examples see the instructions [here](https://github.com/NOAA-OWP/SoilFreezeThaw/blob/master/INSTALL.md).
 
-A detailed description of the parameters for model configuration (i.e., initialize/setup) is provided below. The asterisk (*) denotes calibratable parameters, (i.e., `smcmax, b, and satpsi` can be calibrated)
+A detailed description of the parameters for model configuration (i.e., initialize/setup) is provided below.
+
+> [!NOTE]
+> The asterisk (*) denotes calibratable parameters.
+> Note, calibratable parameters are passed via BMI using the _name next to the asterisk_.
+
 | Variable ______________ | Datatype ________ | Limits ______ | Units ______ | Role _____ |  Description __________________________________________________ |
 | ------ | -------- | ------ | ----- | ---- | ----------- |
 | forcing_file | string | - | - | filename | provides ground temperature (not needed when coupled to models providing ground temperature data|
-| *soil_params.smcmax | double | - | - | state variable | maximum soil moisture content (porosity) |
-| *soil_params.b | double | - | m | state variable | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
-| *soil_params.satpsi | double | - | m | state variable | saturated capillary head (saturated moisture potential) |
-| soil_params.quartz | double | - | m | state variable | soil quartz content, used in soil thermal conductivity function of Peters-Lidard |
+| soil_params.smcmax or *smcmax | double | - | - | state variable | maximum soil moisture content (porosity) |
+| soil_params.b or *b | double | - | m | state variable | pore size distribution, beta exponent in Clapp-Hornberger characteristic function |
+| soil_params.satpsi or *satpsi | double | - | m | state variable | saturated capillary head (saturated moisture potential) |
+| soil_params.quartz or quartz | double | - | m | state variable | soil quartz content, used in soil thermal conductivity function of Peters-Lidard |
 | ice_fraction_scheme | int | - | - | coupling variable | runoff scheme used in the soil reservoir models (e.g. CFE), options: Schaake and Xinanjiang|
 | soil_z | double (1D array) | - | m | spatial resolution | vertical resolution of the soil column (computational domain of the SFT model) |
 | soil_temperature | double (1D array) | - | K | spatial resolution | initial soil temperature for the discretized column |
