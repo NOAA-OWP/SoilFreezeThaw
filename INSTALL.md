@@ -110,7 +110,7 @@ The following pre-process step needs to be completed before running the below ex
   Run: `python ./extern/SoilFreezeThaw/SoilFreezeThaw/tests/test_standalone_ngen.py` (from the sft directory) to compare Example 1 results against the benchmark.
   #### Example 2
   ```
-  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_multi.json
+  ../cmake_build/ngen data/catchment_data.geojson cat-27 data/nexus_data.geojson nex-26 realizations/realization_coupled.json
   ```
   #### Example 3
   Detailed instructions for running this example along with realization and model config files are provided in the [examples](https://github.com/NOAA-OWP/SoilFreezeThaw/tree/master/examples) directory.
