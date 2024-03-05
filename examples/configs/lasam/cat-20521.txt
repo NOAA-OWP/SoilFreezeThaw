@@ -11,6 +11,6 @@ layer_soil_type=13,14,15
 max_soil_types=25
 wilting_point_psi=15495.0[cm]
 giuh_ordinates=0.06,0.51,0.28,0.12,0.03
-sft_coupled=true
+is_sft_coupled=true
 #soil_z=10,20,30,40,50,60,70,80,90,100.0,110.,120,130.,140.,150.,160.,170.,180.,190.,200.0[cm]
 soil_z=10,30,100.0,200.0[cm]
