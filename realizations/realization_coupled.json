@@ -10,37 +10,35 @@
                 {
 		    "name": "bmi_multi",
                     "params": {
-			"model_type_name": "bmi_multi_cfe_sft_smp",
-			"forcing_file": "",
-			"init_config": "",
-			"allow_exceed_end_time": true,
-			"main_output_variable": "Q_OUT",
-			"output_variables" : [
-			    "soil_ice_fraction",
-			    "RAIN_RATE",
-			    "DIRECT_RUNOFF",
-			    "GIUH_RUNOFF",
-			    "NASH_LATERAL_RUNOFF",
-			    "DEEP_GW_TO_CHANNEL_FLUX",
-			    "Q_OUT",
-			    "SOIL_STORAGE",
-			    "ice_fraction_schaake"
-			],
-			"output_header_fields" : [
-			    "soil_ice_fraction",
+			            "model_type_name": "bmi_multi_cfe_sft_smp",
+			            "forcing_file": "",
+			            "init_config": "",
+			            "allow_exceed_end_time": true,
+			            "main_output_variable": "Q_OUT",
+			            "output_variables" : [
+			                "soil_ice_fraction",
+			                "RAIN_RATE",
+			                "DIRECT_RUNOFF",
+			                "NASH_LATERAL_RUNOFF",
+			                "DEEP_GW_TO_CHANNEL_FLUX",
+			                "Q_OUT",
+			                "SOIL_STORAGE",
+			                "ice_fraction_schaake"
+			            ],
+			            "output_header_fields" : [
+			                "soil_ice_fraction",
                             "rain_rate",
                             "direct_runoff",
-                            "giuh_runoff",
                             "nash_lateral_runoff",
                             "deep_gw_to_channel_flux",
                             "q_out",
                             "soil_storage",
-			    "ice_fraction_schaake"
+			                "ice_fraction_schaake"
                         ],
-			"modules": [
-			    {
-				"name": "bmi_c++",
-				"params": {
+			            "modules": [
+			                {
+				                "name": "bmi_c++",
+				                "params": {
                                     "model_type_name": "bmi_c++_sloth",
                                     "library_file": "./extern/sloth/cmake_build/libslothmodel",
                                     "init_config": "/dev/null",
@@ -48,19 +46,19 @@
                                     "main_output_variable": "z",
                                     "uses_forcing_file": false,
                                     "model_params": {
-					"soil_moisture_wetting_fronts(1,double,1,node)": 0.0,
-					"soil_thickness_layered(1,double,1,node)": 0.0,
-					"soil_depth_wetting_fronts(1,double,1,node)": 0.0,
-					"num_wetting_fronts(1,int,1,node)": 1.0,
-					"Qb_topmodel(1,double,1,node)": 0.0,
-					"Qv_topmodel(1,double,1,node)": 0.0,
-					"global_deficit(1,double,1,node)": 0.0
+					                    "soil_moisture_wetting_fronts(1,double,1,node)": 0.0,
+					                    "soil_thickness_layered(1,double,1,node)": 0.0,
+					                    "soil_depth_wetting_fronts(1,double,1,node)": 0.0,
+					                    "num_wetting_fronts(1,int,1,node)": 1.0,
+					                    "Qb_topmodel(1,double,1,node)": 0.0,
+					                    "Qv_topmodel(1,double,1,node)": 0.0,
+					                    "global_deficit(1,double,1,node)": 0.0
                                     }
-				}
+				                }
                             },
-			    {
-				"name": "bmi_c",
-				"params": {
+			                {
+				                "name": "bmi_c",
+				                "params": {
                                     "model_type_name": "bmi_c_pet",
                                     "library_file": "./extern/evapotranspiration/evapotranspiration/cmake_build/libpetbmi",
                                     "forcing_file": "",
@@ -69,40 +67,40 @@
                                     "main_output_variable": "water_potential_evaporation_flux",
                                     "registration_function":"register_bmi_pet",
                                     "uses_forcing_file": false
-				}
+				                }
                             },
-			    {
-				"name": "bmi_c++",
-				"params": {
-				    "model_type_name": "bmi_smp",
-				    "library_file": "./extern/SoilMoistureProfiles/SoilMoistureProfiles/cmake_build/libsmpbmi",
-				    "init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/extern/laramie_config_smp.txt",
-				    "allow_exceed_end_time": true,
-				    "main_output_variable": "soil_water_table",
-				    "variables_names_map" : {
-					"soil_storage" : "SOIL_STORAGE",
-					"soil_storage_change" : "SOIL_STORAGE_CHANGE"
-				    },
-				    "uses_forcing_file": false
-				}
-			    },
-			    {
-				"name": "bmi_c++",
-				"params": {
-				    "model_type_name": "bmi_sft",
-				    "library_file": "./extern/SoilFreezeThaw/SoilFreezeThaw/cmake_build/libsftbmi",
-				    "init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/extern/laramie_config_sft.txt",
-				    "allow_exceed_end_time": true,
-				    "main_output_variable": "num_cells",
-				    "variables_names_map" : {
-					"ground_temperature" : "TMP_ground_surface"
-				    },
-				    "uses_forcing_file": false
-				}
-			    },
-			    {
-				"name": "bmi_c",
-				"params": {
+			                {
+				                "name": "bmi_c++",
+				                "params": {
+				                    "model_type_name": "bmi_smp",
+				                    "library_file": "./extern/SoilMoistureProfiles/SoilMoistureProfiles/cmake_build/libsmpbmi",
+				                    "init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/extern/laramie_config_smp.txt",
+				                    "allow_exceed_end_time": true,
+				                    "main_output_variable": "soil_water_table",
+				                    "variables_names_map" : {
+					                    "soil_storage" : "SOIL_STORAGE",
+					                    "soil_storage_change" : "SOIL_STORAGE_CHANGE"
+				                    },
+				                    "uses_forcing_file": false
+				                }
+			                },
+			                {
+				                "name": "bmi_c++",
+				                "params": {
+				                    "model_type_name": "bmi_sft",
+				                    "library_file": "./extern/SoilFreezeThaw/SoilFreezeThaw/cmake_build/libsftbmi",
+				                    "init_config": "./extern/SoilFreezeThaw/SoilFreezeThaw/configs/extern/laramie_config_sft.txt",
+				                    "allow_exceed_end_time": true,
+				                    "main_output_variable": "num_cells",
+				                    "variables_names_map" : {
+					                    "ground_temperature" : "TMP_ground_surface"
+				                    },
+				                    "uses_forcing_file": false
+				                }
+			                },
+			                {
+				                "name": "bmi_c",
+				                "params": {
                                     "model_type_name": "bmi_c_cfe",
                                     "library_file": "./extern/cfe/cfe/cmake_build/libcfebmi",
                                     "forcing_file": "",
@@ -111,27 +109,26 @@
                                     "main_output_variable": "Q_OUT",
                                     "registration_function": "register_bmi_cfe",
                                     "variables_names_map": {
-					"water_potential_evaporation_flux" : "water_potential_evaporation_flux",
-					"atmosphere_water__liquid_equivalent_precipitation_rate" : "APCP_surface",
-					"atmosphere_air_water~vapor__relative_saturation" : "SPFH_2maboveground",
-					"land_surface_air__temperature" : "TMP_2maboveground",
-					"land_surface_wind__x_component_of_velocity" : "UGRD_10maboveground",
-					"land_surface_wind__y_component_of_velocity" : "VGRD_10maboveground",
-					"land_surface_radiation~incoming~longwave__energy_flux" : "DLWRF_surface",
-					"land_surface_radiation~incoming~shortwave__energy_flux" : "DSWRF_surface",
-					"land_surface_air__pressure" : "PRES_surface"
+					                    "water_potential_evaporation_flux" : "water_potential_evaporation_flux",
+					                    "atmosphere_water__liquid_equivalent_precipitation_rate" : "APCP_surface",
+					                    "atmosphere_air_water~vapor__relative_saturation" : "SPFH_2maboveground",
+					                    "land_surface_air__temperature" : "TMP_2maboveground",
+					                    "land_surface_wind__x_component_of_velocity" : "UGRD_10maboveground",
+					                    "land_surface_wind__y_component_of_velocity" : "VGRD_10maboveground",
+					                    "land_surface_radiation~incoming~longwave__energy_flux" : "DLWRF_surface",
+					                    "land_surface_radiation~incoming~shortwave__energy_flux" : "DSWRF_surface",
+					                    "land_surface_air__pressure" : "PRES_surface"
                                     },
                                     "uses_forcing_file": false
-				}
+				                }
                             }
-			    
-			],
-			"uses_forcing_file": false
+			            ],
+			            "uses_forcing_file": false
                     }
-		}
+		        }
             ],
             "forcing": {
-		"path" : "./extern/SoilFreezeThaw/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv"
+		        "path" : "./extern/SoilFreezeThaw/SoilFreezeThaw/forcings/Laramie_14Jun09_to_15Apr12_ngen.csv"
             }
         }
     }
