@@ -59,16 +59,16 @@ endif()
 if(PFRAMEWORK)
   add_executable(${exe_name} ./src/main_pseudo_framework.cxx
                  ./extern/cfe/src/cfe.c ./extern/cfe/src/bmi_cfe.c
-		 ./extern/cfe/src/giuh.c ./extern/cfe/src/conceptual_reservoir.c
-		 ./extern/aorc_bmi/src/aorc.c ./extern/aorc_bmi/src/bmi_aorc.c
-		 ./extern/evapotranspiration/src/pet.c ./extern/evapotranspiration/src/bmi_pet.c)
+                 ./extern/cfe/src/giuh.c ./extern/cfe/src/conceptual_reservoir.c ./extern/cfe/src/nash_cascade.c
+                 ./extern/aorc_bmi/src/aorc.c ./extern/aorc_bmi/src/bmi_aorc.c
+                 ./extern/evapotranspiration/src/pet.c ./extern/evapotranspiration/src/bmi_pet.c)
 
   add_library(sftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx
               ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx
-	      ./extern/SoilMoistureProfiles/src/bmi_soil_moisture_profile.cxx
-	      ./extern/SoilMoistureProfiles/src/soil_moisture_profile.cxx
-	      ./extern/SoilMoistureProfiles/include/bmi_soil_moisture_profile.hxx
-	      ./extern/SoilMoistureProfiles/include/soil_moisture_profile.hxx)
+              ./extern/SoilMoistureProfiles/src/bmi_soil_moisture_profile.cxx
+              ./extern/SoilMoistureProfiles/src/soil_moisture_profile.cxx
+              ./extern/SoilMoistureProfiles/include/bmi_soil_moisture_profile.hxx
+              ./extern/SoilMoistureProfiles/include/soil_moisture_profile.hxx)
 
   target_link_libraries(${exe_name} LINK_PUBLIC sftlib)
   target_link_libraries(${exe_name} PRIVATE m)
