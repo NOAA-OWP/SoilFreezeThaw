@@ -48,7 +48,7 @@ We provide three examples here to run and test SFT (coupled/uncoupled modes) in 
 - Example 3: Integrated models (SLoTH+SMP+SFT+CFE/LASAM) example with NOAH-OWP-Mod
 
 ### Build
-See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. 
+See general [instructions](https://github.com/NOAA-OWP/ngen/wiki/NGen-Tutorial#running-cfe) for building models in the ngen framework. Note that ngen cmake flag can be set (i.e., `NGEN_WITH_EXTERN_ALL=ON`) to build SLoTH, CFE, PET, Noah-owp-modular (more details are provided below).
 
 Specific instructions for building an integrated system:
 
@@ -108,7 +108,13 @@ make -C extern/sloth/cmake_build
 ```
 #### 10. Build ngen
 ```
-cmake -B cmake_build -S . -DNGEN_WITH_BMI_C=ON -DNGEN_WITH_BMI_FORTRAN=ON -DNGEN_WITH_PYTHON=ON -DNGEN_WITH_SQLITE=ON
+cmake -B cmake_build -S . -DNGEN_WITH_BMI_C=ON -DNGEN_WITH_BMI_FORTRAN=ON -DNGEN_WITH_SQLITE=ON
+make -j4 -C cmake_build
+```
+
+As mentioned earlier, CFE, SLoTH, PET, and Noah-owp-modular can be built as ngen external models at the ngen build time using
+```
+cmake -B cmake_build -S . -DNGEN_WITH_BMI_FORTRAN=ON -DNGEN_WITH_SQLITE=ON -DNGEN_WITH_EXTERN_ALL=ON
 make -j4 -C cmake_build
 ```
 
