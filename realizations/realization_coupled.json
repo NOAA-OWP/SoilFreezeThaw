@@ -19,7 +19,6 @@
 			    "soil_ice_fraction",
 			    "RAIN_RATE",
 			    "DIRECT_RUNOFF",
-			    "GIUH_RUNOFF",
 			    "NASH_LATERAL_RUNOFF",
 			    "DEEP_GW_TO_CHANNEL_FLUX",
 			    "Q_OUT",
@@ -30,7 +29,6 @@
 			    "soil_ice_fraction",
                             "rain_rate",
                             "direct_runoff",
-                            "giuh_runoff",
                             "nash_lateral_runoff",
                             "deep_gw_to_channel_flux",
                             "q_out",
@@ -124,7 +122,6 @@
                                     "uses_forcing_file": false
 				}
                             }
-			    
 			],
 			"uses_forcing_file": false
                     }

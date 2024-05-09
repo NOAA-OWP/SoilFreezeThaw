@@ -31,18 +31,17 @@ jobs:
     steps:
     - name: Checkout the commit
       uses: actions/checkout@v4
-    
+
    # - name: check gcc version
    #   run: gcc --version
-    
+
     - name: Build and Run Unittest
       run: |
         cd tests
         if [ ${{ runner.os }} == 'macOS' ]
         then
           brew install gnu-sed
-          #PATH="$(brew --prefix)/opt/gnu-sed/libexec/gnubin:$PATH"
-          PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+          export PATH="$(brew --prefix gsed)/libexec/gnubin:$PATH"
         fi
         sed -i 's/\${CXX}/g++/' run_unittest.sh
         ./run_unittest.sh
@@ -53,7 +52,7 @@ jobs:
         cmake ../ -DSTANDALONE=ON
         make && cd ..
         ./run_sft.sh STANDALONE
-        
+
     - name: Build and Run Pseudo Framework Mode
       run: |
         git clone https://github.com/NOAA-OWP/cfe extern/cfe
