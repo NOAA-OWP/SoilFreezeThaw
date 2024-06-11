@@ -14,7 +14,7 @@ class NotImplemented : public std::logic_error {
 };
 
 
-class BmiSoilFreezeThaw : public bmixx::Bmi {
+class BmiSoilFreezeThaw : public bmi::Bmi {
   public:
     BmiSoilFreezeThaw() {
       this->input_var_names[0]  = "ground_temperature";

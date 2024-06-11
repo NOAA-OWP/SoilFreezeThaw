@@ -6,13 +6,14 @@
 
 #ifndef BMI_HXX
 #define BMI_HXX
+
 #include <string>
 #include <vector>
 
-namespace bmixx {
+namespace bmi {
 
-  //const int BMI_SUCCESS = 0;
-  //  const int BMI_FAILURE = 1;
+  const int BMI_SUCCESS = 0;
+  const int BMI_FAILURE = 1;
 
   const int MAX_COMPONENT_NAME = 2048;
   const int MAX_VAR_NAME = 2048;
@@ -21,6 +22,8 @@ namespace bmixx {
 
   class Bmi {
     public:
+      virtual ~Bmi() { }
+
       // Model control functions.
       virtual void Initialize(std::string config_file) = 0;
       virtual void Update() = 0;
