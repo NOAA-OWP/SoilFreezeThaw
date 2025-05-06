@@ -174,6 +174,13 @@ int main(int argc, char *argv[])
       model.SetValue(var_name, &(soil_MCT[0]));
     if (var_name == "soil__moisture_content_liquid") 
       model.SetValue(var_name, &(soil_MCL[0]));
+
+    delete [] var;
+    delete [] dest;
+    delete [] var_ptr;
+    delete [] var_new_up;
+    delete [] dest_new_up;
+    
   }
   
   std::cout<<"************* Output variables ***************** \n";
@@ -303,6 +310,7 @@ int main(int argc, char *argv[])
     }
     else if (var_name.compare("soil__num_cells") == 0) {
       len = 1;
+      if(indices != nullptr) delete [] indices;
       indices = new int[len];
       indices[0] = 0;
       
@@ -315,7 +323,17 @@ int main(int argc, char *argv[])
 	test_status &= true;
       else
 	test_status &= false;
+      delete [] var;
     }
+
+    delete [] indicies;
+    delete [] var;
+    delete [] dest;
+    delete [] var_ptr;
+    delete [] var_new;
+    delete [] var_new_up;
+    delete [] dest_new_up;
+
   }
   
   std::string passed = test_status > 0 ? "Yes" : "No";
@@ -354,7 +372,10 @@ int main(int argc, char *argv[])
     test_status &= true;
   else
     test_status &= false;
-    
+  
+  delete [] var_st;
+  delete [] ice_frac;
+
   passed = test_status > 0 ? "Yes" : "No";
   std::cout<<"\n\n*********************************************************\n";
   std::cout<<"*************** Summary of the Unit Test ***************\n";

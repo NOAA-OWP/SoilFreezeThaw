@@ -83,7 +83,7 @@ void pass_icefraction_from_ftm_to_cfe(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_
     ftm_bmi_model.GetValue("ice_fraction_xinan", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_xinan", ice_frac_ptr);
   }
- 
+  delete[] sf_runoff_scheme;
 }
 
 /***************************************************************
@@ -125,6 +125,7 @@ void pass_smc_from_coupler_to_ftm(Bmi *cfe_bmi_model, BmiFreezeThaw ftm_bmi_mode
   coupler_bmi.GetValue("soil__moisture_content_total",&smct[0]);
   //  ftm_bmi_model.SetValue("soil__moisture_content_total", &smct[0]);
   
+  delete [] smct;
 }
 
 /***************************************************************

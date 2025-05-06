@@ -80,7 +80,9 @@ void pass_icefraction_from_sft_to_cfe(Bmi *cfe_bmi_model, BmiSoilFreezeThaw sft_
     sft_bmi_model.GetValue("ice_fraction_xinan", ice_frac_ptr);
     cfe_bmi_model->set_value(cfe_bmi_model, "ice_fraction_xinan", ice_frac_ptr);
   }
- 
+
+  delete [] sf_runoff_scheme;
+
 }
 
 /***************************************************************
@@ -126,6 +128,7 @@ void pass_smc_from_smp_to_sft(Bmi *cfe_bmi_model, BmiSoilFreezeThaw *sft_bmi_mod
   smp_bmi_model->GetValue("soil_moisture_profile",&smct[0]);
   sft_bmi_model->SetValue("soil_moisture_profile", &smct[0]);
   
+  delete [] smct;
 }
 
 /***************************************************************

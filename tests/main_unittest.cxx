@@ -538,6 +538,7 @@ int main(int argc, char *argv[])
 	assert (fabs(var[i] - soil_T[i]) < 0.001);
 	check=true;
       }
+      delete [] var;
       if (check)
 	test_status &= true;
       else {
@@ -648,6 +649,8 @@ int main(int argc, char *argv[])
     std::cout<<"------------------------------------------------------ \n";
     model_calib.Update();
   }
-  
+  model.Finalize();
+  model_cyc.Finalize();
+  model_calib.Finalize();
   return test_status ? SUCCESS : FAILURE;
 }

@@ -80,5 +80,6 @@ int main(int argc, char *argv[])
 
   fclose(fp);
 
+  delete[] shape;
   return SUCCESS;
 }

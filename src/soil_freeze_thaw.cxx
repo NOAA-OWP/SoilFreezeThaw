@@ -263,7 +263,13 @@ InitFromConfigFile(std::string config_file)
   
   // simply allocate space for soil_liquid_content and soil_moisture_content arrays, as they will be set through CFE_BMI
   if (this->is_soil_moisture_bmi_set && is_soil_z_set) {
+    if( soil_moisture_content != nullptr) {
+      delete [] soil_moisture_content;
+    }
     this->soil_moisture_content = new double[this->ncells]();
+    if( soil_liquid_content != nullptr) {
+      delete [] soil_liquid_content;
+    }
     this->soil_liquid_content = new double[this->ncells]();
     n_mct = this->ncells;
     n_mcl = this->ncells;
@@ -868,6 +874,16 @@ PhaseChange() {
     soil_moisture_content[i]  = (MassLiq_L[i] + MassIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
     soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
+
+  delete [] Supercool;
+  delete [] MassIce_L;
+  delete [] MassLiq_L;
+  delete [] HeatEnergy_L;
+  delete [] MassPhaseChange_L;
+  delete [] soil_moisture_content_c;
+  delete [] MassLiq_c;
+  delete [] MassIce_c;
+  delete [] IndexMelt;
 }
 
 
@@ -938,6 +954,16 @@ Properties() :
 
 soilfreezethaw::SoilFreezeThaw::
 ~SoilFreezeThaw()
-{}
+{
+  if( thermal_conductivity != nullptr ) delete [] thermal_conductivity;
+  if( heat_capacity != nullptr ) delete [] heat_capacity;
+  if( soil_dz != nullptr ) delete [] soil_dz;
+  if( soil_ice_content != nullptr ) delete [] soil_ice_content;
+  if( soil_temperature_prev != nullptr ) delete [] soil_temperature_prev;
+  if( soil_z != nullptr ) delete [] soil_z;
+  if( soil_temperature != nullptr ) delete [] soil_temperature;
+  if( soil_moisture_content != nullptr ) delete [] soil_moisture_content;
+  if( soil_liquid_content != nullptr ) delete [] soil_liquid_content;
+}
 
 #endif

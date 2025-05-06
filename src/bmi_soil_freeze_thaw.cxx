@@ -55,8 +55,8 @@ UpdateUntil(double t)
 void BmiSoilFreezeThaw::
 Finalize()
 {
-  if (this->state)
-    this->state->~SoilFreezeThaw();
+  if (this->state != nullptr)
+    delete this->state;
 }
 
 int BmiSoilFreezeThaw::
