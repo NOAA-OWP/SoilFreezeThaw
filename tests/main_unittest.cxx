@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory> //std::unique_ptr
 #include <iostream>
 #include <cmath>
 #include <iomanip>      // std::setprecision
