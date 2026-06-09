@@ -10,10 +10,15 @@
 #include <algorithm>
 #include <stdexcept>
 #include "../include/soil_freeze_thaw.hxx"
+#include "../include/Logger.hpp"
 
+std::stringstream sft_ss("");
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw()
+: soil_z(), soil_dz(), soil_temperature(), soil_temperature_prev(),
+  heat_capacity(), thermal_conductivity(),
+  soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->endtime    = 10.;
   this->time       = 0.;
@@ -39,6 +44,9 @@ SoilFreezeThaw()
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw(std::string config_file)
+: soil_z(), soil_dz(), soil_temperature(), soil_temperature_prev(),
+  heat_capacity(), thermal_conductivity(),
+  soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->latent_heat_fusion = 0.3336E06;
   
@@ -69,11 +77,11 @@ SoilFreezeThaw(std::string config_file)
 void soilfreezethaw::SoilFreezeThaw::
 InitializeArrays(void)
 {
-  this->thermal_conductivity = new double[ncells];
-  this->heat_capacity = new double[ncells];
-  this->soil_dz = new double[ncells];
-  this->soil_ice_content = new double[ncells];
-  this->soil_temperature_prev = new double[ncells];
+  this->thermal_conductivity.resize(ncells);
+  this->heat_capacity.resize(ncells);
+  this->soil_dz.resize(ncells);
+  this->soil_ice_content.resize(ncells);
+  this->soil_temperature_prev.resize(ncells);
   
   for (int i=0;i<ncells;i++) {
     this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
@@ -93,10 +101,12 @@ InitFromConfigFile(std::string config_file)
   fp.open(config_file);
 
   if (!fp) {
-    std::cerr<<"File \""<<config_file<<"\"does not exist."<<"\n";
+    sft_ss <<"File \""<<config_file<<"\"does not exist."<<"\n";
+    LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     abort();
   }
-  int n_st, n_mct, n_mcl;
+  // int n_st, n_mct, n_mcl;
+  int n_st = 0, n_mct = 0, n_mcl = 0;
 
   this->is_soil_moisture_bmi_set = false;
   bool is_endtime_set = false;
@@ -141,11 +151,11 @@ InitFromConfigFile(std::string config_file)
       this->endtime = std::stod(param_value);
 
       if (param_unit == "[d]" || param_unit == "[day]") 
-	this->endtime *= 86400;
+	      this->endtime *= 86400;
       else if (param_unit == "[s]" || param_unit == "[sec]")
-	this->endtime *= 1.0;
+	      this->endtime *= 1.0;
       else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
-	this->endtime *= 3600.0;
+	      this->endtime *= 3600.0;
 
       is_endtime_set = true;
       continue;
@@ -153,22 +163,18 @@ InitFromConfigFile(std::string config_file)
     else if (param_key == "dt") {
       this->dt = std::stod(param_value);
       if (param_unit == "[d]" || param_unit == "[day]")
-	this->dt *= 86400;
+	      this->dt *= 86400;
       else if (param_unit == "[s]" || param_unit == "[sec]")
-	this->dt *= 1.0;
+	      this->dt *= 1.0;
       else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
-	this->dt *= 3600.0;
+	      this->dt *= 3600.0;
       
       is_dt_set = true;
       continue;
     }
     else if (param_key == "soil_z") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      
-      this->soil_z = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_z[i] = vec[i];
-      this->ncells = vec.size();
+      this->soil_z = ReadVectorData(param_value);
+      this->ncells = this->soil_z.size();
       this->soil_depth = this->soil_z[this->ncells-1];
       is_soil_z_set = true;
       continue;
@@ -185,7 +191,10 @@ InitFromConfigFile(std::string config_file)
     else if (param_key == "b" || param_key == "soil_params.b") {
       this->b = std::stod(param_value);
       std::string b_unit = line.substr(loc_u+1,line.length());
-      assert (this->b > 0);
+      if ( !(this->b > 0)) {
+        LOG(LogLevel::FATAL, "%s=%f is invalid. Must be > 0. Source file: %s", param_key.c_str(), this->b, config_file.c_str());
+        assert(this->b > 0);
+      }
       is_b_set = true;
       continue;
     }
@@ -193,7 +202,10 @@ InitFromConfigFile(std::string config_file)
     // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
     else if (param_key == "quartz" || param_key == "soil_params.quartz") {
       this->quartz = std::stod(param_value);
-      assert (this->quartz > 0);
+      if ( !(this->quartz >= 0)) {
+        LOG(LogLevel::FATAL, "%s=%f is invalid. Must be > 0. Source file: %s", param_key.c_str(), this->quartz, config_file.c_str());
+        assert(this->quartz > 0);
+      }
       is_quartz_set = true;
       continue;
     }
@@ -205,33 +217,20 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     else if (param_key == "soil_temperature") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_temperature = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_temperature[i] = vec[i];
-      n_st = vec.size();
-      
+      this->soil_temperature = ReadVectorData(param_value);
+      n_st = this->soil_temperature.size();
       is_soil_temperature_set = true;
       continue;
-
     }
     else if (param_key == "soil_moisture_content") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_moisture_content = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_moisture_content[i] = vec[i];
-      n_mct = vec.size();
+      this->soil_moisture_content = ReadVectorData(param_value);
+      n_mct = this->soil_moisture_content.size();
       is_soil_moisture_content_set = true;
       continue;
     }
     else if (param_key == "soil_liquid_content") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_liquid_content = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++) {
-	//	assert (this->soil_moisture_content[i] >= vec[i]);
-	this->soil_liquid_content[i] = vec[i];
-      }
-      n_mcl = vec.size();
+      this->soil_liquid_content = ReadVectorData(param_value);
+      n_mcl = this->soil_liquid_content.size();
       is_soil_liquid_content_set = true;
       continue;
     }
@@ -263,64 +262,71 @@ InitFromConfigFile(std::string config_file)
   
   // simply allocate space for soil_liquid_content and soil_moisture_content arrays, as they will be set through CFE_BMI
   if (this->is_soil_moisture_bmi_set && is_soil_z_set) {
-    if( soil_moisture_content != nullptr) {
-      delete [] soil_moisture_content;
-    }
-    this->soil_moisture_content = new double[this->ncells]();
-    if( soil_liquid_content != nullptr) {
-      delete [] soil_liquid_content;
-    }
-    this->soil_liquid_content = new double[this->ncells]();
+    this->soil_moisture_content.resize(this->ncells);
+    this->soil_liquid_content.resize(this->ncells);
     n_mct = this->ncells;
     n_mcl = this->ncells;
     is_soil_moisture_content_set = true;
 
   }
 
+  //std::string errMsg;
+  std::string throwMsg;
   if (!is_endtime_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("End time not set in the config file!");
+    throwMsg = "End time not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
 
   if (!is_dt_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Time step (dt) not set in the config file!");
+    throwMsg = "Time step (dt) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_z_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("soil_z not set in the config file!");
+    throwMsg = "soil_z not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_smcmax_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("smcmax not set in the config file!");
+    throwMsg = "smcmax not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_b_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("b (Clapp-Hornberger's parameter) not set in the config file!");
+    throwMsg = "b (Clapp-Hornberger's parameter) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_quartz_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("quartz (soil parameter) not set in the config file!");
+    throwMsg = "quartz (soil parameter) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_satpsi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("satpsi not set in the config file!");
+    throwMsg = "satpsi not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_temperature_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Soil temperature not set in the config file!");
+    throwMsg = "Soil temperature not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_moisture_content_set && !this->is_soil_moisture_bmi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Total soil moisture content not set in the config file!");
+    throwMsg = "Total soil moisture content not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_liquid_content_set && !this->is_soil_moisture_bmi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Liquid soil moisture content not set in the config file!");
+    throwMsg = "Liquid soil moisture content not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_ice_fraction_scheme_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Ice fraction scheme not set in the config file!");
+    throwMsg = "Ice fraction scheme not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
 
   this->option_bottom_boundary = is_bottom_boundary_temp_set == true ? 1 : 2; // if false zero geothermal flux is the BC
@@ -328,9 +334,13 @@ InitFromConfigFile(std::string config_file)
   this->option_top_boundary = is_top_boundary_temp_set == true ? 1 : 2; // 1: constant temp, 2: from a file
 
   // check if the size of the input data is consistent
-  assert (n_st == this->ncells);
-  assert (n_mct == this->ncells);
-  assert (n_mcl == this->ncells);
+  if ( !(n_st == this->ncells) || !(n_mct == this->ncells) || !(n_mcl == this->ncells) ) {
+    LOG(LogLevel::FATAL, "%s: Size of input data inconsistent. ncells=%d: n_st=%d, n_mct=%d, n_mcl=%d",
+        config_file.c_str(), this->ncells, n_st, n_mct, n_mcl);
+    assert(n_st == this->ncells);
+    assert(n_mct == this->ncells);
+    assert(n_mcl == this->ncells);
+  }
 }
 
 /*
@@ -350,6 +360,7 @@ ReadVectorData(std::string key)
     if (v == 0.0) {
       std::stringstream errMsg;
       errMsg << "soil_z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
+      LOG(LogLevel::WARNING, errMsg.str());
       throw std::runtime_error(errMsg.str());
     }
     
@@ -399,7 +410,11 @@ ComputeIceFraction()
     for (int i =0; i < ncells; i++) {
       val += this->soil_ice_content[i] * this->soil_dz[i];
     }
-    assert (this->ice_fraction_schaake <= this->soil_depth);
+    if ( !(this->ice_fraction_schaake <= this->soil_depth) ) {
+        LOG(LogLevel::FATAL, "ice_fraction_schaake %f > soil_depth %f",
+            this->ice_fraction_schaake, this->soil_depth);
+        assert(this->ice_fraction_schaake <= this->soil_depth);
+    }
     this->ice_fraction_schaake = val;
   }
   else if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
@@ -409,7 +424,9 @@ ComputeIceFraction()
     this->ice_fraction_xinanjiang = fcr;
   }
   else {
-    throw std::runtime_error("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
+    std::string errMsg = "Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!";
+    LOG(LogLevel::WARNING, errMsg);
+    throw std::runtime_error(errMsg);
   }
   
   // compute soil ice fraction (the fraction of soil moisture that is ice)
@@ -477,11 +494,15 @@ Advance()
   ComputeIceFraction();
 
   if (verbosity.compare("high") == 0) {
-    for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
+    for (int i=0;i<ncells;i++) {
+      sft_ss <<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
+      LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
+    }
 
-    for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+    for (int i=0;i<ncells;i++) {
+      sft_ss <<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+      LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
+    }
   }
 
   EnergyBalanceCheck();
@@ -509,11 +530,16 @@ GroundHeatFlux(double soil_temp)
     surface_temp = this->ground_temp;       // temperature from a file/coupling
   }
   else {
-    throw std::runtime_error("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!");
+    std::string errMsg = "Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!";
+    LOG(LogLevel::WARNING, errMsg);
+    throw std::runtime_error(errMsg);
     return 0;
   }
 
-  assert (this->soil_z[0] >0);
+  if ( !(this->soil_z[0] >0)) {
+    LOG(LogLevel::FATAL, "soil_z[0] = %f is invalid. Must be > 0.", this->soil_z[0]);
+    assert(this->soil_z[0] >0);
+  }
   double ground_heat_flux_loc = - thermal_conductivity[0] * (soil_temp  - surface_temp) / (0.5*soil_z[0]); // half of top cell thickness
   
   return ground_heat_flux_loc;
@@ -919,21 +945,32 @@ EnergyBalanceCheck()
   this->energy_balance += energy_balance_timestep;
   
   if (verbosity.compare("high") == 0 || fabs(energy_balance) >  tolerance) {
+    char prtMsg[128];
     
-    printf("Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
-    printf("Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
-    printf("Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
-    printf("Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
-    printf("Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
-    printf("Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
-    printf("Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
-    printf("Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
-    printf("Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+    sprintf(prtMsg, "Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy balance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
 
-    if (fabs(energy_balance) > tolerance)
-      throw std::runtime_error("Soil energy balance error...");
-  }
-  
+    if (fabs(energy_balance) > tolerance) {}
+        std::string errMsg = "Soil energy balance error...";
+        LOG(LogLevel::WARNING, errMsg);
+        throw std::runtime_error(errMsg);
+    }
   
 }
 
@@ -951,19 +988,5 @@ Properties() :
   tfrez_     (273.15),
   wdensity_ (1000.)
 {}
-
-soilfreezethaw::SoilFreezeThaw::
-~SoilFreezeThaw()
-{
-  if( thermal_conductivity != nullptr ) delete [] thermal_conductivity;
-  if( heat_capacity != nullptr ) delete [] heat_capacity;
-  if( soil_dz != nullptr ) delete [] soil_dz;
-  if( soil_ice_content != nullptr ) delete [] soil_ice_content;
-  if( soil_temperature_prev != nullptr ) delete [] soil_temperature_prev;
-  if( soil_z != nullptr ) delete [] soil_z;
-  if( soil_temperature != nullptr ) delete [] soil_temperature;
-  if( soil_moisture_content != nullptr ) delete [] soil_moisture_content;
-  if( soil_liquid_content != nullptr ) delete [] soil_liquid_content;
-}
 
 #endif
