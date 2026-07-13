@@ -258,9 +258,7 @@ GetGridOrigin (const int grid, double *origin)
 int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
-  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
-    return 0;
-  else if (grid == 2)
+  if (grid == 0 || grid == 1 || grid == 2 || grid == 3 || grid == 4)
     return 1;
   else
     return -1;
@@ -285,10 +283,10 @@ GetGridSize(const int grid)
 std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
-  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
-    return "scalar";
-  else if (grid == 2)
+  if (grid == 0)
     return "uniform_rectilinear";
+  else if (grid == 1 || grid == 2 || grid == 3 || grid == 4)
+    return "scalar";
   else {
     std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
     LOG(LogLevel::FATAL, errMsg);
