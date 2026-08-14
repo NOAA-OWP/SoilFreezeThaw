@@ -631,6 +631,9 @@ serialize(Archive& ar, const unsigned int version) {
 
   // in EnergyBalanceCheck
   ar & state->energy_balance;
+
+  // BMI output vars
+  ar & state->ncells;
 }
 
 
