@@ -50,10 +50,10 @@ Initialize (std::string config_file)
 
   LOG(LogLevel::INFO, "Initializing SFT");
 
-  if (config_file.compare("") != 0 )
+  if (config_file.compare("") != 0 ) {
       this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
-
-    verbosity= this->state->verbosity;
+      verbosity= this->state->verbosity;
+  }
 }
 
 void BmiSoilFreezeThaw::
@@ -61,7 +61,6 @@ Update()
 {
   this->state->Advance();
 }
-
 
 void BmiSoilFreezeThaw::
 UpdateUntil(double t)
@@ -76,16 +75,20 @@ UpdateUntil(double t)
     double n_steps = (t - time) / dt;
     double frac;
 
-    for (int n=0; n<int(n_steps); n++)
+    for (int n = 0; n < int(n_steps); n++)
       this->Update();
 
     frac = n_steps - int(n_steps);
-    this->state->dt = frac * dt;
-    this->state->Advance();
-    this->state->dt = dt;
+
+    // Only perform a fractional advance when there is
+    // actually a fractional timestep remaining.
+    if (frac > 0.0) {
+      this->state->dt = frac * dt;
+      this->state->Advance();
+      this->state->dt = dt;
+    }
   }
 }
-
 
 void BmiSoilFreezeThaw::
 Finalize()
@@ -171,8 +174,7 @@ GetVarUnits(std::string name)
     return "K";
   else if (name.compare("ground_heat_flux") == 0)
     return "W m-2";
-  else if (name.compare("ice_fraction_schaake") == 0 ||
-           name.compare("ice_fraction_xinanjiang") == 0 ||
+  else if (name.compare("ice_fraction_xinanjiang") == 0 ||
            name.compare("soil_ice_fraction") == 0 ||
            name.compare("soil_moisture_profile") == 0 ||
            name.compare("ice_fraction_scheme_bmi") == 0 ||
@@ -180,7 +182,7 @@ GetVarUnits(std::string name)
            name.compare("b") == 0 ||
            name.compare("quartz") == 0)
     return "1"; // UDUNITS dimensionless
-  else if (name.compare("satpsi") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0 || name.compare("satpsi") == 0)
     return "m";
   else
     return "none";
@@ -254,16 +256,16 @@ GetGridOrigin (const int grid, double *origin)
   }
 }
 
-
 int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
-  if (grid == 0 || grid == 1 || grid == 2 || grid == 3 || grid == 4)
+  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
+    return 0;
+  else if (grid == 2)
     return 1;
   else
     return -1;
 }
-
 
 int BmiSoilFreezeThaw::
 GetGridSize(const int grid)

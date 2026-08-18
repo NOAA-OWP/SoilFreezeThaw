@@ -188,6 +188,25 @@ int main(int argc, char *argv[])
     if (VERBOSITY)
       std::cout<<" units: ["<< units <<"]\n";
 
+    if (model.GetVarUnits("ice_fraction_schaake") != "m") {
+        throw std::runtime_error(
+            "ice_fraction_schaake units should be m");
+    }
+
+    if (model.GetVarUnits("satpsi") != "m") {
+        throw std::runtime_error(
+            "satpsi units should be m");
+    }
+
+    if (model.GetVarUnits("quartz") != "1") {
+        throw std::runtime_error(
+            "quartz units should be dimensionless (1)");
+    }
+
+    if (model.GetVarUnits("b") != "1") {
+      throw std::runtime_error(
+          "b units should be dimensionless (1)");
+    }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_type()
     vartype = model.GetVarType(var_name);
