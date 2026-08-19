@@ -105,7 +105,8 @@ InitFromConfigFile(std::string config_file)
     LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     abort();
   }
-  int n_st, n_mct, n_mcl;
+  // int n_st, n_mct, n_mcl;
+  int n_st = 0, n_mct = 0, n_mcl = 0;
 
   this->is_soil_moisture_bmi_set = false;
   bool is_endtime_set = false;
