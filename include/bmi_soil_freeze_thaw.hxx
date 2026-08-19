@@ -6,7 +6,9 @@ using namespace std;
 #include <string.h>
 #include "../bmi/bmi.hxx"
 #include "soil_freeze_thaw.hxx"
+#include "vecbuf.hpp"
 
+#include <boost/serialization/serialization.hpp>
 
 class NotImplemented : public std::logic_error {
   public:
@@ -16,24 +18,7 @@ class NotImplemented : public std::logic_error {
 
 class BmiSoilFreezeThaw : public bmi::Bmi {
   public:
-    BmiSoilFreezeThaw() {
-      this->input_var_names[0]  = "ground_temperature";
-      this->input_var_names[1]  = "soil_moisture_profile";
-      
-      this->output_var_names[0] = "ice_fraction_schaake";
-      this->output_var_names[1] = "ice_fraction_xinanjiang";
-      this->output_var_names[2] = "num_cells";
-      this->output_var_names[3] = "soil_temperature_profile";
-      this->output_var_names[4] = "soil_ice_fraction";
-      this->output_var_names[5] = "ground_heat_flux";
-
-      // add calibratable parameters
-      this->calib_var_names[0]  = "smcmax";
-      this->calib_var_names[1]  = "b";
-      this->calib_var_names[2]  = "satpsi";
-
-    };
-
+    BmiSoilFreezeThaw();
     void Initialize(std::string config_file);
     void Update();
     void UpdateUntil(double time);
@@ -86,7 +71,10 @@ class BmiSoilFreezeThaw : public bmi::Bmi {
     void GetGridFaceNodes(const int grid, int *face_nodes);
     void GetGridNodesPerFace(const int grid, int *nodes_per_face);
   private:
+    friend class boost::serialization::access;
     soilfreezethaw::SoilFreezeThaw* state;
+    vecbuf<char> m_serialized_vec;
+    uint64_t m_serialized_length; // can theoretically always be derived from the vec's size, but needed for having a stable location for GetValuePtr
     static const int input_var_name_count  = 2;
     static const int output_var_name_count = 6;
     static const int calib_var_name_count  = 3;
@@ -95,6 +83,11 @@ class BmiSoilFreezeThaw : public bmi::Bmi {
     std::string output_var_names[output_var_name_count];
     std::string calib_var_names[calib_var_name_count];
     std::string verbosity;
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+    void new_serialized();
+    void load_serialized(char* data);
+    void clear_serialized();
 };
 
 #ifdef NGEN
