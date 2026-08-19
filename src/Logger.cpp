@@ -282,10 +282,6 @@ void Logger::SetLoggingFlag(void) {
     std::cout << MODULE_NAME << " Logging " << ((loggingEnabled)?"ENABLED":"DISABLED") << std::endl;
 }
 
-bool Logger::IsLoggingEnabled(void) {
-    return loggingEnabled;
-}
-
 void Logger::SetLogModuleName(void) {
     // Make sure the module name used for logging entries is all uppercase and 8 characters wide.
     moduleName            = MODULE_NAME;
@@ -421,3 +417,12 @@ std::string Logger::CreateTimestamp(bool appendMS, bool iso) {
 std::string Logger::GetLogFilePath() {
     return logFilePath;
 }
+
+bool Logger::IsLoggingEnabled(void) {
+    return loggingEnabled;
+}
+
+LogLevel Logger::GetLogLevel(void) {
+    return logLevel;
+} 
+>>>>>>> ngwpc-3.1.2.1.0

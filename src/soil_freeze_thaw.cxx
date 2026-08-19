@@ -962,7 +962,7 @@ EnergyBalanceCheck()
     LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
     sprintf(prtMsg,  "Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
     LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
-    sprintf(prtMsg,  "Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+    sprintf(prtMsg,  "Energy balance error (global)  [W/m^2] = %6.4e \n", energy_balance);
     LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
 
     if (fabs(energy_balance) > tolerance) {}
