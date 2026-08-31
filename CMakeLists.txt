@@ -1,10 +1,14 @@
+#
+# SoilFreezeThaw/CMakeLists.txt
+#
+
 cmake_minimum_required(VERSION 3.10)
 
 string(ASCII 27 Esc)
 set(ColourReset "${Esc}[m")
 set(Red         "${Esc}[32m")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -52,6 +56,13 @@ elseif(NGEN)
 message("${Red} Soil freeze-thaw model ngen-framework build! ${ColourReset}")
 endif()
 
+# -----------------------------------------------------------------------------
+# Find the Boost library and configure usage
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.79.0 REQUIRED COMPONENTS serialization)
+
 # add the executable
 
 ## cfe + aorc + pet + ftm
@@ -59,9 +70,9 @@ endif()
 if(PFRAMEWORK)
   add_executable(${exe_name} ./src/main_pseudo_framework.cxx
                  ./extern/cfe/src/cfe.c ./extern/cfe/src/bmi_cfe.c
-                 ./extern/cfe/src/giuh.c ./extern/cfe/src/conceptual_reservoir.c ./extern/cfe/src/nash_cascade.c
+                 ./extern/cfe/src/giuh.c ./extern/cfe/src/conceptual_reservoir.c ./extern/cfe/src/nash_cascade.c ./extern/cfe/src/bmi_serialization.cxx
                  ./extern/aorc_bmi/src/aorc.c ./extern/aorc_bmi/src/bmi_aorc.c
-                 ./extern/evapotranspiration/src/pet.c ./extern/evapotranspiration/src/bmi_pet.c)
+                 ./extern/evapotranspiration/src/pet.c ./extern/evapotranspiration/src/bmi_pet.c ./extern/evapotranspiration/src/pet_serialization.cpp)
 
   add_library(sftlib ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx
               ./include/bmi_soil_freeze_thaw.hxx ./include/soil_freeze_thaw.hxx
@@ -74,8 +85,10 @@ if(PFRAMEWORK)
   target_link_libraries(${exe_name} PRIVATE m)
   target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/cfe/include)
   target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
+  target_link_libraries(${exe_name} PRIVATE Boost::serialization)
 elseif(STANDALONE)
   add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx)
+  target_link_libraries(${exe_name} PRIVATE Boost::serialization)
 endif()
 
 ##for NGEN BUILD
@@ -97,6 +110,27 @@ target_include_directories(sftbmi PRIVATE include)
 set_target_properties(sftbmi PROPERTIES VERSION ${PROJECT_VERSION})
 
 set_target_properties(sftbmi PROPERTIES PUBLIC_HEADER ./include/bmi_soil_freeze_thaw.hxx)
+
+target_link_libraries(sftbmi PRIVATE Boost::serialization)
+
+option(USE_EWTS "Build SFT with EWTS logging" ON)
+message("-- SFT CMakeLists USE_EWTS = ${USE_EWTS}")
+if(USE_EWTS)
+    message("-- SFT compiled with EWTS logging")
+
+    # --- EWTS (installed from nwm-ewts) ---
+    find_package(ewts CONFIG REQUIRED)
+
+    # Always use EWTS runtime logger for CPP
+    target_link_libraries(sftbmi PRIVATE ewts::ewts_cpp)
+
+    # Built with ngen bridge
+    target_link_libraries(sftbmi PRIVATE 
+        "-Wl,--no-as-needed" ewts::ewts_ngen_bridge "-Wl,--as-needed")
+    target_compile_definitions(sftbmi PRIVATE SFT_USE_EWTS)
+else()
+    message("-- SFT compiled with stdout fallback logging")
+endif()
 
 include(GNUInstallDirs)
 
