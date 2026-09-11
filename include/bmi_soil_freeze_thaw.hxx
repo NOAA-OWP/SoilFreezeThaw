@@ -88,6 +88,7 @@ class BmiSoilFreezeThaw : public bmi::Bmi {
     void new_serialized();
     void load_serialized(char* data);
     void clear_serialized();
+    void reset_time();
 };
 
 #ifdef NGEN

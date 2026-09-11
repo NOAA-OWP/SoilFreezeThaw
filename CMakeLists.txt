@@ -1,10 +1,14 @@
+#
+# SoilFreezeThaw/CMakeLists.txt
+#
+
 cmake_minimum_required(VERSION 3.10)
 
 string(ASCII 27 Esc)
 set(ColourReset "${Esc}[m")
 set(Red         "${Esc}[32m")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -83,7 +87,7 @@ if(PFRAMEWORK)
   target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
   target_link_libraries(${exe_name} PRIVATE Boost::serialization)
 elseif(STANDALONE)
-  add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx ./src/Logger.cpp)
+  add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx)
   target_link_libraries(${exe_name} PRIVATE Boost::serialization)
 endif()
 
@@ -96,9 +100,9 @@ set(SFT_LIB_DESC_CMAKE "OWP SFT BMI Module Shared Library")
 add_compile_definitions(BMI_ACTIVE)
 
 if(WIN32)
-    add_library(sftbmi src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx ./src/Logger.cpp)
+    add_library(sftbmi src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx)
 else()
-    add_library(sftbmi SHARED src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx ./src/Logger.cpp)
+    add_library(sftbmi SHARED src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx)
 endif()
 
 target_include_directories(sftbmi PRIVATE include)
@@ -108,6 +112,18 @@ set_target_properties(sftbmi PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(sftbmi PROPERTIES PUBLIC_HEADER ./include/bmi_soil_freeze_thaw.hxx)
 
 target_link_libraries(sftbmi PRIVATE Boost::serialization)
+
+# --- EWTS (installed from nwm-ewts) ---
+find_package(ewts CONFIG REQUIRED)
+
+# Always use EWTS runtime logger for CPP
+target_link_libraries(sftbmi PRIVATE ewts::ewts_cpp)
+
+# Built with ngen bridge
+target_link_libraries(sftbmi PRIVATE 
+    "-Wl,--no-as-needed" ewts::ewts_ngen_bridge "-Wl,--as-needed")
+target_compile_definitions(sftbmi PRIVATE EWTS_HAVE_NGEN_BRIDGE)
+
 
 include(GNUInstallDirs)
 
