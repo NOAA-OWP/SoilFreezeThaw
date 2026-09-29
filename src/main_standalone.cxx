@@ -7,8 +7,10 @@
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
+#include "../include/Logger.hpp"
 #include <cmath>
 
+std::stringstream main_standlone_ss("");
 
 
 std::vector<double> ReadForcingData(std::string config_file);
@@ -21,6 +23,8 @@ std::vector<double> ReadForcingData(std::string config_file);
 
 int main(int argc, const char *argv[])
 {
+  //setup the Logger
+  (Logger::GetInstance())->setup_logger();
 
   /************************************************************************
       A configuration file is required for running this model through BMI
@@ -134,12 +138,16 @@ int main(int argc, const char *argv[])
     std::string passed = test_status > 0 ? "Yes" : "No";
     
     
-    std::cout<<"*********************************************************\n";
-    std::cout<<" Test passed = "<<passed<<" \n Frozen fraction error = "<<err_frozen_frac_mm<<"\n";
-    std::cout<<"*********************************************************\n";
+    main_standlone_ss<<"*********************************************************\n";
+    LOG(main_standlone_ss.str(), LogLevel::INFO); main_standlone_ss.str("");
+    main_standlone_ss<<" Test passed = "<<passed<<" \n Frozen fraction error = "<<err_frozen_frac_mm<<"\n";
+    LOG(main_standlone_ss.str(), LogLevel::INFO); main_standlone_ss.str("");
+    main_standlone_ss<<"*********************************************************\n";
+    LOG(main_standlone_ss.str(), LogLevel::INFO); main_standlone_ss.str("");
   }
   else {
-    std::cout<<"Golden test created... see "<<filename<<"\n";
+    main_standlone_ss<<"Golden test created... see "<<filename<<"\n";
+    LOG(main_standlone_ss.str(), LogLevel::INFO); main_standlone_ss.str("");
   }
   
   /************************************************************************
@@ -163,7 +171,7 @@ ReadForcingData(std::string config_file)
   if (!file) {
     std::stringstream errMsg;
     errMsg << config_file << " does not exist";
-    throw std::runtime_error(errMsg.str());
+    Logger::logMsgAndThrowRuntimeError(errMsg.str());
   }
 
   std::string forcing_file;
@@ -189,7 +197,7 @@ ReadForcingData(std::string config_file)
   if (!is_forcing_file_set) {
     std::stringstream errMsg;
     errMsg << config_file << " does not provide forcing_file";
-    throw std::runtime_error(errMsg.str());
+    Logger::logMsgAndThrowRuntimeError(errMsg.str());
   }
   
   std::ifstream fp;

@@ -188,6 +188,25 @@ int main(int argc, char *argv[])
     if (VERBOSITY)
       std::cout<<" units: ["<< units <<"]\n";
 
+    if (model.GetVarUnits("ice_fraction_schaake") != "m") {
+        throw std::runtime_error(
+            "ice_fraction_schaake units should be m");
+    }
+
+    if (model.GetVarUnits("satpsi") != "m") {
+        throw std::runtime_error(
+            "satpsi units should be m");
+    }
+
+    if (model.GetVarUnits("quartz") != "1") {
+        throw std::runtime_error(
+            "quartz units should be dimensionless (1)");
+    }
+
+    if (model.GetVarUnits("b") != "1") {
+      throw std::runtime_error(
+          "b units should be dimensionless (1)");
+    }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_var_type()
     vartype = model.GetVarType(var_name);
@@ -323,10 +342,20 @@ int main(int argc, char *argv[])
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_rank()
+    int grid_rank_test[] = {0, 0, 1};
+
     grid_rank = model.GetGridRank(grid_id[i]);
-    if (grid_rank == 0) return FAILURE;
+
+    if (grid_rank != grid_rank_test[i]) {
+        std::stringstream errMsg;
+        errMsg << "Grid " << grid_id[i]
+               << " rank should be " << grid_rank_test[i]
+               << " but was " << grid_rank << "\n";
+        throw std::runtime_error(errMsg.str());
+    }
+
     if (VERBOSITY)
-      std::cout<<" rank: "<<grid_rank<<"\n";
+        std::cout << " rank: " << grid_rank << "\n";
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_size
@@ -447,22 +476,12 @@ int main(int argc, char *argv[])
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // compare benchmark value with bmi GetValue
     if (var_name == "soil_moisture_profile") {
-      bool check = false;
-      for (int i1 =0; i1 < nz; i1++) {
-	assert (fabs(var[i] - soil_moisture_profile[i]) < 0.001);
-	check=true;
-      }
-      if (check)
-	test_status &= true;
-      else {
-	test_status &= false;
-	std::string passed = test_status == true ? "Yes" : "No";
-	std::cout<<"Test passed: "<<passed<<"\n";
-	std::stringstream errMsg;
-	errMsg << "Soil moisture should be: "<<soil_moisture_profile[0]<<" "<<soil_moisture_profile[1]<<" "
-	       <<soil_moisture_profile[2]<<" "<<soil_moisture_profile[3]<<"\n";
-	throw std::runtime_error(errMsg.str());
-      }
+        bool check = false;
+        for (int i1 = 0; i1 < nz; i1++) {
+            assert(fabs(var[i1] - soil_moisture_profile[i1]) < 0.001);
+            check = fabs(var[i1] - soil_moisture_profile[i1]) < 0.001;
+        }
+        test_status &= check;
     }
     else if (var_name == "ground_temperature") {
     // Go ahead and test set_value_*() for last time step here
@@ -532,27 +551,16 @@ int main(int argc, char *argv[])
 	test_status &= false;
     }
     else if (var_name.compare("soil_temperature_profile") == 0) {
-      double *var = new double[nz];
-      model.GetValue(var_name, &(var[0]));
-      bool check = false;
-      for (int i1 =0; i1 < nz; i1++) {
-	assert (fabs(var[i] - soil_T[i]) < 0.001);
-	check=true;
-      }
-      delete [] var;
-      if (check)
-	test_status &= true;
-      else {
-	test_status &= false;
-	std::string passed = test_status == true ? "Yes" : "No";
-	std::cout<<"Test passed: "<<passed<<"\n";
-	std::stringstream errMsg;
-	errMsg << "Soil temperature should be: "<<soil_T[0]<<" "<<soil_T[1]<<" "
-	       <<soil_T[2]<<" "<<soil_T[3]<<"\n";
-	throw std::runtime_error(errMsg.str());
-      }
+        double *var = new double[nz];
+        model.GetValue(var_name, &(var[0]));
+        bool check = false;
+        for (int i1 = 0; i1 < nz; i1++) {
+            assert(fabs(var[i1] - soil_T[i1]) < 0.001);
+            check = fabs(var[i1] - soil_T[i1]) < 0.001;
+        }
+        delete [] var;
+        test_status &= check;
     }
-    
   }
 
   
